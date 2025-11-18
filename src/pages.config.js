@@ -4,6 +4,8 @@ import Vehiculos from './pages/Vehiculos';
 import Cotizaciones from './pages/Cotizaciones';
 import Reportes from './pages/Reportes';
 import Facturacion from './pages/Facturacion';
+import Proveedores from './pages/Proveedores';
+import Inventario from './pages/Inventario';
 import __Layout from './Layout.jsx';
 
 
@@ -14,6 +16,8 @@ export const PAGES = {
     "Cotizaciones": Cotizaciones,
     "Reportes": Reportes,
     "Facturacion": Facturacion,
+    "Proveedores": Proveedores,
+    "Inventario": Inventario,
 }
 
 export const pagesConfig = {
