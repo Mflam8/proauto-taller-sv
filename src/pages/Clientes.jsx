@@ -7,8 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Users, Search, Plus, Phone, Mail, MapPin, Edit, Trash2, Car, Eye } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import ClienteForm from "../components/clientes/ClienteForm";
-import ClienteDetalle from "../components/clientes/ClienteDetalle";
+import ClienteForm from "../components/clientes/ClienteForm.jsx";
+import ClienteDetalle from "../components/clientes/ClienteDetalle.jsx";
 
 export default function Clientes() {
   const [searchTerm, setSearchTerm] = useState("");

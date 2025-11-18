@@ -9,8 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { FileText, Search, Plus, Edit, Eye, CheckCircle, XCircle, Clock, Download } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import CotizacionForm from "../components/cotizaciones/CotizacionForm";
-import CotizacionDetalle from "../components/cotizaciones/CotizacionDetalle";
+import CotizacionForm from "../components/cotizaciones/CotizacionForm.jsx";
+import CotizacionDetalle from "../components/cotizaciones/CotizacionDetalle.jsx";
 
 export default function Cotizaciones() {
   const [searchTerm, setSearchTerm] = useState("");

@@ -8,8 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Car, Search, Plus, Edit, Trash2, Calendar, Fuel, Hash, Eye } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import VehiculoForm from "../components/vehiculos/VehiculoForm";
-import VehiculoDetalle from "../components/vehiculos/VehiculoDetalle";
+import VehiculoForm from "../components/vehiculos/VehiculoForm.jsx";
+import VehiculoDetalle from "../components/vehiculos/VehiculoDetalle.jsx";
 import { Badge } from "@/components/ui/badge";
 
 export default function Vehiculos() {
