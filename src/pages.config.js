@@ -2,6 +2,7 @@ import Dashboard from './pages/Dashboard';
 import Clientes from './pages/Clientes';
 import Vehiculos from './pages/Vehiculos';
 import Cotizaciones from './pages/Cotizaciones';
+import Reportes from './pages/Reportes';
 import __Layout from './Layout.jsx';
 
 
@@ -10,6 +11,7 @@ export const PAGES = {
     "Clientes": Clientes,
     "Vehiculos": Vehiculos,
     "Cotizaciones": Cotizaciones,
+    "Reportes": Reportes,
 }
 
 export const pagesConfig = {
