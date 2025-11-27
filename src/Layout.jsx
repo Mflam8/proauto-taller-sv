@@ -92,6 +92,11 @@ export default function Layout({ children, currentPageName }) {
   const location = useLocation();
   const [user, setUser] = useState(null);
 
+  // Si es la página pública (SitioWeb), mostrar sin layout
+  if (currentPageName === "SitioWeb") {
+    return <>{children}</>;
+  }
+
   useEffect(() => {
     const loadUser = async () => {
       try {
