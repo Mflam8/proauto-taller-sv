@@ -6,6 +6,7 @@ import Reportes from './pages/Reportes';
 import Facturacion from './pages/Facturacion';
 import Proveedores from './pages/Proveedores';
 import Inventario from './pages/Inventario';
+import SitioWeb from './pages/SitioWeb';
 import __Layout from './Layout.jsx';
 
 
@@ -18,6 +19,7 @@ export const PAGES = {
     "Facturacion": Facturacion,
     "Proveedores": Proveedores,
     "Inventario": Inventario,
+    "SitioWeb": SitioWeb,
 }
 
 export const pagesConfig = {
