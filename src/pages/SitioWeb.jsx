@@ -66,18 +66,19 @@ export default function SitioWeb() {
 
       {/* Hero Section */}
       <section className="min-h-screen relative flex items-center justify-center overflow-hidden pt-20">
-        {/* Animated Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-black">
-          <motion.div 
-            animate={{ rotate: 360 }}
-            transition={{ duration: 50, repeat: Infinity, ease: "linear" }}
-            className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-br from-[#E31E24]/20 to-transparent rounded-full blur-3xl"
-          />
-          <motion.div 
-            animate={{ rotate: -360 }}
-            transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
-            className="absolute -bottom-1/2 -left-1/2 w-full h-full bg-gradient-to-tr from-[#E31E24]/10 to-transparent rounded-full blur-3xl"
-          />
+        {/* Video Background */}
+        <div className="absolute inset-0">
+          <video 
+            autoPlay 
+            loop 
+            muted 
+            playsInline
+            className="w-full h-full object-cover"
+          >
+            <source src="URL_DEL_VIDEO_AQUI" type="video/mp4" />
+          </video>
+          {/* Overlay oscuro para mejorar legibilidad del texto */}
+          <div className="absolute inset-0 bg-black/60"></div>
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 text-center">
@@ -108,16 +109,6 @@ export default function SitioWeb() {
               <span className="text-white">EN </span>
               <span className="text-[#E31E24]">SANTA ANA</span>
             </h1>
-
-            <motion.p 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6 }}
-              className="text-xl md:text-2xl text-white/70 max-w-3xl mx-auto mb-10"
-            >
-              Te tratamos como familia. <span className="text-[#E31E24] font-bold">Café gratis</span>, cotizaciones rápidas 
-              y actualizaciones constantes del trabajo de tu vehículo.
-            </motion.p>
 
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
