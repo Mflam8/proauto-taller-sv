@@ -96,18 +96,17 @@ export default function SitioWeb() {
             </motion.p>
             
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-6 leading-tight">
-              <span className="text-white">¿CANSADO DE </span>
+              <span className="text-white">TU TALLER DE </span>
               <motion.span 
                 animate={{ color: ["#E31E24", "#ff4444", "#E31E24"] }}
                 transition={{ duration: 2, repeat: Infinity }}
                 className="text-[#E31E24]"
               >
-                MECÁNICOS
+                CONFIANZA
               </motion.span>
               <br />
-              <span className="text-white">QUE TE </span>
-              <span className="line-through text-white/50">MIENTEN</span>
-              <span className="text-white">?</span>
+              <span className="text-white">EN </span>
+              <span className="text-[#E31E24]">SANTA ANA</span>
             </h1>
 
             <motion.p 
@@ -116,8 +115,8 @@ export default function SitioWeb() {
               transition={{ delay: 0.6 }}
               className="text-xl md:text-2xl text-white/70 max-w-3xl mx-auto mb-10"
             >
-              Somos el taller donde tu auto <span className="text-[#E31E24] font-bold">SÍ está seguro</span>. 
-              Sin sorpresas, sin excusas, sin "ya casi está".
+              Te tratamos como familia. <span className="text-[#E31E24] font-bold">Café gratis</span>, cotizaciones rápidas 
+              y actualizaciones constantes del trabajo de tu vehículo.
             </motion.p>
 
             <motion.div 
@@ -161,11 +160,11 @@ export default function SitioWeb() {
         >
           {[...Array(3)].map((_, i) => (
             <div key={i} className="flex gap-16 items-center">
-              <span className="flex items-center gap-2 text-xl font-bold"><CheckCircle className="w-6 h-6" /> SIN SORPRESAS</span>
-              <span className="flex items-center gap-2 text-xl font-bold"><Star className="w-6 h-6" /> +500 CLIENTES FELICES</span>
-              <span className="flex items-center gap-2 text-xl font-bold"><Heart className="w-6 h-6" /> GARANTÍA EN TODO</span>
-              <span className="flex items-center gap-2 text-xl font-bold"><Zap className="w-6 h-6" /> DIAGNÓSTICO GRATIS</span>
-              <span className="flex items-center gap-2 text-xl font-bold"><Shield className="w-6 h-6" /> PROFESIONALES CERTIFICADOS</span>
+              <span className="flex items-center gap-2 text-xl font-bold"><Heart className="w-6 h-6" /> TRATO AMIGABLE</span>
+              <span className="flex items-center gap-2 text-xl font-bold"><Star className="w-6 h-6" /> CAFÉ Y COMODIDAD</span>
+              <span className="flex items-center gap-2 text-xl font-bold"><Zap className="w-6 h-6" /> COTIZACIÓN RÁPIDA</span>
+              <span className="flex items-center gap-2 text-xl font-bold"><CheckCircle className="w-6 h-6" /> ACTUALIZACIONES CONSTANTES</span>
+              <span className="flex items-center gap-2 text-xl font-bold"><Shield className="w-6 h-6" /> SEGURO PARA MUJERES</span>
             </div>
           ))}
         </motion.div>
@@ -222,19 +221,20 @@ export default function SitioWeb() {
             >
               <p className="text-[#E31E24] font-bold mb-4">CONOCE A NUESTRO EQUIPO</p>
               <h2 className="text-4xl md:text-5xl font-black mb-6">
-                MECÁNICOS DE <span className="text-[#E31E24]">VERDAD</span>
+                PROFESIONALES QUE <span className="text-[#E31E24]">TE CUIDAN</span>
               </h2>
               <p className="text-xl text-white/70 mb-8">
-                No somos como los demás. Aquí no te vamos a inventar piezas que no necesitas, 
-                ni te vamos a cobrar por arreglos fantasma. <strong className="text-white">Punto.</strong>
+                En PROAUTO te recibimos con un café y un trato amable. Te damos una cotización rápida 
+                y te mantenemos informado de cada paso. <strong className="text-white">Especialmente si eres mujer</strong>, 
+                aquí estás en las mejores manos.
               </p>
               
               <div className="space-y-4">
                 {[
-                  "Diagnóstico honesto y transparente",
-                  "Precios justos sin letra pequeña",
-                  "Te explicamos TODO antes de tocar tu auto",
-                  "Garantía en todos nuestros trabajos"
+                  "Café gratis mientras esperas",
+                  "Cotización en minutos, no en horas",
+                  "Te actualizamos del progreso de tu vehículo",
+                  "Ambiente seguro y profesional para mujeres"
                 ].map((item, i) => (
                   <motion.div 
                     key={i}
@@ -292,8 +292,8 @@ export default function SitioWeb() {
                 CONTÁCTANOS <span className="text-[#E31E24]">YA</span>
               </h2>
               <p className="text-xl text-white/70 mb-10">
-                Deja tus datos y te contactamos. O mejor aún, 
-                <strong className="text-[#E31E24]"> ¡ven a visitarnos!</strong>
+                Déjanos tus datos y te contactamos de inmediato. 
+                <strong className="text-[#E31E24]">¡Te esperamos con un café!</strong>
               </p>
 
               <div className="space-y-6">
