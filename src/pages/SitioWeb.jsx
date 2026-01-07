@@ -26,12 +26,12 @@ export default function SitioWeb() {
   const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
 
   const servicios = [
-    { icon: Wrench, title: "Mecánica General", desc: "Gasolina y Diesel. Lo arreglamos todo, sin excusas." },
-    { icon: Cpu, title: "Diagnóstico Computarizado", desc: "Tecnología de punta para saber exactamente qué tiene tu auto." },
-    { icon: Shield, title: "Sistema de Frenos", desc: "Tu seguridad es lo primero. Frenos que de verdad frenan." },
-    { icon: Droplets, title: "Cambio de Aceite", desc: "Rápido, sin cita y con los mejores lubricantes del mercado." },
-    { icon: Zap, title: "Sistema GDI", desc: "Especialistas en inyección directa. Sí, sabemos lo que es." },
-    { icon: Car, title: "Avalúo de Vehículos", desc: "¿Vas a comprar o vender? Te decimos la verdad." },
+    { icon: Wrench, title: "Mantenimiento Preventivo y Correctivo", desc: "Mantenimientos periódicos por kilometraje: cambios de aceite, filtros, bujías y fluidos." },
+    { icon: Cpu, title: "Diagnóstico Computarizado OBD-II", desc: "Contamos con tecnología avanzada para diagnosticar todas las marcas del mercado." },
+    { icon: Shield, title: "Reparación de Frenos", desc: "Mantenimiento de sistemas de frenos, suspensión y dirección." },
+    { icon: Droplets, title: "Reparación de Motor y Transmisión", desc: "Reparaciones completas de motor, transmisión y sistemas de inyección." },
+    { icon: Zap, title: "Enderezado y Pintura", desc: "Restauración de chasis, pintura en cabina con secado térmico y colorimetría de precisión." },
+    { icon: Car, title: "Servicios para Flotas", desc: "Mantenimiento especializado para flotas empresariales con eficiencia operativa." },
   ];
 
   const handleSubmit = async (e) => {
@@ -151,11 +151,11 @@ export default function SitioWeb() {
         >
           {[...Array(3)].map((_, i) => (
             <div key={i} className="flex gap-16 items-center">
-              <span className="flex items-center gap-2 text-xl font-bold"><Heart className="w-6 h-6" /> TRATO AMIGABLE</span>
-              <span className="flex items-center gap-2 text-xl font-bold"><Star className="w-6 h-6" /> CAFÉ Y COMODIDAD</span>
-              <span className="flex items-center gap-2 text-xl font-bold"><Zap className="w-6 h-6" /> COTIZACIÓN RÁPIDA</span>
-              <span className="flex items-center gap-2 text-xl font-bold"><CheckCircle className="w-6 h-6" /> ACTUALIZACIONES CONSTANTES</span>
-              <span className="flex items-center gap-2 text-xl font-bold"><Shield className="w-6 h-6" /> SEGURO PARA MUJERES</span>
+              <span className="flex items-center gap-2 text-xl font-bold"><Shield className="w-6 h-6" /> CONFIANZA</span>
+              <span className="flex items-center gap-2 text-xl font-bold"><Star className="w-6 h-6" /> CALIDAD</span>
+              <span className="flex items-center gap-2 text-xl font-bold"><Zap className="w-6 h-6" /> EFICIENCIA</span>
+              <span className="flex items-center gap-2 text-xl font-bold"><CheckCircle className="w-6 h-6" /> TRANSPARENCIA</span>
+              <span className="flex items-center gap-2 text-xl font-bold"><Heart className="w-6 h-6" /> INNOVACIÓN</span>
             </div>
           ))}
         </motion.div>
@@ -172,7 +172,7 @@ export default function SitioWeb() {
           >
             <p className="text-[#E31E24] font-bold mb-4">NUESTROS SERVICIOS</p>
             <h2 className="text-4xl md:text-6xl font-black">
-              TODO LO QUE TU AUTO <span className="text-[#E31E24]">NECESITA</span>
+              SERVICIOS ESPECIALIZADOS DE <span className="text-[#E31E24]">ALTA CALIDAD</span>
             </h2>
           </motion.div>
 
@@ -210,22 +210,22 @@ export default function SitioWeb() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              <p className="text-[#E31E24] font-bold mb-4">CONOCE A NUESTRO EQUIPO</p>
+              <p className="text-[#E31E24] font-bold mb-4">¿QUIÉNES SOMOS?</p>
               <h2 className="text-4xl md:text-5xl font-black mb-6">
-                PROFESIONALES QUE <span className="text-[#E31E24]">TE CUIDAN</span>
+                PERSONAL ALTAMENTE <span className="text-[#E31E24]">CAPACITADO</span>
               </h2>
               <p className="text-xl text-white/70 mb-8">
-                En PROAUTO te recibimos con un café y un trato amable. Te damos una cotización rápida 
-                y te mantenemos informado de cada paso. <strong className="text-white">Especialmente si eres mujer</strong>, 
-                aquí estás en las mejores manos.
+                Especialistas en el mantenimiento preventivo y correctivo de vehículos, con un enfoque corporativo 
+                para flotas empresariales. <strong className="text-white">Nuestro compromiso es garantizar la productividad 
+                de tu empresa</strong> reduciendo tiempos de inactividad y optimizando la seguridad de tu flota.
               </p>
               
               <div className="space-y-4">
                 {[
-                  "Café gratis mientras esperas",
-                  "Cotización en minutos, no en horas",
-                  "Te actualizamos del progreso de tu vehículo",
-                  "Ambiente seguro y profesional para mujeres"
+                  "Técnicos certificados con amplia experiencia",
+                  "Tecnología de diagnóstico avanzada",
+                  "Control de calidad unificado",
+                  "Transparencia en presupuestos y gestión"
                 ].map((item, i) => (
                   <motion.div 
                     key={i}
@@ -278,13 +278,13 @@ export default function SitioWeb() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
             >
-              <p className="text-[#E31E24] font-bold mb-4">¿LISTO PARA VISITARNOS?</p>
+              <p className="text-[#E31E24] font-bold mb-4">CONTÁCTANOS</p>
               <h2 className="text-4xl md:text-5xl font-black mb-6">
-                CONTÁCTANOS <span className="text-[#E31E24]">YA</span>
+                SOLICITA TU <span className="text-[#E31E24]">COTIZACIÓN</span>
               </h2>
               <p className="text-xl text-white/70 mb-10">
                 Déjanos tus datos y te contactamos de inmediato. 
-                <strong className="text-[#E31E24]">¡Te esperamos con un café!</strong>
+                <strong className="text-[#E31E24]">Presupuestos ágiles y transparentes.</strong>
               </p>
 
               <div className="space-y-6">
@@ -403,11 +403,11 @@ export default function SitioWeb() {
                   </div>
 
                   <div className="mb-6">
-                    <label className="text-white/50 text-sm mb-2 block">¿Cómo podemos ayudarte? *</label>
+                    <label className="text-white/50 text-sm mb-2 block">Mensaje *</label>
                     <Textarea
                       value={formData.mensaje}
                       onChange={(e) => setFormData({...formData, mensaje: e.target.value})}
-                      placeholder="Cuéntanos sobre tu vehículo o qué servicio necesitas..."
+                      placeholder="Describe el servicio que necesitas o solicita una cotización..."
                       required
                       rows={4}
                       className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-[#E31E24] resize-none"
@@ -446,7 +446,7 @@ export default function SitioWeb() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <img src={logoUrl} alt="PROAUTO Taller" className="h-16 object-contain" />
             <p className="text-white/50 text-center">
-              © 2024 PROAUTO Taller. Tu auto seguro, en tu taller de confianza.
+              © 2024-2026 PROAUTO Taller. Tu auto seguro, en tu taller de confianza.
             </p>
             <div className="flex gap-4">
               <a href="https://instagram.com/proautotaller" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-[#E31E24] transition-colors">

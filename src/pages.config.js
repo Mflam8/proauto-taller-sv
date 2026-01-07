@@ -1,25 +1,27 @@
-import Dashboard from './pages/Dashboard';
 import Clientes from './pages/Clientes';
-import Vehiculos from './pages/Vehiculos';
 import Cotizaciones from './pages/Cotizaciones';
-import Reportes from './pages/Reportes';
+import Dashboard from './pages/Dashboard';
 import Facturacion from './pages/Facturacion';
-import Proveedores from './pages/Proveedores';
+import Home from './pages/Home';
 import Inventario from './pages/Inventario';
+import Proveedores from './pages/Proveedores';
+import Reportes from './pages/Reportes';
 import SitioWeb from './pages/SitioWeb';
+import Vehiculos from './pages/Vehiculos';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Dashboard": Dashboard,
     "Clientes": Clientes,
-    "Vehiculos": Vehiculos,
     "Cotizaciones": Cotizaciones,
-    "Reportes": Reportes,
+    "Dashboard": Dashboard,
     "Facturacion": Facturacion,
-    "Proveedores": Proveedores,
+    "Home": Home,
     "Inventario": Inventario,
+    "Proveedores": Proveedores,
+    "Reportes": Reportes,
     "SitioWeb": SitioWeb,
+    "Vehiculos": Vehiculos,
 }
 
 export const pagesConfig = {
