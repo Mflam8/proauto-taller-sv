@@ -288,14 +288,7 @@ export default function SitioWeb() {
             >
               <div className="absolute -inset-4 bg-gradient-to-r from-[#E31E24] to-[#B71C1C] rounded-3xl blur-2xl opacity-30"></div>
               <img src={teamUrl} alt="Equipo PROAUTO Taller" className="relative rounded-3xl shadow-2xl w-full" />
-              <motion.div
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 3, repeat: Infinity }}
-                className="absolute -bottom-6 -right-6 bg-[#E31E24] text-white p-6 rounded-2xl shadow-xl"
-              >
-                <p className="text-3xl font-black">+10</p>
-                <p className="text-sm">Años de experiencia</p>
-              </motion.div>
+
             </motion.div>
           </div>
         </div>
