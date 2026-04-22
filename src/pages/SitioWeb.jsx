@@ -320,11 +320,14 @@ export default function SitioWeb() {
               </div>
 
               <div className="flex gap-4 mt-10">
-                <a href="https://instagram.com/proautotaller" target="_blank" rel="noopener noreferrer" className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#E31E24] transition-colors">
+                <a href="https://www.instagram.com/proautotallersv/" target="_blank" rel="noopener noreferrer" className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#E31E24] transition-colors">
                   <Instagram className="w-6 h-6" />
                 </a>
-                <a href="https://facebook.com/proautotaller" target="_blank" rel="noopener noreferrer" className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#E31E24] transition-colors">
+                <a href="https://www.facebook.com/proautotallersv/" target="_blank" rel="noopener noreferrer" className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#E31E24] transition-colors">
                   <Facebook className="w-6 h-6" />
+                </a>
+                <a href="https://www.tiktok.com/@proautotallersv" target="_blank" rel="noopener noreferrer" className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#E31E24] transition-colors font-black text-sm">
+                  TK
                 </a>
                 <a href="https://wa.me/50368660952" target="_blank" rel="noopener noreferrer" className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#E31E24] transition-colors">
                   <MessageCircle className="w-6 h-6" />
@@ -449,11 +452,14 @@ export default function SitioWeb() {
               © 2024-2026 PROAUTO Taller. Tu auto seguro, en tu taller de confianza.
             </p>
             <div className="flex gap-4">
-              <a href="https://instagram.com/proautotaller" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-[#E31E24] transition-colors">
+              <a href="https://www.instagram.com/proautotallersv/" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-[#E31E24] transition-colors">
                 <Instagram className="w-6 h-6" />
               </a>
-              <a href="https://facebook.com/proautotaller" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-[#E31E24] transition-colors">
+              <a href="https://www.facebook.com/proautotallersv/" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-[#E31E24] transition-colors">
                 <Facebook className="w-6 h-6" />
+              </a>
+              <a href="https://www.tiktok.com/@proautotallersv" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-[#E31E24] transition-colors font-black text-sm">
+                TK
               </a>
               <a href="https://wa.me/50368660952" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-[#E31E24] transition-colors">
                 <MessageCircle className="w-6 h-6" />
