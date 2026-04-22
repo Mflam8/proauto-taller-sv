@@ -52,7 +52,7 @@ export default function SitioWeb() {
         className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-lg border-b border-white/10"
       >
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <img src={logoUrl} alt="PROAUTO Taller" className="h-12 object-contain" />
+          <img src={logoUrl} alt="PROAUTO Taller" className="h-12 w-12 object-cover rounded-full" />
           <div className="hidden md:flex items-center gap-8">
             <a href="#servicios" className="text-white/80 hover:text-[#E31E24] transition-colors">Servicios</a>
             <a href="#nosotros" className="text-white/80 hover:text-[#E31E24] transition-colors">Nosotros</a>
