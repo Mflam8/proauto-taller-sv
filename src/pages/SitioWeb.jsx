@@ -368,7 +368,7 @@ export default function SitioWeb() {
               </motion.div>
               <h3 className="text-xl font-bold">Teléfono</h3>
               <p className="text-white/60 text-sm">Llámanos directo</p>
-              <p className="text-[#E31E24] font-bold">2406-8129</p>
+
             </motion.a>
 
             {/* Ubicación */}
