@@ -462,7 +462,7 @@ export default function SitioWeb() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <img src={logoUrl} alt="PROAUTO Taller" className="h-14 w-14 object-cover rounded-full" />
             <p className="text-white/50 text-center text-sm">
-              © 2024-2026 PROAUTO Taller SV. Santa Ana, El Salvador.
+              © 2026 PROAUTO Taller SV. Santa Ana, El Salvador.
             </p>
             <div className="flex gap-4">
               {[
