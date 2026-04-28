@@ -18,6 +18,7 @@ import {
   Wrench
 } from "lucide-react";
 import StatsCard from "../components/dashboard/StatsCard";
+import AnalyticsWidget from "../components/dashboard/AnalyticsWidget";
 import { motion } from "framer-motion";
 
 export default function Dashboard() {
@@ -265,6 +266,11 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* Google Analytics Widget */}
+        <div className="grid grid-cols-1 gap-6">
+          <AnalyticsWidget />
+        </div>
 
         {/* Quick Actions */}
         <motion.div
