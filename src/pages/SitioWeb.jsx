@@ -10,7 +10,7 @@ import {
   Instagram, Facebook, MessageCircle, Star, Zap, Heart } from
 "lucide-react";
 
-const logoUrl = "https://media.base44.com/images/public/691be028b7c98b3edbc7aec7/d4efbb649_paletadecoloresproauto1ai.png";
+const logoUrl = "https://media.base44.com/images/public/691be028b7c98b3edbc7aec7/22b712e4a_A04D2C9E-C21A-4D2C-8426-147C1CDF3F1F.png";
 const teamUrl = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/691be028b7c98b3edbc7aec7/447e954a9_542751085_122113388192973884_7116183096071181930_n.jpg";
 
 const TikTokIcon = ({ className }) =>
@@ -49,12 +49,12 @@ export default function SitioWeb() {
         className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-lg border-b border-white/10">
         
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <motion.img
-            src={logoUrl}
-            alt="PROAUTO Taller"
-            className="h-12 w-auto object-contain"
+          <motion.div
+            className="w-12 h-12 rounded-full overflow-hidden border-2 border-white/20 bg-white flex items-center justify-center"
             whileHover={{ scale: 1.1, rotate: 5 }}
-            transition={{ type: "spring", stiffness: 300 }} />
+            transition={{ type: "spring", stiffness: 300 }}>
+            <img src={logoUrl} alt="PROAUTO Taller" className="w-10 h-10 object-contain" />
+          </motion.div>
           
           <div className="hidden md:flex items-center gap-8">
             {["Servicios", "Nosotros", "Contacto"].map((item) =>
@@ -103,14 +103,13 @@ export default function SitioWeb() {
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 text-center">
-          <motion.img
-            src={logoUrl}
-            alt="PROAUTO Taller"
+          <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.3, duration: 0.6 }}
-            className="h-40 md:h-56 w-auto object-contain mx-auto mb-8"
-          />
+            className="w-40 h-40 md:w-56 md:h-56 rounded-full overflow-hidden border-4 border-white/20 bg-white mx-auto mb-8 flex items-center justify-center shadow-2xl">
+            <img src={logoUrl} alt="PROAUTO Taller" className="w-36 h-36 md:w-48 md:h-48 object-contain" />
+          </motion.div>
 
           
 
