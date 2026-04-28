@@ -103,14 +103,14 @@ export default function SitioWeb() {
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 text-center">
-          <motion.p
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="text-[#E31E24] font-bold text-lg md:text-xl mb-4 tracking-wider">
-            
-            🔧 SANTA ANA, EL SALVADOR
-          </motion.p>
+          <motion.img
+            src={logoUrl}
+            alt="PROAUTO Taller"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3, duration: 0.6 }}
+            className="h-36 w-36 md:h-48 md:w-48 object-cover rounded-full mx-auto mb-8 shadow-2xl border-4 border-white/20"
+          />
 
           
 
@@ -129,40 +129,31 @@ export default function SitioWeb() {
 
 
           
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.9 }}
-            className="text-white/70 text-xl md:text-2xl mb-10 max-w-2xl mx-auto">
-            
-            Escríbenos por WhatsApp, llámanos o encuéntranos en redes sociales.
-          </motion.p>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1 }}
+            transition={{ delay: 0.7 }}
             className="flex flex-col sm:flex-row gap-4 justify-center">
             
             <motion.a
               href="https://wa.me/50368660952"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-3 bg-[#25D366] text-white text-lg px-10 py-4 rounded-full font-bold shadow-lg shadow-[#25D366]/30"
-              whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(37,211,102,0.4)" }}
+              className="flex items-center justify-center gap-3 bg-[#25D366] text-white text-xl px-12 py-5 rounded-xl font-bold shadow-lg shadow-[#25D366]/40"
+              whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.97 }}>
               
-              <WhatsAppIcon className="w-6 h-6" />
+              <WhatsAppIcon className="w-7 h-7" />
               Escríbenos por WhatsApp
             </motion.a>
             <motion.a
               href="tel:+50368660952"
-              className="flex items-center justify-center gap-3 bg-white/10 border-2 border-white/40 text-white text-lg px-10 py-4 rounded-full font-bold backdrop-blur-sm"
-              whileHover={{ scale: 1.05, backgroundColor: "rgba(255,255,255,0.2)" }}
+              className="flex items-center justify-center gap-3 bg-[#E31E24] text-white text-xl px-12 py-5 rounded-xl font-bold shadow-lg shadow-[#E31E24]/40"
+              whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.97 }}>
               
-              <Phone className="w-6 h-6" />
+              <Phone className="w-7 h-7" />
               Llámanos ahora
             </motion.a>
           </motion.div>
