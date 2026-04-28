@@ -10,7 +10,7 @@ import {
   Instagram, Facebook, MessageCircle, Star, Zap, Heart } from
 "lucide-react";
 
-const logoUrl = "https://media.base44.com/images/public/691be028b7c98b3edbc7aec7/22b712e4a_A04D2C9E-C21A-4D2C-8426-147C1CDF3F1F.png";
+const logoUrl = "https://media.base44.com/images/public/691be028b7c98b3edbc7aec7/d4efbb649_paletadecoloresproauto1ai.png";
 const teamUrl = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/691be028b7c98b3edbc7aec7/447e954a9_542751085_122113388192973884_7116183096071181930_n.jpg";
 
 const TikTokIcon = ({ className }) =>
