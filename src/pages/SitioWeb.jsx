@@ -399,7 +399,11 @@ export default function SitioWeb() {
             className="flex items-center justify-center gap-3 text-white/60 mb-12">
             
             <Clock className="w-5 h-5 text-[#E31E24]" />
-            <span className="text-lg">Lun – Sáb: 8:00 AM – 5:00 PM</span>
+            <div className="text-lg text-left">
+              <p>Lun – Vie: 8:00 AM – 5:00 PM</p>
+              <p>Sáb: 8:00 AM – 12:00 PM</p>
+              <p className="text-sm text-[#E31E24] font-semibold">¡Sin cerrar al medio día!</p>
+            </div>
           </motion.div>
 
           {/* Redes sociales */}
