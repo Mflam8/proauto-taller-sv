@@ -366,7 +366,7 @@ export default function SitioWeb() {
 
             {/* Ubicación */}
             <motion.a
-              href="https://maps.google.com/?q=8a+Av+Sur+Santa+Ana+El+Salvador"
+              href="https://maps.app.goo.gl/hkRrKc9riE1U5xny8"
               target="_blank"
               rel="noopener noreferrer"
               initial={{ opacity: 0, y: 40 }}
