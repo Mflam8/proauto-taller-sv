@@ -82,9 +82,12 @@ export default function SitioWeb() {
       {/* Hero Section */}
       <section className="min-h-screen relative flex items-center justify-center overflow-hidden pt-20">
         <div className="absolute inset-0">
-          <video autoPlay loop muted playsInline className="w-full h-full object-cover">
-            <source src="URL_DEL_VIDEO_AQUI" type="video/mp4" />
-          </video>
+          <iframe
+            className="absolute top-1/2 left-1/2 w-[177.78vh] min-w-full h-[56.25vw] min-h-full -translate-x-1/2 -translate-y-1/2"
+            src="https://www.youtube.com/embed/XtUgYljaSVE?autoplay=1&mute=1&loop=1&playlist=XtUgYljaSVE&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1"
+            allow="autoplay; fullscreen"
+            frameBorder="0"
+          />
           <div className="absolute inset-0 bg-black/60"></div>
           {/* Partículas decorativas animadas */}
           <motion.div
