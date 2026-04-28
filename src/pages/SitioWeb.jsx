@@ -10,7 +10,7 @@ import {
   Instagram, Facebook, MessageCircle, Star, Zap, Heart } from
 "lucide-react";
 
-const logoUrl = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/691be028b7c98b3edbc7aec7/3eecc496c_527724637_10228100711375307_2433035938491200389_n.jpg";
+const logoUrl = "https://media.base44.com/images/public/691be028b7c98b3edbc7aec7/d4efbb649_paletadecoloresproauto1ai.png";
 const teamUrl = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/691be028b7c98b3edbc7aec7/447e954a9_542751085_122113388192973884_7116183096071181930_n.jpg";
 
 const TikTokIcon = ({ className }) =>
@@ -52,7 +52,7 @@ export default function SitioWeb() {
           <motion.img
             src={logoUrl}
             alt="PROAUTO Taller"
-            className="h-12 w-12 object-cover rounded-full"
+            className="h-12 w-auto object-contain"
             whileHover={{ scale: 1.1, rotate: 5 }}
             transition={{ type: "spring", stiffness: 300 }} />
           
@@ -109,7 +109,7 @@ export default function SitioWeb() {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.3, duration: 0.6 }}
-            className="h-36 w-36 md:h-48 md:w-48 object-cover rounded-full mx-auto mb-8 shadow-2xl border-4 border-white/20"
+            className="h-40 md:h-56 w-auto object-contain mx-auto mb-8"
           />
 
           
@@ -454,7 +454,7 @@ export default function SitioWeb() {
       <footer className="py-12 bg-gray-900 border-t border-white/10">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <img src={logoUrl} alt="PROAUTO Taller" className="h-14 w-14 object-cover rounded-full" />
+            <img src={logoUrl} alt="PROAUTO Taller" className="h-12 w-auto object-contain" />
             <p className="text-white/50 text-center text-sm">
               © 2026 PROAUTO Taller SV. Santa Ana, El Salvador.
             </p>
