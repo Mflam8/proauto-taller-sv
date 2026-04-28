@@ -453,7 +453,9 @@ export default function SitioWeb() {
       <footer className="py-12 bg-gray-900 border-t border-white/10">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <img src={logoUrl} alt="PROAUTO Taller" className="h-12 w-auto object-contain" />
+            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white/20 bg-white flex items-center justify-center">
+                <img src={logoUrl} alt="PROAUTO Taller" className="w-10 h-10 object-contain" />
+              </div>
             <p className="text-white/50 text-center text-sm">
               © 2026 PROAUTO Taller SV. Santa Ana, El Salvador.
             </p>
