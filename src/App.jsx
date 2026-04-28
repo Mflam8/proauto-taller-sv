@@ -9,6 +9,8 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import Acerca from './pages/Acerca';
+import Contacto from './pages/Contacto';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -60,6 +62,8 @@ const AuthenticatedApp = () => {
           }
         />
       ))}
+      <Route path="/Acerca" element={<Acerca />} />
+      <Route path="/Contacto" element={<Contacto />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

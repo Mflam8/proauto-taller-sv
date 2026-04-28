@@ -4,6 +4,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 // Esta página es pública - no requiere login
 export const publicAccess = true;
 
+import { Link } from "react-router-dom";
 import {
   Phone, MapPin, Clock, CheckCircle, Wrench,
   Cpu, Shield, Droplets, Car, ChevronDown,
@@ -456,9 +457,15 @@ export default function SitioWeb() {
             <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white/20 bg-white flex items-center justify-center">
                 <img src={logoUrl} alt="PROAUTO Taller" className="w-10 h-10 object-contain" />
               </div>
-            <p className="text-white/50 text-center text-sm">
-              © 2026 PROAUTO Taller SV. Santa Ana, El Salvador.
-            </p>
+            <div className="text-center space-y-2">
+              <div className="flex gap-6 justify-center">
+                <Link to="/Acerca" className="text-white/50 hover:text-[#E31E24] text-sm transition-colors">Nosotros</Link>
+                <Link to="/Contacto" className="text-white/50 hover:text-[#E31E24] text-sm transition-colors">Contacto</Link>
+              </div>
+              <p className="text-white/50 text-sm">
+                © 2026 PROAUTO Taller SV. Santa Ana, El Salvador.
+              </p>
+            </div>
             <div className="flex gap-4">
               {[
               { href: "https://www.instagram.com/proautotallersv/", icon: <Instagram className="w-5 h-5" /> },
