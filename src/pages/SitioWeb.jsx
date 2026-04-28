@@ -112,23 +112,23 @@ export default function SitioWeb() {
             🔧 SANTA ANA, EL SALVADOR
           </motion.p>
 
-          <motion.h1
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }} className="text-5xl md:text-7xl lg:text-8xl font-black mb-6 leading-tight hidden">
-            
-            
-            <span className="text-white hidden">TU TALLER DE </span>
-            <motion.span
-              animate={{ color: ["#E31E24", "#ff4444", "#E31E24"] }}
-              transition={{ duration: 2, repeat: Infinity }} className=" hidden">
-              
-              CONFIANZA
-            </motion.span>
-            <br />
-            <span className="text-white">EN </span>
-            <span className="text-[#E31E24] hidden">SANTA ANA</span>
-          </motion.h1>
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+          
 
           <motion.p
             initial={{ opacity: 0 }}
