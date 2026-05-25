@@ -5,10 +5,11 @@ import { motion, useScroll, useTransform } from "framer-motion";
 export const publicAccess = true;
 
 import { Link } from "react-router-dom";
+import { base44 } from "@/api/base44Client";
 import {
   Phone, MapPin, Clock, CheckCircle, Wrench,
   Cpu, Shield, Droplets, Car, ChevronDown,
-  Instagram, Facebook, MessageCircle, Star, Zap, Heart } from
+  Instagram, Facebook, MessageCircle, Star, Zap, Heart, Settings } from
 "lucide-react";
 
 const logoUrl = "https://media.base44.com/images/public/691be028b7c98b3edbc7aec7/d4efbb649_paletadecoloresproauto1ai.png";
@@ -69,6 +70,13 @@ export default function SitioWeb() {
               </motion.a>
             )}
           </div>
+          <button
+            onClick={() => base44.auth.redirectToLogin()}
+            className="hidden md:flex items-center gap-2 text-white/60 hover:text-white transition-colors text-sm font-medium"
+          >
+            <Settings className="w-4 h-4" />
+            Gestión
+          </button>
           <motion.a
             href="tel:+50368660952"
             className="bg-[#E31E24] hover:bg-[#B71C1C] px-6 py-2 rounded-full font-bold transition-colors"
