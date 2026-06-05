@@ -1,0 +1,65 @@
+{
+  "name": "CajaChica",
+  "type": "object",
+  "properties": {
+    "expediente_id": {
+      "type": "string",
+      "description": "ID del expediente asociado"
+    },
+    "concepto": {
+      "type": "string",
+      "description": "Descripci\u00f3n del gasto o ingreso"
+    },
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "Gasto",
+        "Ingreso"
+      ],
+      "default": "Gasto",
+      "description": "Tipo de movimiento"
+    },
+    "categoria": {
+      "type": "string",
+      "enum": [
+        "Repuesto",
+        "Insumo",
+        "Herramienta",
+        "Transporte",
+        "Otro"
+      ],
+      "description": "Categor\u00eda del movimiento"
+    },
+    "monto": {
+      "type": "number",
+      "description": "Monto en d\u00f3lares"
+    },
+    "proveedor": {
+      "type": "string",
+      "description": "Proveedor o destino del gasto"
+    },
+    "registrado_por": {
+      "type": "string",
+      "description": "Nombre de quien registra"
+    },
+    "fecha": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha del movimiento"
+    },
+    "comprobante_url": {
+      "type": "string",
+      "description": "URL de foto del comprobante"
+    },
+    "notas": {
+      "type": "string",
+      "description": "Notas adicionales"
+    }
+  },
+  "required": [
+    "expediente_id",
+    "concepto",
+    "tipo",
+    "monto"
+  ]
+}
