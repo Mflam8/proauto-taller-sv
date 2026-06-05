@@ -13,6 +13,7 @@ import Acerca from './pages/Acerca';
 import Contacto from './pages/Contacto';
 import Empleados from './pages/Empleados';
 import Expedientes from './pages/Expedientes';
+import ExpedienteVista from './pages/ExpedienteVista';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -68,6 +69,7 @@ const AuthenticatedApp = () => {
       <Route path="/Contacto" element={<Contacto />} />
       <Route path="/Empleados" element={<LayoutWrapper currentPageName="Empleados"><Empleados /></LayoutWrapper>} />
       <Route path="/Expedientes" element={<LayoutWrapper currentPageName="Expedientes"><Expedientes /></LayoutWrapper>} />
+      <Route path="/Expedientes/:id" element={<LayoutWrapper currentPageName="Expedientes"><ExpedienteVista /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

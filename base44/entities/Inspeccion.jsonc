@@ -2,93 +2,158 @@
   "name": "Inspeccion",
   "type": "object",
   "properties": {
-    "orden_trabajo_id": {
+    "expediente_id": {
       "type": "string",
-      "description": "ID de orden de trabajo"
+      "description": "ID del expediente"
     },
     "vehiculo_id": {
       "type": "string",
       "description": "ID del veh\u00edculo"
     },
-    "tipo_inspeccion": {
+    "cliente_id": {
+      "type": "string",
+      "description": "ID del cliente"
+    },
+    "realizada_por": {
+      "type": "string",
+      "description": "Nombre del t\u00e9cnico que realiza"
+    },
+    "fecha": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "kilometraje": {
+      "type": "number"
+    },
+    "aire_acondicionado": {
       "type": "string",
       "enum": [
-        "Inicial",
-        "Durante Reparaci\u00f3n",
-        "Final"
-      ],
-      "description": "Tipo de inspecci\u00f3n"
+        "Funciona",
+        "No funciona",
+        "No aplica"
+      ]
     },
-    "fotos": {
+    "direccion_hidraulica": {
+      "type": "string",
+      "enum": [
+        "S\u00ed",
+        "No"
+      ]
+    },
+    "alarma": {
+      "type": "string",
+      "enum": [
+        "S\u00ed",
+        "No"
+      ]
+    },
+    "estado_llantas": {
+      "type": "string",
+      "enum": [
+        "Bueno",
+        "Regular",
+        "Malo"
+      ]
+    },
+    "estado_luces": {
+      "type": "string",
+      "enum": [
+        "Bueno",
+        "Regular",
+        "Malo"
+      ]
+    },
+    "estado_vidrios": {
+      "type": "string",
+      "enum": [
+        "Bueno",
+        "Regular",
+        "Malo"
+      ]
+    },
+    "estado_pintura": {
+      "type": "string",
+      "enum": [
+        "Bueno",
+        "Regular",
+        "Malo"
+      ]
+    },
+    "estado_tapiceria": {
+      "type": "string",
+      "enum": [
+        "Bueno",
+        "Regular",
+        "Malo"
+      ]
+    },
+    "llanta_repuesto": {
+      "type": "boolean",
+      "default": false
+    },
+    "herramientas": {
+      "type": "boolean",
+      "default": false
+    },
+    "documentos": {
+      "type": "boolean",
+      "default": false
+    },
+    "accesorios_recibidos": {
+      "type": "string",
+      "description": "Lista de accesorios recibidos"
+    },
+    "da\u00f1os": {
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
-          "url": {
-            "type": "string"
-          },
-          "descripcion": {
-            "type": "string"
-          },
-          "fecha": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "description": "Fotos de la inspecci\u00f3n"
-    },
-    "danios_encontrados": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "descripcion": {
-            "type": "string"
-          },
-          "severidad": {
+          "tipo": {
             "type": "string",
             "enum": [
-              "Leve",
-              "Moderado",
-              "Grave"
+              "Ray\u00f3n",
+              "Golpe",
+              "Quebrado",
+              "Faltante",
+              "\u00d3xido",
+              "Vidrio da\u00f1ado",
+              "Da\u00f1o el\u00e9ctrico",
+              "Otro"
             ]
           },
           "ubicacion": {
             "type": "string"
+          },
+          "descripcion": {
+            "type": "string"
+          },
+          "foto_url": {
+            "type": "string"
           }
         }
-      },
-      "description": "Da\u00f1os encontrados"
+      }
     },
-    "piezas_necesarias": {
+    "fotos": {
       "type": "array",
       "items": {
         "type": "string"
       },
-      "description": "Piezas que se necesitan"
-    },
-    "estado_general": {
-      "type": "string",
-      "enum": [
-        "Excelente",
-        "Bueno",
-        "Regular",
-        "Malo"
-      ],
-      "description": "Estado general del veh\u00edculo"
+      "description": "URLs de fotos de evidencia"
     },
     "observaciones": {
-      "type": "string",
-      "description": "Observaciones generales"
+      "type": "string"
     },
-    "realizada_por": {
+    "estado": {
       "type": "string",
-      "description": "T\u00e9cnico que realiz\u00f3 la inspecci\u00f3n"
+      "enum": [
+        "Pendiente",
+        "Completada"
+      ],
+      "default": "Pendiente"
     }
   },
   "required": [
-    "vehiculo_id",
-    "tipo_inspeccion"
+    "expediente_id",
+    "vehiculo_id"
   ]
 }

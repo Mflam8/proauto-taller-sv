@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +10,6 @@ import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import ExpedienteForm from "@/components/expedientes/ExpedienteForm";
-import ExpedienteDetalle from "@/components/expedientes/ExpedienteDetalle";
 
 const ESTADOS = [
   "Todos", "Recibido", "En Diagnóstico", "Esperando Aprobación", "Aprobado",
@@ -36,8 +36,8 @@ export default function Expedientes() {
   const [search, setSearch] = useState("");
   const [filtroEstado, setFiltroEstado] = useState("Todos");
   const [showForm, setShowForm] = useState(false);
-  const [selected, setSelected] = useState(null);
 
+  const navigate = useNavigate();
   const qc = useQueryClient();
 
   const { data: expedientes = [], isLoading } = useQuery({
@@ -73,18 +73,6 @@ export default function Expedientes() {
   // Stats
   const activos = expedientes.filter(e => !["Cerrado", "Cancelado", "Entregado"].includes(e.estado_interno)).length;
   const listos = expedientes.filter(e => e.estado_interno === "Listo para Entrega").length;
-
-  if (selected) {
-    return (
-      <ExpedienteDetalle
-        expediente={selected}
-        cliente={clienteMap[selected.cliente_id]}
-        vehiculo={vehiculoMap[selected.vehiculo_id]}
-        onBack={() => setSelected(null)}
-        onUpdate={() => { qc.invalidateQueries(["expedientes"]); setSelected(null); }}
-      />
-    );
-  }
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -143,7 +131,7 @@ export default function Expedientes() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04 }}
-              onClick={() => setSelected(exp)}
+              onClick={() => navigate(`/Expedientes/${exp.id}`)}
               className="bg-white rounded-xl border p-4 cursor-pointer hover:shadow-md transition-shadow flex flex-col sm:flex-row sm:items-center gap-3"
             >
               <div className="flex items-center gap-3 flex-1">

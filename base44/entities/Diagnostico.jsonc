@@ -1,0 +1,78 @@
+{
+  "name": "Diagnostico",
+  "type": "object",
+  "properties": {
+    "expediente_id": {
+      "type": "string",
+      "description": "ID del expediente"
+    },
+    "vehiculo_id": {
+      "type": "string",
+      "description": "ID del veh\u00edculo"
+    },
+    "tecnico_id": {
+      "type": "string",
+      "description": "ID del empleado t\u00e9cnico"
+    },
+    "tecnico_nombre": {
+      "type": "string",
+      "description": "Nombre del t\u00e9cnico"
+    },
+    "fecha": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "diagnostico_inicial": {
+      "type": "string",
+      "description": "Diagn\u00f3stico inicial"
+    },
+    "diagnostico_final": {
+      "type": "string",
+      "description": "Diagn\u00f3stico final confirmado"
+    },
+    "fallas_detectadas": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "sistema": {
+            "type": "string"
+          },
+          "descripcion": {
+            "type": "string"
+          },
+          "severidad": {
+            "type": "string",
+            "enum": [
+              "Leve",
+              "Moderada",
+              "Grave",
+              "Cr\u00edtica"
+            ]
+          }
+        }
+      }
+    },
+    "recomendaciones": {
+      "type": "string"
+    },
+    "fotos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "estado": {
+      "type": "string",
+      "enum": [
+        "Pendiente",
+        "En Proceso",
+        "Completado"
+      ],
+      "default": "Pendiente"
+    }
+  },
+  "required": [
+    "expediente_id"
+  ]
+}
