@@ -1,0 +1,69 @@
+{
+  "name": "ItemInventario",
+  "type": "object",
+  "properties": {
+    "codigo": {
+      "type": "string",
+      "description": "C\u00f3digo \u00fanico del item"
+    },
+    "nombre": {
+      "type": "string",
+      "description": "Nombre del item"
+    },
+    "descripcion": {
+      "type": "string",
+      "description": "Descripci\u00f3n detallada"
+    },
+    "categoria": {
+      "type": "string",
+      "enum": [
+        "Repuestos",
+        "Aceites y Lubricantes",
+        "Filtros",
+        "Frenos",
+        "Suspensi\u00f3n",
+        "Sistema El\u00e9ctrico",
+        "Herramientas",
+        "Insumos",
+        "Otro"
+      ],
+      "description": "Categor\u00eda del item"
+    },
+    "stock_actual": {
+      "type": "number",
+      "default": 0,
+      "description": "Cantidad actual en stock"
+    },
+    "stock_minimo": {
+      "type": "number",
+      "default": 5,
+      "description": "Stock m\u00ednimo para alerta"
+    },
+    "precio_compra": {
+      "type": "number",
+      "description": "Precio de compra unitario"
+    },
+    "precio_venta": {
+      "type": "number",
+      "description": "Precio de venta unitario"
+    },
+    "proveedor_principal": {
+      "type": "string",
+      "description": "ID del proveedor principal"
+    },
+    "ubicacion_fisica": {
+      "type": "string",
+      "description": "Ubicaci\u00f3n en el taller"
+    },
+    "activo": {
+      "type": "boolean",
+      "default": true,
+      "description": "Si el item est\u00e1 activo"
+    }
+  },
+  "required": [
+    "nombre",
+    "categoria",
+    "stock_actual"
+  ]
+}

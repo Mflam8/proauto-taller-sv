@@ -1,0 +1,48 @@
+{
+  "name": "Servicio",
+  "type": "object",
+  "properties": {
+    "nombre": {
+      "type": "string",
+      "description": "Nombre del servicio"
+    },
+    "descripcion": {
+      "type": "string",
+      "description": "Descripci\u00f3n detallada"
+    },
+    "categoria": {
+      "type": "string",
+      "enum": [
+        "Mec\u00e1nica General",
+        "Diagn\u00f3stico Computarizado",
+        "Sistema de Frenos",
+        "Mantenimiento GDI",
+        "Aval\u00fao",
+        "Sistema El\u00e9ctrico",
+        "Suspensi\u00f3n",
+        "Transmisi\u00f3n",
+        "Motor",
+        "Otro"
+      ],
+      "description": "Categor\u00eda del servicio"
+    },
+    "precio_base": {
+      "type": "number",
+      "description": "Precio base estimado"
+    },
+    "tiempo_estimado_horas": {
+      "type": "number",
+      "description": "Tiempo estimado en horas"
+    },
+    "activo": {
+      "type": "boolean",
+      "default": true,
+      "description": "Si el servicio est\u00e1 activo"
+    }
+  },
+  "required": [
+    "nombre",
+    "categoria",
+    "precio_base"
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "name": "Cliente",
+  "type": "object",
+  "properties": {
+    "nombre_completo": {
+      "type": "string",
+      "description": "Nombre completo del cliente"
+    },
+    "telefono": {
+      "type": "string",
+      "description": "N\u00famero de tel\u00e9fono"
+    },
+    "whatsapp": {
+      "type": "string",
+      "description": "N\u00famero de WhatsApp"
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "Correo electr\u00f3nico"
+    },
+    "dui": {
+      "type": "string",
+      "description": "N\u00famero de DUI"
+    },
+    "nit": {
+      "type": "string",
+      "description": "N\u00famero de NIT"
+    },
+    "direccion": {
+      "type": "string",
+      "description": "Direcci\u00f3n completa"
+    },
+    "tipo_cliente": {
+      "type": "string",
+      "enum": [
+        "Particular",
+        "Empresa",
+        "Aseguradora",
+        "Flota"
+      ],
+      "default": "Particular",
+      "description": "Tipo de cliente"
+    },
+    "nombre_empresa": {
+      "type": "string",
+      "description": "Nombre de la empresa (si aplica)"
+    },
+    "notas": {
+      "type": "string",
+      "description": "Observaciones adicionales sobre el cliente"
+    },
+    "activo": {
+      "type": "boolean",
+      "default": true,
+      "description": "Si el cliente est\u00e1 activo"
+    }
+  },
+  "required": [
+    "nombre_completo",
+    "telefono"
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "name": "Cotizacion",
+  "type": "object",
+  "properties": {
+    "numero_cotizacion": {
+      "type": "string",
+      "description": "N\u00famero \u00fanico de cotizaci\u00f3n"
+    },
+    "cliente_id": {
+      "type": "string",
+      "description": "ID del cliente"
+    },
+    "vehiculo_id": {
+      "type": "string",
+      "description": "ID del veh\u00edculo"
+    },
+    "servicios": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "servicio_id": {
+            "type": "string"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "descripcion": {
+            "type": "string"
+          },
+          "precio": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Lista de servicios cotizados"
+    },
+    "subtotal": {
+      "type": "number",
+      "description": "Subtotal de la cotizaci\u00f3n"
+    },
+    "descuento": {
+      "type": "number",
+      "default": 0,
+      "description": "Descuento aplicado"
+    },
+    "total": {
+      "type": "number",
+      "description": "Total de la cotizaci\u00f3n"
+    },
+    "estado": {
+      "type": "string",
+      "enum": [
+        "Pendiente",
+        "Aprobada",
+        "Rechazada",
+        "Vencida"
+      ],
+      "default": "Pendiente",
+      "description": "Estado de la cotizaci\u00f3n"
+    },
+    "fecha_aprobacion": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha de aprobaci\u00f3n"
+    },
+    "metodo_aprobacion": {
+      "type": "string",
+      "enum": [
+        "Digital",
+        "F\u00edsica"
+      ],
+      "description": "M\u00e9todo de aprobaci\u00f3n"
+    },
+    "notas": {
+      "type": "string",
+      "description": "Notas adicionales"
+    },
+    "vigencia_dias": {
+      "type": "number",
+      "default": 15,
+      "description": "D\u00edas de vigencia"
+    }
+  },
+  "required": [
+    "cliente_id",
+    "vehiculo_id",
+    "servicios",
+    "total"
+  ]
+}

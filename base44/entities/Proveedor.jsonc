@@ -1,0 +1,51 @@
+{
+  "name": "Proveedor",
+  "type": "object",
+  "properties": {
+    "nombre": {
+      "type": "string",
+      "description": "Nombre del proveedor"
+    },
+    "contacto_principal": {
+      "type": "string",
+      "description": "Nombre del contacto"
+    },
+    "telefono": {
+      "type": "string",
+      "description": "Tel\u00e9fono"
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "Email"
+    },
+    "direccion": {
+      "type": "string",
+      "description": "Direcci\u00f3n"
+    },
+    "productos_suministrados": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tipos de productos que suministra"
+    },
+    "terminos_pago": {
+      "type": "string",
+      "description": "T\u00e9rminos de pago"
+    },
+    "notas": {
+      "type": "string",
+      "description": "Notas adicionales"
+    },
+    "activo": {
+      "type": "boolean",
+      "default": true,
+      "description": "Si el proveedor est\u00e1 activo"
+    }
+  },
+  "required": [
+    "nombre",
+    "telefono"
+  ]
+}

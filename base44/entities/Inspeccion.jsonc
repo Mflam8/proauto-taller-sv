@@ -1,0 +1,94 @@
+{
+  "name": "Inspeccion",
+  "type": "object",
+  "properties": {
+    "orden_trabajo_id": {
+      "type": "string",
+      "description": "ID de orden de trabajo"
+    },
+    "vehiculo_id": {
+      "type": "string",
+      "description": "ID del veh\u00edculo"
+    },
+    "tipo_inspeccion": {
+      "type": "string",
+      "enum": [
+        "Inicial",
+        "Durante Reparaci\u00f3n",
+        "Final"
+      ],
+      "description": "Tipo de inspecci\u00f3n"
+    },
+    "fotos": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "descripcion": {
+            "type": "string"
+          },
+          "fecha": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "description": "Fotos de la inspecci\u00f3n"
+    },
+    "danios_encontrados": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "descripcion": {
+            "type": "string"
+          },
+          "severidad": {
+            "type": "string",
+            "enum": [
+              "Leve",
+              "Moderado",
+              "Grave"
+            ]
+          },
+          "ubicacion": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Da\u00f1os encontrados"
+    },
+    "piezas_necesarias": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Piezas que se necesitan"
+    },
+    "estado_general": {
+      "type": "string",
+      "enum": [
+        "Excelente",
+        "Bueno",
+        "Regular",
+        "Malo"
+      ],
+      "description": "Estado general del veh\u00edculo"
+    },
+    "observaciones": {
+      "type": "string",
+      "description": "Observaciones generales"
+    },
+    "realizada_por": {
+      "type": "string",
+      "description": "T\u00e9cnico que realiz\u00f3 la inspecci\u00f3n"
+    }
+  },
+  "required": [
+    "vehiculo_id",
+    "tipo_inspeccion"
+  ]
+}

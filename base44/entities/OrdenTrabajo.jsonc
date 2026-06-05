@@ -1,0 +1,102 @@
+{
+  "name": "OrdenTrabajo",
+  "type": "object",
+  "properties": {
+    "numero_orden": {
+      "type": "string",
+      "description": "N\u00famero \u00fanico de orden"
+    },
+    "cotizacion_id": {
+      "type": "string",
+      "description": "ID de cotizaci\u00f3n asociada"
+    },
+    "cliente_id": {
+      "type": "string",
+      "description": "ID del cliente"
+    },
+    "vehiculo_id": {
+      "type": "string",
+      "description": "ID del veh\u00edculo"
+    },
+    "tecnico_asignado_id": {
+      "type": "string",
+      "description": "ID del t\u00e9cnico asignado"
+    },
+    "estado": {
+      "type": "string",
+      "enum": [
+        "Recibido",
+        "En Diagn\u00f3stico",
+        "Esperando Repuestos",
+        "En Reparaci\u00f3n",
+        "Control de Calidad",
+        "Completado",
+        "Entregado"
+      ],
+      "default": "Recibido",
+      "description": "Estado actual"
+    },
+    "progreso_porcentaje": {
+      "type": "number",
+      "default": 0,
+      "description": "Porcentaje de progreso"
+    },
+    "servicios_realizados": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "servicio": {
+            "type": "string"
+          },
+          "fecha_inicio": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "fecha_fin": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "tecnico": {
+            "type": "string"
+          },
+          "completado": {
+            "type": "boolean"
+          },
+          "notas": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Registro de servicios"
+    },
+    "fecha_entrada": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha de entrada al taller"
+    },
+    "fecha_estimada_entrega": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha estimada de entrega"
+    },
+    "fecha_entrega_real": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha real de entrega"
+    },
+    "kilometraje_entrada": {
+      "type": "number",
+      "description": "Kilometraje al entrar"
+    },
+    "notas_internas": {
+      "type": "string",
+      "description": "Notas internas del taller"
+    }
+  },
+  "required": [
+    "cliente_id",
+    "vehiculo_id",
+    "estado"
+  ]
+}

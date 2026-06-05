@@ -1,0 +1,62 @@
+{
+  "name": "Empleado",
+  "type": "object",
+  "properties": {
+    "nombre_completo": {
+      "type": "string",
+      "description": "Nombre completo del empleado"
+    },
+    "telefono": {
+      "type": "string",
+      "description": "Tel\u00e9fono de contacto"
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "Correo electr\u00f3nico"
+    },
+    "cargo": {
+      "type": "string",
+      "description": "Cargo o puesto"
+    },
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "Recepci\u00f3n",
+        "T\u00e9cnico",
+        "Administraci\u00f3n",
+        "Gerencia",
+        "Carwash",
+        "Pintura",
+        "Otro"
+      ],
+      "description": "Tipo de rol en el taller"
+    },
+    "especialidad": {
+      "type": "string",
+      "description": "Especialidad t\u00e9cnica (si aplica)"
+    },
+    "fecha_ingreso": {
+      "type": "string",
+      "format": "date",
+      "description": "Fecha de ingreso al taller"
+    },
+    "dui": {
+      "type": "string",
+      "description": "N\u00famero de DUI"
+    },
+    "activo": {
+      "type": "boolean",
+      "default": true,
+      "description": "Si el empleado est\u00e1 activo"
+    },
+    "notas": {
+      "type": "string",
+      "description": "Observaciones"
+    }
+  },
+  "required": [
+    "nombre_completo",
+    "tipo"
+  ]
+}

@@ -11,6 +11,8 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import Acerca from './pages/Acerca';
 import Contacto from './pages/Contacto';
+import Empleados from './pages/Empleados';
+import Expedientes from './pages/Expedientes';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -64,6 +66,8 @@ const AuthenticatedApp = () => {
       ))}
       <Route path="/Acerca" element={<Acerca />} />
       <Route path="/Contacto" element={<Contacto />} />
+      <Route path="/Empleados" element={<LayoutWrapper currentPageName="Empleados"><Empleados /></LayoutWrapper>} />
+      <Route path="/Expedientes" element={<LayoutWrapper currentPageName="Expedientes"><Expedientes /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

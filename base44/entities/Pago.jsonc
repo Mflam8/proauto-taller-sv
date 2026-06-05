@@ -1,0 +1,47 @@
+{
+  "name": "Pago",
+  "type": "object",
+  "properties": {
+    "factura_id": {
+      "type": "string",
+      "description": "ID de la factura"
+    },
+    "monto": {
+      "type": "number",
+      "description": "Monto del pago"
+    },
+    "metodo_pago": {
+      "type": "string",
+      "enum": [
+        "Efectivo",
+        "Transferencia",
+        "Tarjeta D\u00e9bito",
+        "Tarjeta Cr\u00e9dito",
+        "Cheque"
+      ],
+      "description": "M\u00e9todo de pago"
+    },
+    "referencia": {
+      "type": "string",
+      "description": "Referencia del pago"
+    },
+    "fecha_pago": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha del pago"
+    },
+    "recibido_por": {
+      "type": "string",
+      "description": "Usuario que recibi\u00f3 el pago"
+    },
+    "notas": {
+      "type": "string",
+      "description": "Notas del pago"
+    }
+  },
+  "required": [
+    "factura_id",
+    "monto",
+    "metodo_pago"
+  ]
+}

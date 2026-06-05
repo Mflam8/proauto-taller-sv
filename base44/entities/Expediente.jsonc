@@ -1,0 +1,147 @@
+{
+  "name": "Expediente",
+  "type": "object",
+  "properties": {
+    "numero_expediente": {
+      "type": "string",
+      "description": "N\u00famero \u00fanico del expediente (ej: EXP-2026-001)"
+    },
+    "cliente_id": {
+      "type": "string",
+      "description": "ID del cliente"
+    },
+    "vehiculo_id": {
+      "type": "string",
+      "description": "ID del veh\u00edculo"
+    },
+    "recibido_por_id": {
+      "type": "string",
+      "description": "ID del empleado que recibe"
+    },
+    "fecha_ingreso": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha y hora de ingreso"
+    },
+    "fecha_promesa_entrega": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha prometida de entrega"
+    },
+    "fecha_salida": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha y hora real de salida"
+    },
+    "kilometraje_entrada": {
+      "type": "number",
+      "description": "Kilometraje al ingresar"
+    },
+    "kilometraje_salida": {
+      "type": "number",
+      "description": "Kilometraje al salir"
+    },
+    "motivo_visita": {
+      "type": "string",
+      "description": "Motivo principal de la visita"
+    },
+    "sintomas_cliente": {
+      "type": "string",
+      "description": "S\u00edntomas reportados por el cliente"
+    },
+    "indicaciones_cliente": {
+      "type": "string",
+      "description": "Indicaciones especiales del cliente"
+    },
+    "estado_interno": {
+      "type": "string",
+      "enum": [
+        "Recibido",
+        "En Diagn\u00f3stico",
+        "Esperando Aprobaci\u00f3n",
+        "Aprobado",
+        "En Reparaci\u00f3n",
+        "Esperando Repuesto",
+        "En Pintura",
+        "En Lavado",
+        "Listo para Entrega",
+        "Entregado",
+        "Cerrado",
+        "Cancelado"
+      ],
+      "default": "Recibido",
+      "description": "Estado interno del expediente"
+    },
+    "estado_cliente": {
+      "type": "string",
+      "enum": [
+        "En revisi\u00f3n",
+        "En reparaci\u00f3n",
+        "Listo",
+        "Entregado"
+      ],
+      "default": "En revisi\u00f3n",
+      "description": "Estado visible para el cliente"
+    },
+    "llaves_cantidad": {
+      "type": "number",
+      "default": 1,
+      "description": "Cantidad de llaves recibidas"
+    },
+    "llaves_observaciones": {
+      "type": "string",
+      "description": "Observaciones sobre las llaves"
+    },
+    "observaciones": {
+      "type": "string",
+      "description": "Observaciones generales"
+    },
+    "fotos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "URLs de fotos/videos del veh\u00edculo al ingresar"
+    },
+    "total_cobrado": {
+      "type": "number",
+      "default": 0,
+      "description": "Total cobrado al cliente"
+    },
+    "total_pagado": {
+      "type": "number",
+      "default": 0,
+      "description": "Total pagado hasta la fecha"
+    },
+    "saldo_pendiente": {
+      "type": "number",
+      "default": 0,
+      "description": "Saldo pendiente de pago"
+    },
+    "trabajos_completados": {
+      "type": "boolean",
+      "default": false
+    },
+    "diagnostico_documentado": {
+      "type": "boolean",
+      "default": false
+    },
+    "evidencia_final": {
+      "type": "boolean",
+      "default": false
+    },
+    "factura_generada": {
+      "type": "boolean",
+      "default": false
+    },
+    "cierre_autorizado": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "cliente_id",
+    "vehiculo_id",
+    "motivo_visita"
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "name": "MovimientoInventario",
+  "type": "object",
+  "properties": {
+    "item_inventario_id": {
+      "type": "string",
+      "description": "ID del item"
+    },
+    "tipo_movimiento": {
+      "type": "string",
+      "enum": [
+        "Entrada",
+        "Salida",
+        "Ajuste"
+      ],
+      "description": "Tipo de movimiento"
+    },
+    "cantidad": {
+      "type": "number",
+      "description": "Cantidad del movimiento"
+    },
+    "motivo": {
+      "type": "string",
+      "description": "Motivo del movimiento"
+    },
+    "orden_trabajo_id": {
+      "type": "string",
+      "description": "Orden asociada (si aplica)"
+    },
+    "costo_unitario": {
+      "type": "number",
+      "description": "Costo unitario en este movimiento"
+    },
+    "responsable": {
+      "type": "string",
+      "description": "Usuario responsable"
+    },
+    "notas": {
+      "type": "string",
+      "description": "Notas adicionales"
+    }
+  },
+  "required": [
+    "item_inventario_id",
+    "tipo_movimiento",
+    "cantidad"
+  ]
+}

@@ -17,7 +17,8 @@ import {
   Menu,
   X,
   LogOut,
-  ChevronRight
+  ChevronRight,
+  FolderOpen
 } from "lucide-react";
 import {
   Sidebar,
@@ -80,6 +81,16 @@ const navigationItems = [
     title: "Facturación",
     url: createPageUrl("Facturacion"),
     icon: DollarSign,
+  },
+  {
+    title: "Empleados",
+    url: createPageUrl("Empleados"),
+    icon: Users,
+  },
+  {
+    title: "Expedientes",
+    url: "/Expedientes",
+    icon: FolderOpen,
   },
   {
     title: "Reportes",

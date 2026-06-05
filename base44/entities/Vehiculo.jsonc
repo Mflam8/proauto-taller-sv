@@ -1,0 +1,97 @@
+{
+  "name": "Vehiculo",
+  "type": "object",
+  "properties": {
+    "cliente_id": {
+      "type": "string",
+      "description": "ID del cliente propietario"
+    },
+    "placa": {
+      "type": "string",
+      "description": "N\u00famero de placa"
+    },
+    "marca": {
+      "type": "string",
+      "description": "Marca del veh\u00edculo"
+    },
+    "modelo": {
+      "type": "string",
+      "description": "Modelo del veh\u00edculo"
+    },
+    "anio": {
+      "type": "number",
+      "description": "A\u00f1o del veh\u00edculo"
+    },
+    "color": {
+      "type": "string",
+      "description": "Color del veh\u00edculo"
+    },
+    "vin": {
+      "type": "string",
+      "description": "N\u00famero VIN"
+    },
+    "tipo_vehiculo": {
+      "type": "string",
+      "enum": [
+        "Sed\u00e1n",
+        "Pick-up",
+        "SUV",
+        "Cami\u00f3n",
+        "Motocicleta",
+        "Van",
+        "Otro"
+      ],
+      "description": "Tipo de veh\u00edculo"
+    },
+    "motor": {
+      "type": "string",
+      "description": "Tipo/c\u00f3digo de motor"
+    },
+    "cilindrada": {
+      "type": "string",
+      "description": "Cilindrada del motor (ej: 1.6L, 2.0L)"
+    },
+    "tipo_combustible": {
+      "type": "string",
+      "enum": [
+        "Gasolina",
+        "Diesel",
+        "H\u00edbrido",
+        "El\u00e9ctrico"
+      ],
+      "description": "Tipo de combustible"
+    },
+    "kilometraje_actual": {
+      "type": "number",
+      "description": "Kilometraje actual"
+    },
+    "estado_actual": {
+      "type": "string",
+      "enum": [
+        "En taller",
+        "Listo",
+        "Entregado",
+        "Fuera del taller"
+      ],
+      "default": "Fuera del taller",
+      "description": "Estado actual del veh\u00edculo"
+    },
+    "fotos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "URLs de fotos del veh\u00edculo"
+    },
+    "notas": {
+      "type": "string",
+      "description": "Notas adicionales"
+    }
+  },
+  "required": [
+    "cliente_id",
+    "placa",
+    "marca",
+    "modelo"
+  ]
+}
