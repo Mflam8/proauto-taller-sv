@@ -15,13 +15,18 @@ import {
   AlertCircle,
   CheckCircle,
   Clock,
-  Wrench
+  Wrench,
+  UserPlus
 } from "lucide-react";
 import StatsCard from "../components/dashboard/StatsCard";
 import AnalyticsWidget from "../components/dashboard/AnalyticsWidget";
 import { motion } from "framer-motion";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import ClienteForm from "../components/clientes/ClienteForm";
 
 export default function Dashboard() {
+  const [showNuevoCliente, setShowNuevoCliente] = useState(false);
+
   const { data: clientes = [] } = useQuery({
     queryKey: ['clientes'],
     queryFn: () => base44.entities.Cliente.list(),
@@ -95,13 +100,29 @@ export default function Dashboard() {
             <p className="text-gray-600 mt-2">Bienvenido a PROAUTO Taller SV</p>
           </div>
           <div className="flex gap-3">
+            <Button
+              onClick={() => setShowNuevoCliente(true)}
+              className="bg-gradient-to-r from-[#E31E24] to-[#B71C1C] hover:from-[#B71C1C] hover:to-[#E31E24] text-white shadow-md hover:shadow-lg transition-all duration-300"
+            >
+              <UserPlus className="w-4 h-4 mr-2" />
+              Nuevo Cliente
+            </Button>
             <Link to={createPageUrl("Cotizaciones")}>
-              <Button className="bg-gradient-to-r from-[#E31E24] to-[#B71C1C] hover:from-[#B71C1C] hover:to-[#E31E24] text-white shadow-md hover:shadow-lg transition-all duration-300">
+              <Button variant="outline" className="border-gray-300 hover:bg-gray-100">
                 <FileText className="w-4 h-4 mr-2" />
                 Nueva Cotización
               </Button>
             </Link>
           </div>
+
+          <Dialog open={showNuevoCliente} onOpenChange={setShowNuevoCliente}>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle className="text-xl font-bold">Nuevo Cliente</DialogTitle>
+              </DialogHeader>
+              <ClienteForm onClose={() => setShowNuevoCliente(false)} />
+            </DialogContent>
+          </Dialog>
         </motion.div>
 
         {/* Stats Cards */}
