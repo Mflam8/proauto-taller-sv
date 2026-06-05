@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 
 // Esta página es pública - no requiere login
@@ -30,6 +30,19 @@ const WhatsAppIcon = ({ className }) =>
 export default function SitioWeb() {
   const { scrollYProgress } = useScroll();
   const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    base44.auth.isAuthenticated().then(setIsLoggedIn);
+  }, []);
+
+  const handleGestion = () => {
+    if (isLoggedIn) {
+      window.location.href = "/Dashboard";
+    } else {
+      base44.auth.redirectToLogin("/Dashboard");
+    }
+  };
 
   const servicios = [
   { icon: Wrench, title: "Mantenimiento Preventivo y Correctivo", desc: "Mantenimientos periódicos por kilometraje: cambios de aceite, filtros, bujías y fluidos." },
@@ -71,11 +84,11 @@ export default function SitioWeb() {
             )}
           </div>
           <button
-            onClick={() => base44.auth.redirectToLogin()}
+            onClick={handleGestion}
             className="hidden md:flex items-center gap-2 text-white/60 hover:text-white transition-colors text-sm font-medium"
           >
             <Settings className="w-4 h-4" />
-            Gestión
+            {isLoggedIn ? "Panel" : "Gestión"}
           </button>
           <motion.a
             href="tel:+50368660952"
