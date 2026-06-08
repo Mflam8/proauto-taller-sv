@@ -15,6 +15,7 @@ import Empleados from './pages/Empleados';
 import Expedientes from './pages/Expedientes';
 import ExpedienteVista from './pages/ExpedienteVista';
 import LinkTree from './pages/LinkTree';
+import OrdenesTrabajos from './pages/OrdenesTrabajos';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -72,6 +73,7 @@ const AuthenticatedApp = () => {
       <Route path="/Expedientes" element={<LayoutWrapper currentPageName="Expedientes"><Expedientes /></LayoutWrapper>} />
       <Route path="/Expedientes/:id" element={<LayoutWrapper currentPageName="Expedientes"><ExpedienteVista /></LayoutWrapper>} />
       <Route path="/links" element={<LinkTree />} />
+      <Route path="/OrdenesTrabajos" element={<LayoutWrapper currentPageName="OrdenesTrabajos"><OrdenesTrabajos /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
