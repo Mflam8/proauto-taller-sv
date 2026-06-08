@@ -100,7 +100,7 @@ export default function LinkTree() {
 
         {/* Botones */}
         <div className="w-full space-y-4">
-          {links.map(({ label, href, icon: Icon, bg, border, hover }, i) => (
+            {links.map(({ label, href, icon: IconComp, bg, border, hover }, i) => (
             <motion.a
               key={label}
               href={href}
@@ -113,7 +113,7 @@ export default function LinkTree() {
               whileTap={{ scale: 0.97 }}
               className={`flex items-center gap-4 w-full px-6 py-4 rounded-2xl border text-white font-bold text-lg transition-all ${bg} ${border} ${hover}`}
             >
-              <Icon className="w-6 h-6 flex-shrink-0" />
+              <IconComp className="w-6 h-6 flex-shrink-0" />
               {label}
             </motion.a>
           ))}
