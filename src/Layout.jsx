@@ -18,7 +18,8 @@ import {
   X,
   LogOut,
   ChevronRight,
-  FolderOpen
+  FolderOpen,
+  LayoutGrid
 } from "lucide-react";
 import {
   Sidebar,
@@ -37,6 +38,11 @@ import {
 import { Button } from "@/components/ui/button";
 
 const navigationItems = [
+  {
+    title: "Tablero Diario",
+    url: "/TableroDiario",
+    icon: LayoutGrid,
+  },
   {
     title: "Dashboard",
     url: createPageUrl("Dashboard"),
