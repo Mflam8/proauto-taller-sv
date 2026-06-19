@@ -37,6 +37,22 @@
     "notas": {
       "type": "string",
       "description": "Notas del pago"
+    },
+    "legacy_payment_id": {
+      "type": "string",
+      "description": "ID del cobro en sistema anterior (DBF)"
+    },
+    "legacy_invoice_id": {
+      "type": "string",
+      "description": "ID de la factura en sistema anterior"
+    },
+    "legacy_customer_id": {
+      "type": "string",
+      "description": "ID del cliente en sistema anterior"
+    },
+    "legacy_raw_table": {
+      "type": "string",
+      "description": "Tabla de origen en sistema anterior"
     }
   },
   "required": [

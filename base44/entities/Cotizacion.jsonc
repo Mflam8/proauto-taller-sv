@@ -80,6 +80,22 @@
       "type": "number",
       "default": 15,
       "description": "D\u00edas de vigencia"
+    },
+    "legacy_quote_id": {
+      "type": "string",
+      "description": "ID del presupuesto en sistema anterior (DBF)"
+    },
+    "legacy_customer_id": {
+      "type": "string",
+      "description": "ID del cliente en sistema anterior"
+    },
+    "legacy_series": {
+      "type": "string",
+      "description": "Serie del presupuesto en sistema anterior"
+    },
+    "legacy_raw_table": {
+      "type": "string",
+      "description": "Tabla de origen en sistema anterior"
     }
   },
   "required": [

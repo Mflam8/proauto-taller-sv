@@ -54,6 +54,30 @@
       "type": "boolean",
       "default": true,
       "description": "Si el cliente est\u00e1 activo"
+    },
+    "legacy_customer_id": {
+      "type": "string",
+      "description": "ID original del sistema anterior (DBF)"
+    },
+    "legacy_customer_code": {
+      "type": "string",
+      "description": "C\u00f3digo del cliente en sistema anterior"
+    },
+    "legacy_nombre_legal": {
+      "type": "string",
+      "description": "Nombre fiscal/legal del sistema anterior"
+    },
+    "legacy_saldo": {
+      "type": "number",
+      "description": "Saldo del cliente en sistema anterior"
+    },
+    "legacy_forma_pago": {
+      "type": "string",
+      "description": "Forma de pago del sistema anterior"
+    },
+    "legacy_raw_table": {
+      "type": "string",
+      "description": "Tabla de origen en sistema anterior"
     }
   },
   "required": [

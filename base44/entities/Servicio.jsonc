@@ -38,6 +38,26 @@
       "type": "boolean",
       "default": true,
       "description": "Si el servicio est\u00e1 activo"
+    },
+    "legacy_item_id": {
+      "type": "string",
+      "description": "ID del art\u00edculo en sistema anterior (DBF)"
+    },
+    "legacy_code_family": {
+      "type": "string",
+      "description": "C\u00f3digo de familia en sistema anterior"
+    },
+    "legacy_barcode": {
+      "type": "string",
+      "description": "C\u00f3digo de barras en sistema anterior"
+    },
+    "legacy_precio_lista1": {
+      "type": "number",
+      "description": "Precio lista 1 del sistema anterior"
+    },
+    "legacy_raw_table": {
+      "type": "string",
+      "description": "Tabla de origen en sistema anterior"
     }
   },
   "required": [

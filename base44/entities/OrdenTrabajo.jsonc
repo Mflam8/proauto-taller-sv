@@ -92,6 +92,26 @@
     "notas_internas": {
       "type": "string",
       "description": "Notas internas del taller"
+    },
+    "legacy_job_id": {
+      "type": "string",
+      "description": "ID del trabajo en sistema anterior (DBF)"
+    },
+    "legacy_job_number": {
+      "type": "string",
+      "description": "N\u00famero de trabajo en sistema anterior"
+    },
+    "legacy_customer_id": {
+      "type": "string",
+      "description": "ID del cliente en sistema anterior"
+    },
+    "legacy_invoice_id": {
+      "type": "string",
+      "description": "ID de la factura asociada en sistema anterior"
+    },
+    "legacy_raw_table": {
+      "type": "string",
+      "description": "Tabla de origen en sistema anterior"
     }
   },
   "required": [
