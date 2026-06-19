@@ -1,34 +1,74 @@
 import React, { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, DollarSign, Truck, AlertCircle, ClipboardCheck } from "lucide-react";
+import { CheckCircle, DollarSign, Truck, AlertCircle, ClipboardCheck, Receipt } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const METODOS_PAGO = ["Efectivo", "Transferencia", "Tarjeta Débito", "Tarjeta Crédito", "Cheque"];
 
 export default function CierreTab({ expediente, onCerrar }) {
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [pago, setPago] = useState({ monto: expediente.saldo_pendiente || 0, metodo: "Efectivo", referencia: "", notas: "" });
   const [kmSalida, setKmSalida] = useState(expediente.kilometraje_salida || "");
   const [saving, setSaving] = useState(false);
   const [pagado, setPagado] = useState(false);
 
+  // Buscar factura asociada al expediente
+  const { data: facturas = [] } = useQuery({
+    queryKey: ["facturas-expediente", expediente.id],
+    queryFn: () => base44.entities.Factura.filter({ expediente_id: expediente.id }),
+    enabled: !!expediente.id,
+  });
+  const factura = facturas[0];
+
   const listo = expediente.estado_interno === "Listo para Entrega" || expediente.estado_interno === "Entregado";
   const yaCerrado = expediente.estado_interno === "Cerrado" || expediente.estado_interno === "Entregado";
+  const sinFactura = !factura && expediente.factura_generada !== true;
 
   const handlePagar = async () => {
-    if (!pago.monto) return;
+    if (!pago.monto || !factura) return;
     setSaving(true);
-    const nuevoTotalPagado = (expediente.total_pagado || 0) + parseFloat(pago.monto);
+    const montoNum = parseFloat(pago.monto);
+
+    // 1. Crear registro de Pago vinculado a la Factura
+    const currentUser = await base44.auth.me();
+    await base44.entities.Pago.create({
+      factura_id: factura.id,
+      monto: montoNum,
+      metodo_pago: pago.metodo,
+      referencia: pago.referencia,
+      fecha_pago: new Date().toISOString(),
+      recibido_por: currentUser?.full_name || "",
+      notas: pago.notas,
+    });
+
+    // 2. Actualizar Factura
+    const nuevoMontoPagadoFactura = (factura.monto_pagado || 0) + montoNum;
+    const nuevoSaldoFactura = factura.total - nuevoMontoPagadoFactura;
+    const nuevoEstadoFactura = nuevoSaldoFactura <= 0.01 ? "Pagada" : "Parcial";
+    await base44.entities.Factura.update(factura.id, {
+      monto_pagado: nuevoMontoPagadoFactura,
+      saldo_pendiente: Math.max(0, nuevoSaldoFactura),
+      estado_pago: nuevoEstadoFactura,
+    });
+
+    // 3. Actualizar Expediente
+    const nuevoTotalPagado = (expediente.total_pagado || 0) + montoNum;
     const nuevoSaldo = (expediente.total_cobrado || 0) - nuevoTotalPagado;
     await base44.entities.Expediente.update(expediente.id, {
       total_pagado: nuevoTotalPagado,
       saldo_pendiente: Math.max(0, nuevoSaldo),
     });
+
     qc.invalidateQueries(["expediente", expediente.id]);
+    qc.invalidateQueries(["facturas-expediente", expediente.id]);
+    qc.invalidateQueries(["facturas"]);
+    qc.invalidateQueries(["pagos"]);
     setPagado(true);
     setSaving(false);
   };
@@ -91,29 +131,48 @@ export default function CierreTab({ expediente, onCerrar }) {
 
         {/* Registrar pago */}
         {!yaCerrado && (expediente.saldo_pendiente || 0) > 0 && !pagado && (
-          <div className="border-t pt-3 space-y-3">
-            <p className="text-sm font-medium text-gray-700">Registrar pago</p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <label className="text-xs text-gray-500 mb-1 block">Monto ($)</label>
-                <Input type="number" min="0" step="0.01" value={pago.monto} onChange={e => setPago({ ...pago, monto: e.target.value })} />
-              </div>
-              <div>
-                <label className="text-xs text-gray-500 mb-1 block">Método</label>
-                <Select value={pago.metodo} onValueChange={v => setPago({ ...pago, metodo: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{METODOS_PAGO.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-xs text-gray-500 mb-1 block">Referencia</label>
-                <Input placeholder="# de transferencia..." value={pago.referencia} onChange={e => setPago({ ...pago, referencia: e.target.value })} />
+          sinFactura ? (
+            <div className="border-t pt-3">
+              <div className="flex items-center gap-2 text-amber-700 bg-amber-50 rounded-xl p-3 border border-amber-200">
+                <Receipt className="w-4 h-4 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium">Primero genera la factura</p>
+                  <p className="text-xs text-amber-600">Debes generar la factura desde el botón rojo en la parte superior del expediente antes de registrar un pago.</p>
+                </div>
               </div>
             </div>
-            <Button onClick={handlePagar} disabled={saving} className="bg-[#E31E24] hover:bg-[#B71C1C] gap-2">
-              <DollarSign className="w-4 h-4" /> Registrar Pago
-            </Button>
-          </div>
+          ) : (
+            <div className="border-t pt-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-gray-700">Registrar pago</p>
+                {factura && (
+                  <Badge variant="outline" className="text-xs">
+                    Factura #{factura.numero_factura || factura.id.slice(0, 8)}
+                  </Badge>
+                )}
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">Monto ($)</label>
+                  <Input type="number" min="0" step="0.01" value={pago.monto} onChange={e => setPago({ ...pago, monto: e.target.value })} />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">Método</label>
+                  <Select value={pago.metodo} onValueChange={v => setPago({ ...pago, metodo: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>{METODOS_PAGO.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">Referencia</label>
+                  <Input placeholder="# de transferencia..." value={pago.referencia} onChange={e => setPago({ ...pago, referencia: e.target.value })} />
+                </div>
+              </div>
+              <Button onClick={handlePagar} disabled={saving} className="bg-[#E31E24] hover:bg-[#B71C1C] gap-2">
+                <DollarSign className="w-4 h-4" /> Registrar Pago
+              </Button>
+            </div>
+          )
         )}
         {pagado && (
           <div className="flex items-center gap-2 text-green-700 bg-green-50 rounded-xl p-3 border border-green-100">
