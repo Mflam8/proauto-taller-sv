@@ -207,7 +207,7 @@ export default function ItemInventarioForm({ item, onClose }) {
               <SelectValue placeholder="Seleccionar proveedor" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={null}>Sin proveedor</SelectItem>
+              <SelectItem value="none">Sin proveedor</SelectItem>
               {proveedores.map(prov => (
                 <SelectItem key={prov.id} value={prov.id}>
                   {prov.nombre}

@@ -8,8 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge";
 import { Truck, Search, Plus, Phone, Mail, MapPin, Edit, Trash2, Eye } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import ProveedorForm from "../components/proveedores/ProveedorForm.jsx";
-import ProveedorDetalle from "../components/proveedores/ProveedorDetalle.jsx";
+import ProveedorForm from "@/components/proveedores/ProveedorForm";
+import ProveedorDetalle from "@/components/proveedores/ProveedorDetalle";
 
 export default function Proveedores() {
   const [searchTerm, setSearchTerm] = useState("");

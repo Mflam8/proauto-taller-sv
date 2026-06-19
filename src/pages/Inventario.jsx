@@ -9,9 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Package, Search, Plus, AlertCircle, TrendingUp, TrendingDown, Eye, Edit, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import ItemInventarioForm from "../components/inventario/ItemInventarioForm.jsx";
-import ItemInventarioDetalle from "../components/inventario/ItemInventarioDetalle.jsx";
-import MovimientoForm from "../components/inventario/MovimientoForm.jsx";
+import ItemInventarioForm from "@/components/inventario/ItemInventarioForm";
+import ItemInventarioDetalle from "@/components/inventario/ItemInventarioDetalle";
+import MovimientoForm from "@/components/inventario/MovimientoForm";
 
 export default function Inventario() {
   const [searchTerm, setSearchTerm] = useState("");
