@@ -5,7 +5,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, FolderOpen, Car, User, ClipboardList, Stethoscope, Wrench, DollarSign, PackageMinus, TruckIcon } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ArrowLeft, FolderOpen, Car, User, ClipboardList, Stethoscope, Wrench, DollarSign, PackageMinus, TruckIcon, Receipt } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import InspeccionForm from "@/components/inspeccion/InspeccionForm";
@@ -13,6 +14,7 @@ import DiagnosticoForm from "@/components/diagnostico/DiagnosticoForm";
 import TrabajosTab from "@/components/trabajos/TrabajosTab";
 import CajaChicaTab from "@/components/caja/CajaChicaTab";
 import CierreTab from "@/components/cierre/CierreTab";
+import GenerarFacturaForm from "@/components/facturacion/GenerarFacturaForm";
 
 const TABS = [
   { id: "resumen", label: "Resumen", icon: FolderOpen },
@@ -49,6 +51,7 @@ export default function ExpedienteVista() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [tab, setTab] = useState("resumen");
+  const [showFacturaForm, setShowFacturaForm] = useState(false);
 
   const { data: expediente, isLoading } = useQuery({
     queryKey: ["expediente", id],
@@ -128,6 +131,16 @@ export default function ExpedienteVista() {
         </div>
         <div className="flex items-center gap-2">
           <Badge className={estadoColor[expediente.estado_interno]}>{expediente.estado_interno}</Badge>
+          {!expediente.factura_generada ? (
+            <Button size="sm" onClick={() => setShowFacturaForm(true)}
+              className="bg-gradient-to-r from-[#E31E24] to-[#B71C1C] text-white gap-1 text-xs">
+              <Receipt className="w-3.5 h-3.5" /> Generar Factura
+            </Button>
+          ) : (
+            <Badge className="bg-green-100 text-green-800 border border-green-200">
+              <Receipt className="w-3 h-3 mr-1" /> Facturado
+            </Badge>
+          )}
         </div>
       </div>
 
@@ -295,6 +308,27 @@ export default function ExpedienteVista() {
           />
         </div>
       )}
+      {/* Dialog Generar Factura */}
+      <Dialog open={showFacturaForm} onOpenChange={setShowFacturaForm}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <Receipt className="w-5 h-5 text-[#E31E24]" />
+              Generar Factura — {expediente.numero_expediente || `EXP-${id?.slice(-6)?.toUpperCase()}`}
+            </DialogTitle>
+          </DialogHeader>
+          <GenerarFacturaForm
+            expediente={expediente}
+            cliente={cliente}
+            vehiculo={vehiculo}
+            onSuccess={() => {
+              setShowFacturaForm(false);
+              qc.invalidateQueries(["expediente", id]);
+            }}
+            onClose={() => setShowFacturaForm(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -6,6 +6,10 @@
       "type": "string",
       "description": "N\u00famero de factura"
     },
+    "expediente_id": {
+      "type": "string",
+      "description": "ID del expediente asociado"
+    },
     "orden_trabajo_id": {
       "type": "string",
       "description": "ID de orden de trabajo"
@@ -17,6 +21,16 @@
     "vehiculo_id": {
       "type": "string",
       "description": "ID del veh\u00edculo"
+    },
+    "forma_pago": {
+      "type": "string",
+      "enum": [
+        "Contado",
+        "Cr\u00e9dito",
+        "Mixto"
+      ],
+      "default": "Contado",
+      "description": "Forma de pago general"
     },
     "items": {
       "type": "array",
@@ -41,11 +55,15 @@
     },
     "subtotal": {
       "type": "number",
-      "description": "Subtotal"
+      "description": "Subtotal (Importe Bruto)"
+    },
+    "importe_neto": {
+      "type": "number",
+      "description": "Importe Neto antes de IVA"
     },
     "iva": {
       "type": "number",
-      "description": "IVA aplicado"
+      "description": "IVA aplicado (13%)"
     },
     "total": {
       "type": "number",
