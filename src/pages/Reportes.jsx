@@ -13,7 +13,7 @@ export default function Reportes() {
 
   const { data: facturas = [] } = useQuery({
     queryKey: ['facturas'],
-    queryFn: () => base44.entities.Factura.list('-created_date'),
+    queryFn: () => base44.entities.Factura.list('-fecha_emision'),
     initialData: [],
   });
 
@@ -48,7 +48,7 @@ export default function Reportes() {
   });
 
   // Filtrar por periodo
-  const filtrarPorPeriodo = (items, periodo) => {
+  const filtrarPorPeriodo = (items, periodo, dateField = 'created_date') => {
     const ahora = new Date();
     const inicio = new Date();
     
@@ -62,21 +62,25 @@ export default function Reportes() {
       inicio.setFullYear(ahora.getFullYear() - 1);
     }
 
-    return items.filter(item => new Date(item.created_date) >= inicio);
+    return items.filter(item => {
+      const fecha = item[dateField] || item.created_date;
+      return new Date(fecha) >= inicio;
+    });
   };
 
-  const facturasFiltradasPeriodo = filtrarPorPeriodo(facturas, periodoFacturas);
+  const facturasFiltradasPeriodo = filtrarPorPeriodo(facturas, periodoFacturas, 'fecha_emision');
   const ordenesFiltradasPeriodo = filtrarPorPeriodo(ordenes, periodoOrdenes);
 
   // Métricas Financieras
   const totalFacturado = facturas.reduce((sum, f) => sum + (f.total || 0), 0);
   const totalCobrado = pagos.reduce((sum, p) => sum + (p.monto || 0), 0);
-  const pendienteCobro = totalFacturado - totalCobrado;
+  const facturasConDeuda = facturas.filter(f => (f.saldo_pendiente || 0) > 0 && f.estado_pago !== 'Pagada');
+  const pendienteCobro = facturasConDeuda.reduce((sum, f) => sum + (f.saldo_pendiente || 0), 0);
   const promedioFactura = facturas.length > 0 ? totalFacturado / facturas.length : 0;
 
   // Facturación por periodo
   const facturacionPeriodo = facturasFiltradasPeriodo.reduce((sum, f) => sum + (f.total || 0), 0);
-  const facturasPendientes = facturas.filter(f => f.estado_pago === 'Pendiente' || f.estado_pago === 'Parcial').length;
+  const facturasPendientes = facturasConDeuda.length;
 
   // Métricas Operativas
   const ordenesActivas = ordenes.filter(o => !['Completado', 'Entregado'].includes(o.estado)).length;
@@ -89,7 +93,7 @@ export default function Reportes() {
     mes.setMonth(mes.getMonth() - (5 - i));
     const mesNombre = mes.toLocaleDateString('es', { month: 'short' });
     const facturasMes = facturas.filter(f => {
-      const fechaFactura = new Date(f.created_date);
+      const fechaFactura = new Date(f.fecha_emision || f.created_date);
       return fechaFactura.getMonth() === mes.getMonth() && fechaFactura.getFullYear() === mes.getFullYear();
     });
     return {

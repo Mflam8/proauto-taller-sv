@@ -24,7 +24,8 @@ export default function FacturaDetalle({ factura }) {
     initialData: [],
   });
 
-  const saldoPendiente = (factura.total || 0) - (factura.monto_pagado || 0);
+  const saldoCalculado = factura.saldo_pendiente != null ? factura.saldo_pendiente : (factura.total || 0) - (factura.monto_pagado || 0);
+  const saldoPendiente = factura.estado_pago === 'Pagada' ? 0 : saldoCalculado;
 
   return (
     <div className="space-y-6">
@@ -37,8 +38,13 @@ export default function FacturaDetalle({ factura }) {
               <div>
                 <CardTitle className="text-xl">Factura #{factura.numero_factura || factura.id.slice(0, 8)}</CardTitle>
                 <p className="text-sm opacity-90">
-                  Fecha: {new Date(factura.created_date).toLocaleDateString()}
+                  Fecha emisión: {factura.fecha_emision ? new Date(factura.fecha_emision).toLocaleDateString() : '—'}
                 </p>
+                {factura.legacy_invoice_id && (
+                  <p className="text-xs opacity-70">
+                    Importado al sistema: {new Date(factura.created_date).toLocaleDateString()}
+                  </p>
+                )}
               </div>
             </div>
             <Badge className={`

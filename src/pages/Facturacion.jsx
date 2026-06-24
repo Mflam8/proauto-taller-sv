@@ -22,7 +22,7 @@ export default function Facturacion() {
 
   const { data: facturas = [], isLoading } = useQuery({
     queryKey: ['facturas'],
-    queryFn: () => base44.entities.Factura.list('-created_date'),
+    queryFn: () => base44.entities.Factura.list('-fecha_emision'),
     initialData: [],
   });
 
@@ -80,8 +80,9 @@ export default function Facturacion() {
   // Estadísticas
   const totalFacturado = facturas.reduce((sum, f) => sum + (f.total || 0), 0);
   const totalCobrado = pagos.reduce((sum, p) => sum + (p.monto || 0), 0);
-  const pendienteCobro = totalFacturado - totalCobrado;
-  const facturasPendientes = facturas.filter(f => f.estado_pago === 'Pendiente' || f.estado_pago === 'Parcial').length;
+  const facturasConDeuda = facturas.filter(f => (f.saldo_pendiente || 0) > 0 && f.estado_pago !== 'Pagada');
+  const pendienteCobro = facturasConDeuda.reduce((sum, f) => sum + (f.saldo_pendiente || 0), 0);
+  const facturasPendientes = facturasConDeuda.length;
 
   return (
     <div className="min-h-screen bg-[#F5F5F5] p-4 md:p-8">
@@ -226,7 +227,7 @@ export default function Facturacion() {
                                   Cliente: {getClienteNombre(factura.cliente_id)}
                                 </p>
                                 <p className="text-sm text-gray-500">
-                                  Fecha: {new Date(factura.created_date).toLocaleDateString()}
+                                  Fecha emisión: {factura.fecha_emision ? new Date(factura.fecha_emision).toLocaleDateString() : '—'}
                                 </p>
                               </div>
                             </div>

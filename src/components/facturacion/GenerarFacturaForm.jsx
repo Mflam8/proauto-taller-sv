@@ -58,6 +58,7 @@ export default function GenerarFacturaForm({ expediente, cliente, vehiculo, onSu
       const facturaData = {
         numero_factura: numeroFactura || `FAC-${Date.now().toString().slice(-8)}`,
         expediente_id: expediente.id,
+        fecha_emision: new Date().toISOString(),
         cliente_id: expediente.cliente_id,
         vehiculo_id: expediente.vehiculo_id,
         forma_pago: formaPago,

@@ -53,7 +53,7 @@ export default function Dashboard() {
 
   const { data: facturas = [] } = useQuery({
     queryKey: ['facturas'],
-    queryFn: () => base44.entities.Factura.list('-created_date'),
+    queryFn: () => base44.entities.Factura.list('-fecha_emision'),
     initialData: [],
   });
 
@@ -68,7 +68,7 @@ export default function Dashboard() {
 
   const facturasTotal = facturas.reduce((sum, f) => sum + (f.total || 0), 0);
   const facturasPendientes = facturas.filter(f => 
-    f.estado_pago === 'Pendiente' || f.estado_pago === 'Parcial'
+    (f.saldo_pendiente || 0) > 0 && f.estado_pago !== 'Pagada'
   ).length;
 
   const ordenesRecientes = ordenes.slice(0, 5);
