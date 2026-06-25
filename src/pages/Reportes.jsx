@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { BarChart3, DollarSign, TrendingUp, TrendingDown, Calendar, FileText, Users, Car, Wrench } from "lucide-react";
 import { motion } from "framer-motion";
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
@@ -44,6 +45,12 @@ export default function Reportes() {
   const { data: inventario = [] } = useQuery({
     queryKey: ['inventario'],
     queryFn: () => base44.entities.ItemInventario.list(),
+    initialData: [],
+  });
+
+  const { data: trabajos = [] } = useQuery({
+    queryKey: ['trabajos-reportes'],
+    queryFn: () => base44.entities.TrabajoExpediente.list(),
     initialData: [],
   });
 
@@ -101,6 +108,83 @@ export default function Reportes() {
       monto: facturasMes.reduce((sum, f) => sum + (f.total || 0), 0)
     };
   });
+
+  // === MÉTRICAS OPERATIVAS ===
+  const clienteMap = Object.fromEntries(clientes.map(c => [c.id, c]));
+
+  // Ventas por semana (últimas 8 semanas)
+  const ventasPorSemana = Array.from({ length: 8 }, (_, i) => {
+    const inicio = new Date();
+    inicio.setDate(inicio.getDate() - (7 - i) * 7);
+    inicio.setHours(0, 0, 0, 0);
+    const fin = new Date(inicio);
+    fin.setDate(fin.getDate() + 6);
+    fin.setHours(23, 59, 59, 999);
+    const monto = facturas.filter(f => {
+      const fecha = new Date(f.fecha_emision || f.created_date);
+      return fecha >= inicio && fecha <= fin;
+    }).reduce((sum, f) => sum + (f.total || 0), 0);
+    return { semana: `${inicio.getDate()}/${inicio.getMonth() + 1}`, monto };
+  });
+
+  // Ventas por día (últimos 14 días)
+  const ventasPorDia = Array.from({ length: 14 }, (_, i) => {
+    const dia = new Date();
+    dia.setDate(dia.getDate() - (13 - i));
+    dia.setHours(0, 0, 0, 0);
+    const diaFin = new Date(dia);
+    diaFin.setHours(23, 59, 59, 999);
+    const monto = facturas.filter(f => {
+      const fecha = new Date(f.fecha_emision || f.created_date);
+      return fecha >= dia && fecha <= diaFin;
+    }).reduce((sum, f) => sum + (f.total || 0), 0);
+    return { dia: dia.toLocaleDateString('es', { day: '2-digit', month: '2-digit' }), monto };
+  });
+
+  // Top clientes por facturación
+  const gastoPorCliente = {};
+  facturas.forEach(f => {
+    if (f.cliente_id) gastoPorCliente[f.cliente_id] = (gastoPorCliente[f.cliente_id] || 0) + (f.total || 0);
+  });
+  const topClientes = Object.entries(gastoPorCliente)
+    .map(([id, total]) => ({
+      nombre: clienteMap[id]?.nombre_completo || 'N/A',
+      total,
+      facturas: facturas.filter(f => f.cliente_id === id).length,
+    }))
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 8);
+
+  // Ventas por tipo de trabajo (mano de obra vs repuestos)
+  const ventasPorTipo = {};
+  trabajos.forEach(t => {
+    const tipo = t.tipo || 'Otro';
+    ventasPorTipo[tipo] = (ventasPorTipo[tipo] || 0) + (t.subtotal || (t.cantidad || 1) * (t.precio_unitario || 0));
+  });
+  const manoObraVsRepuestos = [
+    { name: 'Mano de Obra', value: ventasPorTipo['Mano de Obra'] || 0, color: '#3B82F6' },
+    { name: 'Repuestos', value: ventasPorTipo['Repuesto'] || 0, color: '#E31E24' },
+    { name: 'Insumos', value: ventasPorTipo['Insumo'] || 0, color: '#F59E0B' },
+    { name: 'Diagnóstico', value: ventasPorTipo['Diagnóstico'] || 0, color: '#8B5CF6' },
+    { name: 'Otros', value: ventasPorTipo['Otro'] || 0, color: '#6B7280' },
+  ].filter(i => i.value > 0);
+
+  const montoManoObra = ventasPorTipo['Mano de Obra'] || 0;
+  const montoRepuestos = ventasPorTipo['Repuesto'] || 0;
+  const piezasCompradas = trabajos.filter(t => t.tipo === 'Repuesto').length;
+
+  // Qué se vende más (top trabajos por frecuencia)
+  const trabajosCount = {};
+  trabajos.forEach(t => {
+    const desc = t.descripcion || 'Sin descripción';
+    if (!trabajosCount[desc]) trabajosCount[desc] = { count: 0, monto: 0 };
+    trabajosCount[desc].count++;
+    trabajosCount[desc].monto += (t.subtotal || (t.cantidad || 1) * (t.precio_unitario || 0));
+  });
+  const topTrabajos = Object.entries(trabajosCount)
+    .map(([desc, data]) => ({ descripcion: desc, ...data }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 10);
 
   const estadosOrdenes = [
     { name: 'Completado', value: ordenes.filter(o => o.estado === 'Completado').length, color: '#10B981' },
@@ -256,6 +340,165 @@ export default function Reportes() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Métricas Operativas */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card className="border-0 shadow-md bg-gradient-to-br from-indigo-500 to-indigo-600 text-white">
+            <CardContent className="p-5">
+              <DollarSign className="w-8 h-8 opacity-80 mb-2" />
+              <p className="text-2xl font-bold">${promedioFactura.toFixed(2)}</p>
+              <p className="text-xs opacity-90 mt-1">Factura promedio</p>
+            </CardContent>
+          </Card>
+          <Card className="border-0 shadow-md bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+            <CardContent className="p-5">
+              <Wrench className="w-8 h-8 opacity-80 mb-2" />
+              <p className="text-2xl font-bold">${montoManoObra.toFixed(2)}</p>
+              <p className="text-xs opacity-90 mt-1">Venta mano de obra</p>
+            </CardContent>
+          </Card>
+          <Card className="border-0 shadow-md bg-gradient-to-br from-[#E31E24] to-[#B71C1C] text-white">
+            <CardContent className="p-5">
+              <DollarSign className="w-8 h-8 opacity-80 mb-2" />
+              <p className="text-2xl font-bold">${montoRepuestos.toFixed(2)}</p>
+              <p className="text-xs opacity-90 mt-1">Venta en repuestos</p>
+            </CardContent>
+          </Card>
+          <Card className="border-0 shadow-md bg-gradient-to-br from-amber-500 to-orange-600 text-white">
+            <CardContent className="p-5">
+              <FileText className="w-8 h-8 opacity-80 mb-2" />
+              <p className="text-2xl font-bold">{piezasCompradas}</p>
+              <p className="text-xs opacity-90 mt-1">Piezas compradas</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Ventas por semana y por día */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card className="border-0 shadow-lg">
+            <CardHeader className="border-b">
+              <CardTitle className="flex items-center gap-2"><TrendingUp className="w-5 h-5 text-[#E31E24]" /> Ventas por Semana (8 semanas)</CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <ResponsiveContainer width="100%" height={280}>
+                <LineChart data={ventasPorSemana}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="semana" />
+                  <YAxis />
+                  <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
+                  <Line type="monotone" dataKey="monto" stroke="#E31E24" strokeWidth={3} dot={{ r: 4 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-lg">
+            <CardHeader className="border-b">
+              <CardTitle className="flex items-center gap-2"><Calendar className="w-5 h-5 text-blue-600" /> Ventas por Día (14 días)</CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart data={ventasPorDia}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="dia" />
+                  <YAxis />
+                  <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
+                  <Bar dataKey="monto" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Mano de obra vs repuestos + Top clientes */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card className="border-0 shadow-lg">
+            <CardHeader className="border-b">
+              <CardTitle className="flex items-center gap-2"><Wrench className="w-5 h-5 text-[#E31E24]" /> Mano de Obra vs Repuestos</CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              {manoObraVsRepuestos.length > 0 ? (
+                <ResponsiveContainer width="100%" height={280}>
+                  <PieChart>
+                    <Pie data={manoObraVsRepuestos} cx="50%" cy="50%" labelLine={false}
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={100} dataKey="value">
+                      {manoObraVsRepuestos.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <p className="text-center text-gray-400 py-12">Sin trabajos registrados</p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-lg">
+            <CardHeader className="border-b">
+              <CardTitle className="flex items-center gap-2"><Users className="w-5 h-5 text-blue-600" /> Top Clientes</CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              {topClientes.length > 0 ? (
+                <div className="space-y-3">
+                  {topClientes.map((c, i) => (
+                    <div key={i} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                      <div className="w-8 h-8 bg-gradient-to-br from-[#E31E24] to-[#B71C1C] rounded-full flex items-center justify-center text-white font-bold text-sm">
+                        {i + 1}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-900 truncate">{c.nombre}</p>
+                        <p className="text-xs text-gray-500">{c.facturas} factura{c.facturas !== 1 ? "s" : ""}</p>
+                      </div>
+                      <p className="font-bold text-green-600">${c.total.toFixed(2)}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-center text-gray-400 py-12">Sin clientes con facturas</p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Qué se vende más */}
+        <Card className="border-0 shadow-lg">
+          <CardHeader className="border-b">
+            <CardTitle className="flex items-center gap-2"><BarChart3 className="w-5 h-5 text-[#E31E24]" /> Qué se vende más (top 10)</CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            {topTrabajos.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-100">
+                      <th className="text-left py-2 px-3 text-xs font-semibold text-gray-500 uppercase">#</th>
+                      <th className="text-left py-2 px-3 text-xs font-semibold text-gray-500 uppercase">Descripción</th>
+                      <th className="text-right py-2 px-3 text-xs font-semibold text-gray-500 uppercase">Veces</th>
+                      <th className="text-right py-2 px-3 text-xs font-semibold text-gray-500 uppercase">Monto total</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {topTrabajos.map((t, i) => (
+                      <tr key={i} className="hover:bg-gray-50">
+                        <td className="py-2.5 px-3 text-gray-400 font-medium">{i + 1}</td>
+                        <td className="py-2.5 px-3 font-medium text-gray-900">{t.descripcion}</td>
+                        <td className="py-2.5 px-3 text-right">
+                          <Badge className="bg-blue-100 text-blue-800">{t.count}</Badge>
+                        </td>
+                        <td className="py-2.5 px-3 text-right font-bold text-gray-900">${t.monto.toFixed(2)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-center text-gray-400 py-12">Sin trabajos registrados</p>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Estadísticas Adicionales */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
