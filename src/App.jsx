@@ -14,6 +14,7 @@ import Contacto from './pages/Contacto';
 import Empleados from './pages/Empleados';
 import Expedientes from './pages/Expedientes';
 import ExpedienteVista from './pages/ExpedienteVista';
+import Inspecciones from './pages/Inspecciones';
 import LinkTree from './pages/LinkTree';
 import OrdenesTrabajos from './pages/OrdenesTrabajos';
 import TableroDiario from './pages/TableroDiario';
@@ -73,6 +74,7 @@ const AuthenticatedApp = () => {
       <Route path="/Empleados" element={<LayoutWrapper currentPageName="Empleados"><Empleados /></LayoutWrapper>} />
       <Route path="/Expedientes" element={<LayoutWrapper currentPageName="Expedientes"><Expedientes /></LayoutWrapper>} />
       <Route path="/Expedientes/:id" element={<LayoutWrapper currentPageName="Expedientes"><ExpedienteVista /></LayoutWrapper>} />
+      <Route path="/Inspecciones" element={<LayoutWrapper currentPageName="Inspecciones"><Inspecciones /></LayoutWrapper>} />
       <Route path="/links" element={<LinkTree />} />
       <Route path="/OrdenesTrabajos" element={<LayoutWrapper currentPageName="OrdenesTrabajos"><OrdenesTrabajos /></LayoutWrapper>} />
       <Route path="/TableroDiario" element={<LayoutWrapper currentPageName="TableroDiario"><TableroDiario /></LayoutWrapper>} />
