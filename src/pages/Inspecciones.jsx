@@ -112,6 +112,23 @@ export default function Inspecciones() {
   const inspeccionesConDaños = inspecciones.filter(i => i.daños?.length > 0).length;
   const totalDaños = inspecciones.reduce((sum, i) => sum + (i.daños?.length || 0), 0);
 
+  // === INSPECCIONES POR PERIODO ===
+  const ahora = new Date();
+  const inicioSemana = new Date(ahora); inicioSemana.setDate(ahora.getDate() - 7);
+  const inicioMes = new Date(ahora); inicioMes.setMonth(ahora.getMonth() - 1);
+  const inicioTrimestre = new Date(ahora); inicioTrimestre.setMonth(ahora.getMonth() - 3);
+  const inicioAnio = new Date(ahora); inicioAnio.setFullYear(ahora.getFullYear() - 1);
+
+  const inspeccionesPorPeriodo = (inicio) => inspecciones.filter(i => {
+    const fecha = new Date(i.fecha || i.created_date);
+    return fecha >= inicio && fecha <= ahora;
+  }).length;
+
+  const inspSemana = inspeccionesPorPeriodo(inicioSemana);
+  const inspMes = inspeccionesPorPeriodo(inicioMes);
+  const inspTrimestre = inspeccionesPorPeriodo(inicioTrimestre);
+  const inspAnio = inspeccionesPorPeriodo(inicioAnio);
+
   // Trabajos realizados (qué se hizo)
   const trabajosPorTipo = {};
   trabajos.forEach(t => {
@@ -155,6 +172,14 @@ export default function Inspecciones() {
           <MetricCard icon={Wrench} label="Sin repuestos" value={expedientesSinRepuesto} color="bg-gray-500" />
           <MetricCard icon={AlertCircle} label="Con daños al recibir" value={inspeccionesConDaños} sub={`${totalDaños} daños registrados`} color="bg-red-500" />
           <MetricCard icon={CheckCircle} label="Inspecciones totales" value={inspecciones.length} color="bg-indigo-500" />
+        </div>
+
+        {/* Inspecciones por periodo */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <MetricCard icon={Calendar} label="Esta semana" value={inspSemana} color="bg-blue-500" />
+          <MetricCard icon={Calendar} label="Este mes" value={inspMes} color="bg-emerald-500" />
+          <MetricCard icon={Calendar} label="Este trimestre" value={inspTrimestre} color="bg-purple-500" />
+          <MetricCard icon={Calendar} label="Este año" value={inspAnio} color="bg-amber-500" />
         </div>
 
         {/* Modelos y trabajos */}
