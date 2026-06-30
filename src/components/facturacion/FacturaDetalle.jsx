@@ -1,13 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Receipt, User, Car, Calendar, CreditCard, DollarSign, Printer } from "lucide-react";
+import { Receipt, User, Car, Calendar, CreditCard, DollarSign, Printer, Mail, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ReciboPrint from "@/components/facturacion/ReciboPrint";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function FacturaDetalle({ factura }) {
+  const { toast } = useToast();
+  const [enviandoCorreo, setEnviandoCorreo] = useState(false);
   const { data: cliente } = useQuery({
     queryKey: ['cliente', factura.cliente_id],
     queryFn: () => base44.entities.Cliente.list().then(clientes => clientes.find(c => c.id === factura.cliente_id)),
@@ -30,6 +33,58 @@ export default function FacturaDetalle({ factura }) {
   const saldoPendiente = factura.estado_pago === 'Pagada' ? 0 : saldoCalculado;
 
   const handlePrintRecibo = ReciboPrint({ factura, cliente, vehiculo });
+
+  const handleEnviarCorreo = async () => {
+    const correo = cliente?.email;
+    if (!correo) {
+      toast({
+        variant: "destructive",
+        title: "Sin correo electrónico",
+        description: "Este cliente no tiene correo registrado. Agrégalo en su perfil.",
+      });
+      return;
+    }
+
+    setEnviandoCorreo(true);
+    try {
+      const items = (factura.items || []).map(it => ({
+        descripcion: it.descripcion || "",
+        cantidad: it.cantidad || 0,
+        precio_unitario: it.precio_unitario || 0,
+        subtotal: it.subtotal || (it.cantidad || 0) * (it.precio_unitario || 0),
+      }));
+      await base44.integrations.Core.SendEmail({
+        to: correo,
+        subject: `Recibo ${factura.numero_factura || factura.id.slice(0, 8)} - PROAUTO Taller SV`,
+        body: `Estimado/a ${cliente?.nombre_completo || ""},\n\nAdjunto el detalle de su recibo:\n\n` +
+          `Recibo: ${factura.numero_factura || factura.id.slice(0, 8)}\n` +
+          `Fecha: ${factura.fecha_emision ? new Date(factura.fecha_emision).toLocaleDateString("es-SV") : new Date().toLocaleDateString("es-SV")}\n` +
+          `Forma de Pago: ${factura.forma_pago || "Contado"}\n` +
+          `Vehículo: ${vehiculo ? `${vehiculo.marca} ${vehiculo.modelo} - ${vehiculo.placa}` : "N/A"}\n\n` +
+          `DETALLE DE SERVICIOS:\n` +
+          items.map(it => `  ${it.cantidad}x ${it.descripcion} — $${it.precio_unitario.toFixed(2)} = $${it.subtotal.toFixed(2)}`).join("\n") +
+          `\n\nSubtotal: $${(factura.subtotal || 0).toFixed(2)}\n` +
+          (factura.iva > 0 ? `IVA (13%): $${(factura.iva || 0).toFixed(2)}\n` : "") +
+          `TOTAL: $${(factura.total || 0).toFixed(2)}\n` +
+          `Pagado: $${(factura.monto_pagado || 0).toFixed(2)}\n` +
+          `Saldo: $${factura.estado_pago === "Pagada" ? "0.00" : ((factura.saldo_pendiente != null ? factura.saldo_pendiente : (factura.total || 0) - (factura.monto_pagado || 0))).toFixed(2)}\n\n` +
+          `Estado: ${factura.estado_pago}\n\n` +
+          `¡Gracias por preferirnos!\n\nPROAUTO Taller SV\n8 Av Sur Entre 27 y 29 Calle Pte, Santa Ana\nTel: 6866-0952 / 2406-8129`,
+      });
+      toast({
+        title: "Correo enviado",
+        description: `El recibo se envió a ${correo}`,
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error al enviar",
+        description: error.message || "No se pudo enviar el correo.",
+      });
+    } finally {
+      setEnviandoCorreo(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -59,6 +114,19 @@ export default function FacturaDetalle({ factura }) {
               >
                 <Printer className="w-4 h-4" />
                 Imprimir Recibo
+              </Button>
+              <Button
+                onClick={handleEnviarCorreo}
+                disabled={enviandoCorreo}
+                className="bg-white text-blue-600 hover:bg-blue-50 gap-2"
+                size="sm"
+              >
+                {enviandoCorreo ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Mail className="w-4 h-4" />
+                )}
+                {enviandoCorreo ? "Enviando..." : "Enviar Correo"}
               </Button>
               <Badge className={`
                 ${factura.estado_pago === 'Pagada' ? 'bg-green-500' : 
