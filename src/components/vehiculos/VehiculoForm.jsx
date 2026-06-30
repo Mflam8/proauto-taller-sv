@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Save, X } from "lucide-react";
+import ClienteCombobox from "@/components/clientes/ClienteCombobox";
 
 export default function VehiculoForm({ vehiculo, onClose }) {
   const [formData, setFormData] = useState(vehiculo || {
@@ -66,22 +67,12 @@ export default function VehiculoForm({ vehiculo, onClose }) {
           <Label htmlFor="cliente_id" className="text-sm font-semibold text-gray-700">
             Cliente *
           </Label>
-          <Select
+          <ClienteCombobox
+            clientes={clientes}
             value={formData.cliente_id}
-            onValueChange={(value) => handleChange('cliente_id', value)}
-            required
-          >
-            <SelectTrigger className="h-11 border-gray-300 focus:border-[#E31E24]">
-              <SelectValue placeholder="Selecciona un cliente" />
-            </SelectTrigger>
-            <SelectContent>
-              {clientes.map(cliente => (
-                <SelectItem key={cliente.id} value={cliente.id}>
-                  {cliente.nombre_completo}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            onChange={(value) => handleChange('cliente_id', value)}
+            placeholder="Buscar cliente por nombre..."
+          />
         </div>
 
         <div className="space-y-2">
