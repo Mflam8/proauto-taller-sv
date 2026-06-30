@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { Save, Receipt, User, Car, Trash2, Plus } from "lucide-react";
 
 const IVA_RATE = 0.13;
@@ -29,6 +30,7 @@ export default function GenerarFacturaForm({ expediente, cliente, vehiculo, onSu
 
   const [items, setItems] = useState(null); // null = not yet initialized
   const [formaPago, setFormaPago] = useState("Contado");
+  const [aplicaIva, setAplicaIva] = useState(true);
   const [numeroFactura, setNumeroFactura] = useState("");
   const [newItem, setNewItem] = useState({ descripcion: "", cantidad: 1, precio_unitario: 0 });
 
@@ -36,8 +38,8 @@ export default function GenerarFacturaForm({ expediente, cliente, vehiculo, onSu
   const displayItems = items ?? initialItems;
 
   const importeBruto = displayItems.reduce((sum, item) => sum + (item.subtotal || item.cantidad * item.precio_unitario), 0);
-  const importeNeto = importeBruto; // In this case, same as bruto
-  const iva = Math.round(importeNeto * IVA_RATE * 100) / 100;
+  const importeNeto = importeBruto;
+  const iva = aplicaIva ? Math.round(importeNeto * IVA_RATE * 100) / 100 : 0;
   const totalFactura = Math.round((importeNeto + iva) * 100) / 100;
 
   const handleRemoveItem = (index) => {
@@ -62,6 +64,7 @@ export default function GenerarFacturaForm({ expediente, cliente, vehiculo, onSu
         cliente_id: expediente.cliente_id,
         vehiculo_id: expediente.vehiculo_id,
         forma_pago: formaPago,
+        aplica_iva: aplicaIva,
         items: displayItems,
         subtotal: importeBruto,
         importe_neto: importeNeto,
@@ -205,8 +208,18 @@ export default function GenerarFacturaForm({ expediente, cliente, vehiculo, onSu
           <span className="text-gray-300">Importe Neto</span>
           <span className="font-medium">${importeNeto.toFixed(2)}</span>
         </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-300">IVA (13%)</span>
+        <div className="flex justify-between items-center text-sm">
+          <div className="flex items-center gap-3">
+            <span className="text-gray-300">IVA (13%)</span>
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={aplicaIva}
+                onCheckedChange={setAplicaIva}
+                className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-gray-600"
+              />
+              <span className="text-xs text-gray-400">{aplicaIva ? "Aplica" : "No aplica"}</span>
+            </div>
+          </div>
           <span className="font-medium">${iva.toFixed(2)}</span>
         </div>
         <div className="border-t border-gray-700 pt-2 mt-2 flex justify-between text-lg">

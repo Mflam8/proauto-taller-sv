@@ -32,6 +32,11 @@
       "default": "Contado",
       "description": "Forma de pago general"
     },
+    "aplica_iva": {
+      "type": "boolean",
+      "default": true,
+      "description": "Si la factura aplica IVA (13%)"
+    },
     "items": {
       "type": "array",
       "items": {
