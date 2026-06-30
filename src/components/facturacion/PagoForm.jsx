@@ -40,23 +40,37 @@ export default function PagoForm({ factura, onClose }) {
   const createPagoMutation = useMutation({
     mutationFn: async (data) => {
       const pago = await base44.entities.Pago.create(data);
-      
+
       const nuevoMontoPagado = (factura.monto_pagado || 0) + data.monto;
       const nuevoSaldo = factura.total - nuevoMontoPagado;
       const nuevoEstado = nuevoSaldo <= 0.01 ? 'Pagada' : nuevoSaldo < factura.total ? 'Parcial' : 'Pendiente';
-      
+
       await base44.entities.Factura.update(factura.id, {
         monto_pagado: nuevoMontoPagado,
         saldo_pendiente: nuevoSaldo,
         estado_pago: nuevoEstado
       });
-      
+
+      // Sincronizar el expediente asociado (si existe)
+      if (factura.expediente_id) {
+        const facturasExp = await base44.entities.Factura.filter({ expediente_id: factura.expediente_id });
+        const totalCobrado = facturasExp.reduce((sum, f) => sum + (f.total || 0), 0);
+        const totalPagado = facturasExp.reduce((sum, f) => sum + (f.monto_pagado || 0), 0);
+        const saldoExp = Math.max(0, totalCobrado - totalPagado);
+        await base44.entities.Expediente.update(factura.expediente_id, {
+          total_cobrado: totalCobrado,
+          total_pagado: totalPagado,
+          saldo_pendiente: saldoExp
+        });
+      }
+
       return pago;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['facturas'] });
       queryClient.invalidateQueries({ queryKey: ['pagos'] });
       queryClient.invalidateQueries({ queryKey: ['pagos-factura', factura.id] });
+      queryClient.invalidateQueries({ queryKey: ['expedientes'] });
       onClose();
     },
   });
