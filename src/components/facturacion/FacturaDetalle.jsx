@@ -3,7 +3,9 @@ import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Receipt, User, Car, Calendar, CreditCard, DollarSign } from "lucide-react";
+import { Receipt, User, Car, Calendar, CreditCard, DollarSign, Printer } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import ReciboPrint from "@/components/facturacion/ReciboPrint";
 
 export default function FacturaDetalle({ factura }) {
   const { data: cliente } = useQuery({
@@ -27,6 +29,8 @@ export default function FacturaDetalle({ factura }) {
   const saldoCalculado = factura.saldo_pendiente != null ? factura.saldo_pendiente : (factura.total || 0) - (factura.monto_pagado || 0);
   const saldoPendiente = factura.estado_pago === 'Pagada' ? 0 : saldoCalculado;
 
+  const handlePrintRecibo = ReciboPrint({ factura, cliente, vehiculo });
+
   return (
     <div className="space-y-6">
       {/* Encabezado */}
@@ -47,13 +51,23 @@ export default function FacturaDetalle({ factura }) {
                 )}
               </div>
             </div>
-            <Badge className={`
-              ${factura.estado_pago === 'Pagada' ? 'bg-green-500' : 
-                factura.estado_pago === 'Parcial' ? 'bg-yellow-500' : 'bg-red-500'} 
-              text-white border-0 text-lg px-4 py-2
-            `}>
-              {factura.estado_pago}
-            </Badge>
+            <div className="flex items-center gap-3">
+              <Button
+                onClick={handlePrintRecibo}
+                className="bg-white text-[#E31E24] hover:bg-gray-100 gap-2"
+                size="sm"
+              >
+                <Printer className="w-4 h-4" />
+                Imprimir Recibo
+              </Button>
+              <Badge className={`
+                ${factura.estado_pago === 'Pagada' ? 'bg-green-500' : 
+                  factura.estado_pago === 'Parcial' ? 'bg-yellow-500' : 'bg-red-500'} 
+                text-white border-0 text-lg px-4 py-2
+              `}>
+                {factura.estado_pago}
+              </Badge>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="p-6">
