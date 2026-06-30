@@ -1,163 +1,173 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { BarChart3, DollarSign, TrendingUp, TrendingDown, Calendar, FileText, Users, Car, Wrench } from "lucide-react";
+import { BarChart3, DollarSign, TrendingUp, TrendingDown, Calendar, FileText, Users, Car, Wrench, Truck } from "lucide-react";
 import { motion } from "framer-motion";
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+
+const PERIODO_LABELS = {
+  semana: "Última Semana",
+  mes: "Último Mes",
+  trimestre: "Último Trimestre",
+  anio: "Último Año",
+};
+
+const COLORS = ['#E31E24', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899'];
 
 export default function Reportes() {
-  const [periodoFacturas, setPeriodoFacturas] = useState("mes");
-  const [periodoOrdenes, setPeriodoOrdenes] = useState("mes");
+  const [periodo, setPeriodo] = useState("mes");
 
   const { data: facturas = [] } = useQuery({
     queryKey: ['facturas'],
     queryFn: () => base44.entities.Factura.list('-fecha_emision'),
     initialData: [],
   });
-
   const { data: ordenes = [] } = useQuery({
     queryKey: ['ordenes'],
     queryFn: () => base44.entities.OrdenTrabajo.list('-created_date'),
     initialData: [],
   });
-
   const { data: clientes = [] } = useQuery({
     queryKey: ['clientes'],
     queryFn: () => base44.entities.Cliente.list(),
     initialData: [],
   });
-
   const { data: vehiculos = [] } = useQuery({
     queryKey: ['vehiculos'],
     queryFn: () => base44.entities.Vehiculo.list(),
     initialData: [],
   });
-
   const { data: pagos = [] } = useQuery({
     queryKey: ['pagos'],
     queryFn: () => base44.entities.Pago.list('-created_date'),
     initialData: [],
   });
-
-  const { data: inventario = [] } = useQuery({
-    queryKey: ['inventario'],
-    queryFn: () => base44.entities.ItemInventario.list(),
-    initialData: [],
-  });
-
   const { data: trabajos = [] } = useQuery({
     queryKey: ['trabajos-reportes'],
     queryFn: () => base44.entities.TrabajoExpediente.list(),
     initialData: [],
   });
+  const { data: cajaChica = [] } = useQuery({
+    queryKey: ['cajaChica-reportes'],
+    queryFn: () => base44.entities.CajaChica.list('-created_date'),
+    initialData: [],
+  });
 
-  // Filtrar por periodo
-  const filtrarPorPeriodo = (items, periodo, dateField = 'created_date') => {
+  // === RANGO DEL PERIODO SELECCIONADO ===
+  const { inicio, fin } = useMemo(() => {
     const ahora = new Date();
-    const inicio = new Date();
-    
-    if (periodo === 'semana') {
-      inicio.setDate(ahora.getDate() - 7);
-    } else if (periodo === 'mes') {
-      inicio.setMonth(ahora.getMonth() - 1);
-    } else if (periodo === 'trimestre') {
-      inicio.setMonth(ahora.getMonth() - 3);
-    } else if (periodo === 'anio') {
-      inicio.setFullYear(ahora.getFullYear() - 1);
-    }
+    const ini = new Date();
+    if (periodo === 'semana') ini.setDate(ahora.getDate() - 7);
+    else if (periodo === 'mes') ini.setMonth(ahora.getMonth() - 1);
+    else if (periodo === 'trimestre') ini.setMonth(ahora.getMonth() - 3);
+    else ini.setFullYear(ahora.getFullYear() - 1);
+    ini.setHours(0, 0, 0, 0);
+    return { inicio: ini, fin: ahora };
+  }, [periodo]);
 
-    return items.filter(item => {
-      const fecha = item[dateField] || item.created_date;
-      return new Date(fecha) >= inicio;
-    });
+  const enPeriodo = (item, dateField) => {
+    const fecha = new Date(item[dateField] || item.created_date);
+    return fecha >= inicio && fecha <= fin;
   };
 
-  const facturasFiltradasPeriodo = filtrarPorPeriodo(facturas, periodoFacturas, 'fecha_emision');
-  const ordenesFiltradasPeriodo = filtrarPorPeriodo(ordenes, periodoOrdenes);
+  // === DATOS FILTRADOS POR PERIODO ===
+  const facturasPeriodo = facturas.filter(f => enPeriodo(f, 'fecha_emision'));
+  const ordenesPeriodo = ordenes.filter(o => enPeriodo(o, 'created_date'));
+  const pagosPeriodo = pagos.filter(p => enPeriodo(p, 'fecha_pago'));
+  const clientesPeriodo = clientes.filter(c => enPeriodo(c, 'created_date'));
+  const trabajosPeriodo = trabajos.filter(t => enPeriodo(t, 'created_date'));
+  const cajaPeriodo = cajaChica.filter(c => enPeriodo(c, 'fecha'));
 
-  // Métricas Financieras
-  const totalFacturado = facturas.reduce((sum, f) => sum + (f.total || 0), 0);
-  const totalCobrado = pagos.reduce((sum, p) => sum + (p.monto || 0), 0);
-  const facturasConDeuda = facturas.filter(f => (f.saldo_pendiente || 0) > 0 && f.estado_pago !== 'Pagada');
+  // === MÉTRICAS PRINCIPALES (periodo) ===
+  const totalFacturado = facturasPeriodo.reduce((sum, f) => sum + (f.total || 0), 0);
+  const totalCobrado = pagosPeriodo.reduce((sum, p) => sum + (p.monto || 0), 0);
+  const facturasConDeuda = facturasPeriodo.filter(f => (f.saldo_pendiente || 0) > 0 && f.estado_pago !== 'Pagada');
   const pendienteCobro = facturasConDeuda.reduce((sum, f) => sum + (f.saldo_pendiente || 0), 0);
-  const promedioFactura = facturas.length > 0 ? totalFacturado / facturas.length : 0;
+  const promedioFactura = facturasPeriodo.length > 0 ? totalFacturado / facturasPeriodo.length : 0;
 
-  // Facturación por periodo
-  const facturacionPeriodo = facturasFiltradasPeriodo.reduce((sum, f) => sum + (f.total || 0), 0);
-  const facturasPendientes = facturasConDeuda.length;
+  const ordenesActivas = ordenesPeriodo.filter(o => !['Completado', 'Entregado'].includes(o.estado)).length;
+  const ordenesCompletadas = ordenesPeriodo.filter(o => ['Completado', 'Entregado'].includes(o.estado)).length;
+  const tasaCompletado = ordenesPeriodo.length > 0 ? (ordenesCompletadas / ordenesPeriodo.length * 100).toFixed(1) : 0;
 
-  // Métricas Operativas
-  const ordenesActivas = ordenes.filter(o => !['Completado', 'Entregado'].includes(o.estado)).length;
-  const ordenesCompletadas = ordenes.filter(o => o.estado === 'Completado' || o.estado === 'Entregado').length;
-  const tasaCompletado = ordenes.length > 0 ? (ordenesCompletadas / ordenes.length * 100).toFixed(1) : 0;
+  // === BUCKETS DINÁMICOS (granularidad según periodo) ===
+  const buckets = useMemo(() => {
+    const result = [];
+    if (periodo === 'semana') {
+      // Diario: 7 días
+      const cursor = new Date(inicio);
+      while (cursor <= fin) {
+        const bFin = new Date(cursor); bFin.setHours(23, 59, 59, 999);
+        result.push({ label: cursor.toLocaleDateString('es', { day: '2-digit', month: '2-digit' }), inicio: new Date(cursor), fin: bFin });
+        cursor.setDate(cursor.getDate() + 1);
+      }
+    } else if (periodo === 'mes' || periodo === 'trimestre') {
+      // Semanal
+      const cursor = new Date(inicio);
+      while (cursor <= fin) {
+        const bFin = new Date(cursor); bFin.setDate(bFin.getDate() + 6); bFin.setHours(23, 59, 59, 999);
+        const clamped = bFin > fin ? new Date(fin) : bFin;
+        result.push({ label: `${cursor.getDate()}/${cursor.getMonth() + 1}`, inicio: new Date(cursor), fin: clamped });
+        cursor.setDate(cursor.getDate() + 7);
+      }
+    } else {
+      // Mensual: 12 meses
+      for (let i = 11; i >= 0; i--) {
+        const mes = new Date(); mes.setDate(1); mes.setHours(0, 0, 0, 0); mes.setMonth(mes.getMonth() - i);
+        const mesFin = new Date(mes); mesFin.setMonth(mesFin.getMonth() + 1);
+        result.push({ label: mes.toLocaleDateString('es', { month: 'short' }), inicio: mes, fin: mesFin });
+      }
+    }
+    return result;
+  }, [periodo, inicio, fin]);
 
-  // Datos para gráficas
-  const facturacionMensual = Array.from({ length: 6 }, (_, i) => {
-    const mes = new Date();
-    mes.setMonth(mes.getMonth() - (5 - i));
-    const mesNombre = mes.toLocaleDateString('es', { month: 'short' });
-    const facturasMes = facturas.filter(f => {
-      const fechaFactura = new Date(f.fecha_emision || f.created_date);
-      return fechaFactura.getMonth() === mes.getMonth() && fechaFactura.getFullYear() === mes.getFullYear();
+  const enBucket = (item, bucket, dateField) => {
+    const fecha = new Date(item[dateField] || item.created_date);
+    return fecha >= bucket.inicio && fecha <= bucket.fin;
+  };
+
+  // Gráfico principal: facturación por bucket
+  const chartFacturacion = buckets.map(b => ({
+    label: b.label,
+    monto: facturas.filter(f => enBucket(f, b, 'fecha_emision')).reduce((s, f) => s + (f.total || 0), 0),
+  }));
+
+  // Clientes nuevos por bucket
+  const clientesNuevosData = buckets.map(b => ({
+    label: b.label,
+    clientes: clientes.filter(c => enBucket(c, b, 'created_date')).length,
+  }));
+
+  // === REPUESTOS POR PROVEEDOR (mensual, últimos 6 meses) ===
+  const repuestosPorProveedor = useMemo(() => {
+    const gastosRep = cajaChica.filter(c => c.tipo === 'Gasto' && c.categoria === 'Repuesto');
+    const provTotals = {};
+    gastosRep.forEach(g => {
+      const prov = g.proveedor || 'Sin proveedor';
+      provTotals[prov] = (provTotals[prov] || 0) + (g.monto || 0);
     });
-    return {
-      mes: mesNombre,
-      monto: facturasMes.reduce((sum, f) => sum + (f.total || 0), 0)
-    };
-  });
+    const topProvs = Object.entries(provTotals).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([p]) => p);
+    const monthsData = Array.from({ length: 6 }, (_, i) => {
+      const mes = new Date(); mes.setDate(1); mes.setHours(0, 0, 0, 0); mes.setMonth(mes.getMonth() - (5 - i));
+      const mesFin = new Date(mes); mesFin.setMonth(mesFin.getMonth() + 1);
+      const row = { mes: mes.toLocaleDateString('es', { month: 'short' }) };
+      topProvs.forEach(p => {
+        row[p] = gastosRep.filter(g => {
+          const f = new Date(g.fecha || g.created_date);
+          return f >= mes && f < mesFin && (g.proveedor || 'Sin proveedor') === p;
+        }).reduce((s, g) => s + (g.monto || 0), 0);
+      });
+      return row;
+    });
+    return { monthsData, topProvs };
+  }, [cajaChica]);
 
-  // === MÉTRICAS OPERATIVAS ===
+  // === MANO DE OBRA VS REPUESTOS (periodo) ===
   const clienteMap = Object.fromEntries(clientes.map(c => [c.id, c]));
-
-  // Ventas por semana (últimas 8 semanas)
-  const ventasPorSemana = Array.from({ length: 8 }, (_, i) => {
-    const fin = new Date();
-    fin.setDate(fin.getDate() - (7 - i - 1) * 7);
-    fin.setHours(23, 59, 59, 999);
-    const inicio = new Date(fin);
-    inicio.setDate(inicio.getDate() - 6);
-    inicio.setHours(0, 0, 0, 0);
-    const monto = facturas.filter(f => {
-      const fecha = new Date(f.fecha_emision || f.created_date);
-      return fecha >= inicio && fecha <= fin;
-    }).reduce((sum, f) => sum + (f.total || 0), 0);
-    return { semana: `${inicio.getDate()}/${inicio.getMonth() + 1} - ${fin.getDate()}/${fin.getMonth() + 1}`, monto };
-  });
-
-  // Ventas por día (últimos 14 días)
-  const ventasPorDia = Array.from({ length: 14 }, (_, i) => {
-    const dia = new Date();
-    dia.setDate(dia.getDate() - (13 - i));
-    dia.setHours(0, 0, 0, 0);
-    const diaFin = new Date(dia);
-    diaFin.setHours(23, 59, 59, 999);
-    const monto = facturas.filter(f => {
-      const fecha = new Date(f.fecha_emision || f.created_date);
-      return fecha >= dia && fecha <= diaFin;
-    }).reduce((sum, f) => sum + (f.total || 0), 0);
-    return { dia: dia.toLocaleDateString('es', { day: '2-digit', month: '2-digit' }), monto };
-  });
-
-  // Top clientes por facturación
-  const gastoPorCliente = {};
-  facturas.forEach(f => {
-    if (f.cliente_id) gastoPorCliente[f.cliente_id] = (gastoPorCliente[f.cliente_id] || 0) + (f.total || 0);
-  });
-  const topClientes = Object.entries(gastoPorCliente)
-    .map(([id, total]) => ({
-      nombre: clienteMap[id]?.nombre_completo || 'N/A',
-      total,
-      facturas: facturas.filter(f => f.cliente_id === id).length,
-    }))
-    .sort((a, b) => b.total - a.total)
-    .slice(0, 8);
-
-  // Ventas por tipo de trabajo (mano de obra vs repuestos)
   const ventasPorTipo = {};
-  trabajos.forEach(t => {
+  trabajosPeriodo.forEach(t => {
     const tipo = t.tipo || 'Otro';
     ventasPorTipo[tipo] = (ventasPorTipo[tipo] || 0) + (t.subtotal || (t.cantidad || 1) * (t.precio_unitario || 0));
   });
@@ -168,14 +178,27 @@ export default function Reportes() {
     { name: 'Diagnóstico', value: ventasPorTipo['Diagnóstico'] || 0, color: '#8B5CF6' },
     { name: 'Otros', value: ventasPorTipo['Otro'] || 0, color: '#6B7280' },
   ].filter(i => i.value > 0);
-
   const montoManoObra = ventasPorTipo['Mano de Obra'] || 0;
   const montoRepuestos = ventasPorTipo['Repuesto'] || 0;
-  const piezasCompradas = trabajos.filter(t => t.tipo === 'Repuesto').length;
+  const piezasCompradas = trabajosPeriodo.filter(t => t.tipo === 'Repuesto').length;
 
-  // Qué se vende más (top trabajos por frecuencia)
+  // === TOP CLIENTES (periodo) ===
+  const gastoPorCliente = {};
+  facturasPeriodo.forEach(f => {
+    if (f.cliente_id) gastoPorCliente[f.cliente_id] = (gastoPorCliente[f.cliente_id] || 0) + (f.total || 0);
+  });
+  const topClientes = Object.entries(gastoPorCliente)
+    .map(([id, total]) => ({
+      nombre: clienteMap[id]?.nombre_completo || 'N/A',
+      total,
+      facturas: facturasPeriodo.filter(f => f.cliente_id === id).length,
+    }))
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 8);
+
+  // === TOP TRABAJOS (periodo) ===
   const trabajosCount = {};
-  trabajos.forEach(t => {
+  trabajosPeriodo.forEach(t => {
     const desc = t.descripcion || 'Sin descripción';
     if (!trabajosCount[desc]) trabajosCount[desc] = { count: 0, monto: 0 };
     trabajosCount[desc].count++;
@@ -186,38 +209,48 @@ export default function Reportes() {
     .sort((a, b) => b.count - a.count)
     .slice(0, 10);
 
+  // === ESTADOS (periodo) ===
   const estadosOrdenes = [
-    { name: 'Completado', value: ordenes.filter(o => o.estado === 'Completado').length, color: '#10B981' },
-    { name: 'En Reparación', value: ordenes.filter(o => o.estado === 'En Reparación').length, color: '#F59E0B' },
-    { name: 'Diagnóstico', value: ordenes.filter(o => o.estado === 'En Diagnóstico').length, color: '#3B82F6' },
-    { name: 'Esperando', value: ordenes.filter(o => o.estado === 'Esperando Repuestos').length, color: '#EF4444' },
-    { name: 'Otros', value: ordenes.filter(o => !['Completado', 'En Reparación', 'En Diagnóstico', 'Esperando Repuestos'].includes(o.estado)).length, color: '#6B7280' }
+    { name: 'Completado', value: ordenesPeriodo.filter(o => o.estado === 'Completado').length, color: '#10B981' },
+    { name: 'En Reparación', value: ordenesPeriodo.filter(o => o.estado === 'En Reparación').length, color: '#F59E0B' },
+    { name: 'Diagnóstico', value: ordenesPeriodo.filter(o => o.estado === 'En Diagnóstico').length, color: '#3B82F6' },
+    { name: 'Esperando', value: ordenesPeriodo.filter(o => o.estado === 'Esperando Repuestos').length, color: '#EF4444' },
+    { name: 'Otros', value: ordenesPeriodo.filter(o => !['Completado', 'En Reparación', 'En Diagnóstico', 'Esperando Repuestos'].includes(o.estado)).length, color: '#6B7280' },
   ].filter(item => item.value > 0);
 
   const estadosFacturas = [
-    { name: 'Pagada', value: facturas.filter(f => f.estado_pago === 'Pagada').length, color: '#10B981' },
-    { name: 'Pendiente', value: facturas.filter(f => f.estado_pago === 'Pendiente').length, color: '#EF4444' },
-    { name: 'Parcial', value: facturas.filter(f => f.estado_pago === 'Parcial').length, color: '#F59E0B' }
+    { name: 'Pagada', value: facturasPeriodo.filter(f => f.estado_pago === 'Pagada').length, color: '#10B981' },
+    { name: 'Pendiente', value: facturasPeriodo.filter(f => f.estado_pago === 'Pendiente').length, color: '#EF4444' },
+    { name: 'Parcial', value: facturasPeriodo.filter(f => f.estado_pago === 'Parcial').length, color: '#F59E0B' },
   ].filter(item => item.value > 0);
 
-  const COLORS = ['#E31E24', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899'];
+  const chartTitle = periodo === 'semana' ? 'Facturación Diaria' : (periodo === 'anio' ? 'Facturación Mensual' : 'Facturación Semanal');
+  const chartSubtitle = periodo === 'semana' ? 'Por día' : (periodo === 'anio' ? 'Por mes (12 meses)' : 'Por semana');
 
   return (
     <div className="min-h-screen bg-[#F5F5F5] p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-3"
-        >
+        {/* Header con selector global */}
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-wrap items-center gap-3">
           <div className="p-3 bg-gradient-to-br from-[#E31E24] to-[#B71C1C] rounded-xl shadow-lg">
             <BarChart3 className="w-8 h-8 text-white" />
           </div>
-          <div>
+          <div className="flex-1">
             <h1 className="text-3xl font-bold text-gray-900">Reportes y Análisis</h1>
-            <p className="text-gray-600">Métricas financieras y operativas del taller</p>
+            <p className="text-gray-600">Métricas financieras y operativas · {PERIODO_LABELS[periodo]}</p>
           </div>
+          <Select value={periodo} onValueChange={setPeriodo}>
+            <SelectTrigger className="w-40">
+              <Calendar className="w-4 h-4 mr-2" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="semana">Semana</SelectItem>
+              <SelectItem value="mes">Mes</SelectItem>
+              <SelectItem value="trimestre">Trimestre</SelectItem>
+              <SelectItem value="anio">Año</SelectItem>
+            </SelectContent>
+          </Select>
         </motion.div>
 
         {/* Métricas Principales */}
@@ -231,7 +264,7 @@ export default function Reportes() {
                 </div>
                 <p className="text-sm opacity-90 mb-1">Facturación Total</p>
                 <p className="text-3xl font-bold">${totalFacturado.toFixed(2)}</p>
-                <p className="text-xs opacity-80 mt-2">{facturas.length} facturas emitidas</p>
+                <p className="text-xs opacity-80 mt-2">{facturasPeriodo.length} facturas emitidas</p>
               </CardContent>
             </Card>
           </motion.div>
@@ -245,7 +278,7 @@ export default function Reportes() {
                 </div>
                 <p className="text-sm opacity-90 mb-1">Total Cobrado</p>
                 <p className="text-3xl font-bold">${totalCobrado.toFixed(2)}</p>
-                <p className="text-xs opacity-80 mt-2">{pagos.length} pagos recibidos</p>
+                <p className="text-xs opacity-80 mt-2">{pagosPeriodo.length} pagos recibidos</p>
               </CardContent>
             </Card>
           </motion.div>
@@ -259,7 +292,7 @@ export default function Reportes() {
                 </div>
                 <p className="text-sm opacity-90 mb-1">Pendiente de Cobro</p>
                 <p className="text-3xl font-bold">${pendienteCobro.toFixed(2)}</p>
-                <p className="text-xs opacity-80 mt-2">{facturasPendientes} facturas pendientes</p>
+                <p className="text-xs opacity-80 mt-2">{facturasConDeuda.length} facturas pendientes</p>
               </CardContent>
             </Card>
           </motion.div>
@@ -279,31 +312,20 @@ export default function Reportes() {
           </motion.div>
         </div>
 
-        {/* Gráficas Principales */}
+        {/* Gráfico Principal Dinámico + Estado de Órdenes */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Facturación Mensual */}
           <Card className="border-0 shadow-lg">
             <CardHeader className="border-b">
-              <div className="flex items-center justify-between">
-                <CardTitle>Facturación Últimos 6 Meses</CardTitle>
-                <Select value={periodoFacturas} onValueChange={setPeriodoFacturas}>
-                  <SelectTrigger className="w-32">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="semana">Semana</SelectItem>
-                    <SelectItem value="mes">Mes</SelectItem>
-                    <SelectItem value="trimestre">Trimestre</SelectItem>
-                    <SelectItem value="anio">Año</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <CardTitle className="flex items-center justify-between">
+                <span>{chartTitle}</span>
+                <Badge variant="secondary">{chartSubtitle}</Badge>
+              </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={facturacionMensual}>
+                <BarChart data={chartFacturacion}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="mes" />
+                  <XAxis dataKey="label" />
                   <YAxis />
                   <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
                   <Bar dataKey="monto" fill="#E31E24" radius={[8, 8, 0, 0]} />
@@ -312,31 +334,27 @@ export default function Reportes() {
             </CardContent>
           </Card>
 
-          {/* Estado de Órdenes */}
           <Card className="border-0 shadow-lg">
             <CardHeader className="border-b">
               <CardTitle>Estado de Órdenes de Trabajo</CardTitle>
             </CardHeader>
             <CardContent className="p-6">
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={estadosOrdenes}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {estadosOrdenes.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
+              {estadosOrdenes.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie data={estadosOrdenes} cx="50%" cy="50%" labelLine={false}
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={100} dataKey="value">
+                      {estadosOrdenes.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <p className="text-center text-gray-400 py-12">Sin órdenes en este periodo</p>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -373,37 +391,44 @@ export default function Reportes() {
           </Card>
         </div>
 
-        {/* Ventas por semana y por día */}
+        {/* Repuestos por Proveedor (mensual) + Clientes Nuevos */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card className="border-0 shadow-lg">
             <CardHeader className="border-b">
-              <CardTitle className="flex items-center gap-2"><TrendingUp className="w-5 h-5 text-[#E31E24]" /> Ventas por Semana (8 semanas)</CardTitle>
+              <CardTitle className="flex items-center gap-2"><Truck className="w-5 h-5 text-[#E31E24]" /> Repuestos por Proveedor (mensual)</CardTitle>
             </CardHeader>
             <CardContent className="p-6">
-              <ResponsiveContainer width="100%" height={280}>
-                <LineChart data={ventasPorSemana}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="semana" />
-                  <YAxis />
-                  <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
-                  <Line type="monotone" dataKey="monto" stroke="#E31E24" strokeWidth={3} dot={{ r: 4 }} />
-                </LineChart>
-              </ResponsiveContainer>
+              {repuestosPorProveedor.topProvs.length > 0 ? (
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={repuestosPorProveedor.monthsData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="mes" />
+                    <YAxis />
+                    <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
+                    <Legend />
+                    {repuestosPorProveedor.topProvs.map((p, i) => (
+                      <Bar key={p} dataKey={p} stack="a" fill={COLORS[i % COLORS.length]} radius={[4, 4, 0, 0]} />
+                    ))}
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <p className="text-center text-gray-400 py-12">Sin gastos de repuestos registrados</p>
+              )}
             </CardContent>
           </Card>
 
           <Card className="border-0 shadow-lg">
             <CardHeader className="border-b">
-              <CardTitle className="flex items-center gap-2"><Calendar className="w-5 h-5 text-blue-600" /> Ventas por Día (14 días)</CardTitle>
+              <CardTitle className="flex items-center gap-2"><Users className="w-5 h-5 text-blue-600" /> Clientes Nuevos ({chartSubtitle})</CardTitle>
             </CardHeader>
             <CardContent className="p-6">
               <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={ventasPorDia}>
+                <BarChart data={clientesNuevosData}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="dia" />
-                  <YAxis />
-                  <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
-                  <Bar dataKey="monto" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+                  <XAxis dataKey="label" />
+                  <YAxis allowDecimals={false} />
+                  <Tooltip />
+                  <Bar dataKey="clientes" fill="#3B82F6" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -421,7 +446,7 @@ export default function Reportes() {
                 <ResponsiveContainer width="100%" height={280}>
                   <PieChart>
                     <Pie data={manoObraVsRepuestos} cx="50%" cy="50%" labelLine={false}
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      label={({ name, value, percent }) => `${name}: $${value.toFixed(0)} (${(percent * 100).toFixed(0)}%)`}
                       outerRadius={100} dataKey="value">
                       {manoObraVsRepuestos.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
@@ -431,14 +456,14 @@ export default function Reportes() {
                   </PieChart>
                 </ResponsiveContainer>
               ) : (
-                <p className="text-center text-gray-400 py-12">Sin trabajos registrados</p>
+                <p className="text-center text-gray-400 py-12">Sin trabajos registrados en este periodo</p>
               )}
             </CardContent>
           </Card>
 
           <Card className="border-0 shadow-lg">
             <CardHeader className="border-b">
-              <CardTitle className="flex items-center gap-2"><Users className="w-5 h-5 text-blue-600" /> Top Clientes</CardTitle>
+              <CardTitle className="flex items-center gap-2"><Users className="w-5 h-5 text-blue-600" /> Top Clientes ({PERIODO_LABELS[periodo]})</CardTitle>
             </CardHeader>
             <CardContent className="p-6">
               {topClientes.length > 0 ? (
@@ -457,7 +482,7 @@ export default function Reportes() {
                   ))}
                 </div>
               ) : (
-                <p className="text-center text-gray-400 py-12">Sin clientes con facturas</p>
+                <p className="text-center text-gray-400 py-12">Sin clientes con facturas en este periodo</p>
               )}
             </CardContent>
           </Card>
@@ -466,7 +491,7 @@ export default function Reportes() {
         {/* Qué se vende más */}
         <Card className="border-0 shadow-lg">
           <CardHeader className="border-b">
-            <CardTitle className="flex items-center gap-2"><BarChart3 className="w-5 h-5 text-[#E31E24]" /> Qué se vende más (top 10)</CardTitle>
+            <CardTitle className="flex items-center gap-2"><BarChart3 className="w-5 h-5 text-[#E31E24]" /> Qué se vende más ({PERIODO_LABELS[periodo]})</CardTitle>
           </CardHeader>
           <CardContent className="p-6">
             {topTrabajos.length > 0 ? (
@@ -495,7 +520,7 @@ export default function Reportes() {
                 </table>
               </div>
             ) : (
-              <p className="text-center text-gray-400 py-12">Sin trabajos registrados</p>
+              <p className="text-center text-gray-400 py-12">Sin trabajos registrados en este periodo</p>
             )}
           </CardContent>
         </Card>
@@ -512,8 +537,12 @@ export default function Reportes() {
             <CardContent className="p-6">
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Total Clientes</span>
-                  <span className="font-bold text-xl">{clientes.length}</span>
+                  <span className="text-gray-600">Nuevos en el periodo</span>
+                  <span className="font-bold text-xl">{clientesPeriodo.length}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Total registrados</span>
+                  <span className="font-semibold text-gray-900">{clientes.length}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Promedio Factura</span>
@@ -569,28 +598,27 @@ export default function Reportes() {
         {/* Estado de Facturas */}
         <Card className="border-0 shadow-lg">
           <CardHeader className="border-b">
-            <CardTitle>Estado de Facturas</CardTitle>
+            <CardTitle>Estado de Facturas ({PERIODO_LABELS[periodo]})</CardTitle>
           </CardHeader>
           <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {estadosFacturas.map((estado, index) => (
-                <div key={index} className="p-6 bg-gray-50 rounded-xl">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-gray-700 font-medium">{estado.name}</span>
-                    <div 
-                      className="w-4 h-4 rounded-full" 
-                      style={{ backgroundColor: estado.color }}
-                    ></div>
+            {estadosFacturas.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {estadosFacturas.map((estado, index) => (
+                  <div key={index} className="p-6 bg-gray-50 rounded-xl">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-gray-700 font-medium">{estado.name}</span>
+                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: estado.color }}></div>
+                    </div>
+                    <p className="text-3xl font-bold" style={{ color: estado.color }}>{estado.value}</p>
+                    <p className="text-sm text-gray-600 mt-2">
+                      {facturasPeriodo.length > 0 ? ((estado.value / facturasPeriodo.length) * 100).toFixed(1) : 0}% del total
+                    </p>
                   </div>
-                  <p className="text-3xl font-bold" style={{ color: estado.color }}>
-                    {estado.value}
-                  </p>
-                  <p className="text-sm text-gray-600 mt-2">
-                    {((estado.value / facturas.length) * 100).toFixed(1)}% del total
-                  </p>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-gray-400 py-12">Sin facturas en este periodo</p>
+            )}
           </CardContent>
         </Card>
       </div>
