@@ -1,28 +1,32 @@
 import React from "react";
 
+const LOGO_URL = "https://media.base44.com/images/public/691be028b7c98b3edbc7aec7/a93f61a60_generated_image.png";
+
 /**
- * ReciboPrint — genera un recibo optimizado para impresora térmica 80mm (3NSTAR).
- * Abre una ventana nueva con el HTML del recibo y dispara window.print().
- * Así no interfiere con el layout de la página principal.
+ * ReciboPrint — recibo optimizado para impresora térmica 80mm (POS-80C / 3NSTAR).
+ * Todo el texto en negrita para evitar impresión tenue.
  */
 export default function ReciboPrint({ factura, cliente, vehiculo }) {
   const handlePrint = () => {
     const fecha = factura.fecha_emision
-      ? new Date(factura.fecha_emision).toLocaleString("es-SV")
-      : new Date().toLocaleString("es-SV");
+      ? new Date(factura.fecha_emision).toLocaleDateString("es-SV", { day: "2-digit", month: "2-digit", year: "2-digit" })
+      : new Date().toLocaleDateString("es-SV", { day: "2-digit", month: "2-digit", year: "2-digit" });
 
     const itemsHtml = (factura.items || [])
       .map(
         (item) => `
         <tr>
-          <td colspan="2" class="item-desc">${escapeHtml(item.descripcion || "")}</td>
-        </tr>
-        <tr>
-          <td class="item-qty">${item.cantidad} × $${(item.precio_unitario || 0).toFixed(2)}</td>
-          <td class="item-sub">$${(item.subtotal || 0).toFixed(2)}</td>
+          <td class="col-cant">${item.cantidad}</td>
+          <td class="col-desc">${escapeHtml(item.descripcion || "")}</td>
+          <td class="col-precio">${(item.precio_unitario || 0).toFixed(2)}</td>
+          <td class="col-total">${(item.subtotal || item.cantidad * item.precio_unitario || 0).toFixed(2)}</td>
         </tr>`
       )
       .join("");
+
+    const vehiculoLinea = vehiculo
+      ? `${escapeHtml(vehiculo.marca || "")} ${escapeHtml(vehiculo.modelo || "")} ${vehiculo.anio || ""}`.trim()
+      : "N/A";
 
     const html = `<!DOCTYPE html>
 <html lang="es">
@@ -38,125 +42,144 @@ export default function ReciboPrint({ factura, cliente, vehiculo }) {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    font-weight: bold;
   }
   body {
     font-family: "Courier New", monospace;
     font-size: 11px;
+    font-weight: bold;
     color: #000;
     width: 72mm;
     padding: 2mm 1mm;
-    line-height: 1.4;
+    line-height: 1.5;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
   .center { text-align: center; }
   .right { text-align: right; }
-  .bold { font-weight: bold; }
+  .logo {
+    width: 40mm;
+    height: auto;
+    margin: 0 auto 2px;
+    display: block;
+  }
   .header {
     border-bottom: 1px dashed #000;
     padding-bottom: 4px;
     margin-bottom: 4px;
+    text-align: center;
   }
-  .header h1 { font-size: 14px; }
-  .header p { font-size: 10px; }
-  .section {
+  .header p { font-size: 10px; font-weight: bold; }
+  .meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 4px;
     border-bottom: 1px dashed #000;
-    padding: 4px 0;
+    padding-bottom: 4px;
     margin-bottom: 4px;
-  }
-  .info-row {
-    display: flex;
-    justify-content: space-between;
     font-size: 10px;
   }
+  .meta-grid div { display: flex; justify-content: space-between; }
+  .meta-full {
+    border-bottom: 1px dashed #000;
+    padding-bottom: 4px;
+    margin-bottom: 4px;
+    font-size: 10px;
+  }
+  .meta-full div { display: flex; justify-content: space-between; margin-bottom: 1px; }
   table {
     width: 100%;
     border-collapse: collapse;
     margin: 2px 0;
   }
-  td { padding: 1px 0; vertical-align: top; }
-  .item-desc { font-size: 10px; }
-  .item-qty { font-size: 9px; color: #333; }
-  .item-sub { font-size: 10px; text-align: right; }
+  thead th {
+    font-size: 9px;
+    font-weight: bold;
+    border-bottom: 1px solid #000;
+    padding: 2px 0;
+    text-transform: uppercase;
+  }
+  tbody td {
+    font-size: 10px;
+    font-weight: bold;
+    padding: 2px 0;
+    vertical-align: top;
+  }
+  .col-cant { width: 12%; text-align: left; }
+  .col-desc { width: 48%; }
+  .col-precio { width: 18%; text-align: right; }
+  .col-total { width: 22%; text-align: right; }
   .totals {
     border-top: 1px dashed #000;
     padding-top: 4px;
-    margin-top: 4px;
+    margin-top: 2px;
+    font-size: 10px;
   }
-  .total-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-    font-weight: bold;
-    padding: 2px 0;
+  .totals div { display: flex; justify-content: space-between; margin-bottom: 1px; }
+  .total-final {
+    font-size: 13px;
+    border-top: 1px solid #000;
+    margin-top: 2px;
+    padding-top: 2px;
   }
   .footer {
     border-top: 1px dashed #000;
     padding-top: 4px;
-    margin-top: 6px;
+    margin-top: 4px;
     text-align: center;
-    font-size: 9px;
+    font-size: 10px;
+    font-weight: bold;
   }
 </style>
 </head>
 <body>
-  <div class="header center">
-    <h1>PROAUTO Taller SV</h1>
-    <p>Taller Mecánico Automotriz</p>
-    <p>Tel: +503 XXXX-XXXX</p>
+  <div class="header">
+    <img src="${LOGO_URL}" class="logo" alt="PROAUTO" />
+    <p>8 Av Sur Entre 27 y 29 Calle Pte</p>
+    <p>Locales 1 y 2, Santa Ana</p>
+    <p>Tel: 6866-0952 / 2406-8129</p>
   </div>
 
-  <div class="section">
-    <div class="info-row">
-      <span class="bold">Recibo:</span>
-      <span>${escapeHtml(factura.numero_factura || factura.id.slice(0, 8))}</span>
-    </div>
-    <div class="info-row">
-      <span class="bold">Fecha:</span>
-      <span>${fecha}</span>
-    </div>
-    <div class="info-row">
-      <span class="bold">Forma Pago:</span>
-      <span>${escapeHtml(factura.forma_pago || "Contado")}</span>
-    </div>
+  <div class="meta-grid">
+    <div><span>ORDEN:</span><span>${escapeHtml(factura.numero_factura || factura.id.slice(0, 8))}</span></div>
+    <div><span>FECHA:</span><span>${fecha}</span></div>
+    <div><span>PAGO:</span><span>${escapeHtml(factura.forma_pago || "Contado")}</span></div>
   </div>
 
-  <div class="section">
-    <p class="bold">Cliente:</p>
-    <p>${escapeHtml(cliente?.nombre_completo || "N/A")}</p>
-    ${cliente?.telefono ? `<p>Tel: ${escapeHtml(cliente.telefono)}</p>` : ""}
-    ${vehiculo ? `<p class="bold" style="margin-top:2px">Vehículo:</p><p>${escapeHtml(vehiculo.marca + " " + vehiculo.modelo)} - ${escapeHtml(vehiculo.placa || "")}</p>` : ""}
+  <div class="meta-full">
+    <div><span>NOMBRE:</span><span>${escapeHtml(truncate(cliente?.nombre_completo || "N/A", 30))}</span></div>
+    <div><span>VEHICULO:</span><span>${escapeHtml(truncate(vehiculoLinea, 30))}</span></div>
+    <div><span>PLACA:</span><span>${escapeHtml(vehiculo?.placa || "—")}</span></div>
   </div>
 
   <table>
-    ${itemsHtml}
+    <thead>
+      <tr>
+        <th class="col-cant">Cant</th>
+        <th class="col-desc">Descripcion</th>
+        <th class="col-precio">Precio</th>
+        <th class="col-total">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${itemsHtml}
+    </tbody>
   </table>
 
   <div class="totals">
-    <div class="info-row">
-      <span>Subtotal:</span>
-      <span>$${(factura.subtotal || 0).toFixed(2)}</span>
-    </div>
-    ${factura.iva > 0 ? `<div class="info-row"><span>IVA (13%):</span><span>$${(factura.iva || 0).toFixed(2)}</span></div>` : ""}
-    <div class="total-row">
-      <span>TOTAL:</span>
-      <span>$${(factura.total || 0).toFixed(2)}</span>
-    </div>
+    <div><span>Importe Bruto:</span><span>$${(factura.subtotal || 0).toFixed(2)}</span></div>
+    <div><span>Importe Neto:</span><span>$${(factura.importe_neto || factura.subtotal || 0).toFixed(2)}</span></div>
+    ${factura.iva > 0 ? `<div><span>IVA (13%):</span><span>$${(factura.iva || 0).toFixed(2)}</span></div>` : ""}
+    <div class="total-final"><span>TOTAL:</span><span>$${(factura.total || 0).toFixed(2)}</span></div>
   </div>
 
   <div class="totals">
-    <div class="info-row">
-      <span>Pagado:</span>
-      <span>$${(factura.monto_pagado || 0).toFixed(2)}</span>
-    </div>
-    <div class="info-row bold">
-      <span>Saldo:</span>
-      <span>$${factura.estado_pago === "Pagada" ? "0.00" : ((factura.saldo_pendiente != null ? factura.saldo_pendiente : (factura.total || 0) - (factura.monto_pagado || 0))).toFixed(2)}</span>
-    </div>
-    <p class="center" style="margin-top:2px">Estado: ${escapeHtml(factura.estado_pago || "Pendiente")}</p>
+    <div><span>Pagado:</span><span>$${(factura.monto_pagado || 0).toFixed(2)}</span></div>
+    <div><span>Saldo:</span><span>$${factura.estado_pago === "Pagada" ? "0.00" : ((factura.saldo_pendiente != null ? factura.saldo_pendiente : (factura.total || 0) - (factura.monto_pagado || 0))).toFixed(2)}</span></div>
   </div>
 
   <div class="footer">
-    <p>¡Gracias por su preferencia!</p>
-    <p>Conserve este recibo</p>
+    <p>GRACIAS POR PREFERIRNOS</p>
   </div>
 
   <script>
@@ -186,4 +209,9 @@ function escapeHtml(text) {
   const div = document.createElement("div");
   div.textContent = String(text);
   return div.innerHTML;
+}
+
+function truncate(text, max) {
+  if (!text) return "";
+  return text.length > max ? text.slice(0, max - 1) + "…" : text;
 }
