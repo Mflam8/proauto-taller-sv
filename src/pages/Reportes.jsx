@@ -114,17 +114,17 @@ export default function Reportes() {
 
   // Ventas por semana (últimas 8 semanas)
   const ventasPorSemana = Array.from({ length: 8 }, (_, i) => {
-    const inicio = new Date();
-    inicio.setDate(inicio.getDate() - (7 - i) * 7);
-    inicio.setHours(0, 0, 0, 0);
-    const fin = new Date(inicio);
-    fin.setDate(fin.getDate() + 6);
+    const fin = new Date();
+    fin.setDate(fin.getDate() - (7 - i - 1) * 7);
     fin.setHours(23, 59, 59, 999);
+    const inicio = new Date(fin);
+    inicio.setDate(inicio.getDate() - 6);
+    inicio.setHours(0, 0, 0, 0);
     const monto = facturas.filter(f => {
       const fecha = new Date(f.fecha_emision || f.created_date);
       return fecha >= inicio && fecha <= fin;
     }).reduce((sum, f) => sum + (f.total || 0), 0);
-    return { semana: `${inicio.getDate()}/${inicio.getMonth() + 1}`, monto };
+    return { semana: `${inicio.getDate()}/${inicio.getMonth() + 1} - ${fin.getDate()}/${fin.getMonth() + 1}`, monto };
   });
 
   // Ventas por día (últimos 14 días)
