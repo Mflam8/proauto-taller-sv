@@ -210,65 +210,6 @@ export default function Inspecciones() {
           />
         ) : (
         <>
-        {/* Modelos y trabajos */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Modelos más frecuentes */}
-          <Card className="border-0 shadow-md">
-            <CardHeader className="border-b">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Car className="w-5 h-5 text-blue-600" />
-                Modelos que ingresaron
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              {topModelos.length > 0 ? (
-                <div className="space-y-3">
-                  {topModelos.map(([modelo, count]) => {
-                    const pct = vehiculosRecibidos > 0 ? (count / vehiculosRecibidos * 100) : 0;
-                    return (
-                      <div key={modelo}>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span className="font-medium text-gray-700">{modelo}</span>
-                          <span className="text-gray-500">{count} ({pct.toFixed(0)}%)</span>
-                        </div>
-                        <div className="w-full bg-gray-100 rounded-full h-2">
-                          <div className="bg-gradient-to-r from-[#E31E24] to-[#B71C1C] h-2 rounded-full" style={{ width: `${pct}%` }} />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <p className="text-center text-gray-400 py-6">Sin datos aún</p>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Qué se hizo (trabajos por tipo) */}
-          <Card className="border-0 shadow-md">
-            <CardHeader className="border-b">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Wrench className="w-5 h-5 text-[#E31E24]" />
-                Qué se hizo (por tipo)
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              {Object.keys(trabajosPorTipo).length > 0 ? (
-                <div className="grid grid-cols-2 gap-3">
-                  {Object.entries(trabajosPorTipo).sort((a, b) => b[1] - a[1]).map(([tipo, count]) => (
-                    <div key={tipo} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <span className="text-sm text-gray-700">{tipo}</span>
-                      <Badge className="bg-[#E31E24] text-white">{count}</Badge>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-center text-gray-400 py-6">Sin trabajos registrados</p>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
         {/* Buscador */}
         <Card className="border-0 shadow-md">
           <CardContent className="p-4">
