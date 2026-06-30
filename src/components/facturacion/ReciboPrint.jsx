@@ -1,6 +1,6 @@
 import React from "react";
 
-const LOGO_URL = "https://media.base44.com/images/public/691be028b7c98b3edbc7aec7/a93f61a60_generated_image.png";
+const LOGO_URL = "https://media.base44.com/images/public/691be028b7c98b3edbc7aec7/3462a2501_527724637_10228100711375307_2433035938491200389_n.jpg";
 
 /**
  * ReciboPrint — recibo optimizado para impresora térmica 80mm (POS-80C / 3NSTAR).
