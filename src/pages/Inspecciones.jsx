@@ -183,26 +183,6 @@ export default function Inspecciones() {
           </Button>
         </div>
 
-        {/* Métricas principales */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
-          <MetricCard icon={Car} label="Vehículos recibidos" value={vehiculosRecibidos} color="bg-blue-500" />
-          <MetricCard icon={Clock} label="Días promedio en taller" value={diasPromedio} color="bg-orange-500" />
-          <MetricCard icon={DollarSign} label="Total pagado" value={`$${totalPagado.toFixed(0)}`} color="bg-green-500" />
-          <MetricCard icon={TrendingUp} label="Ticket promedio" value={`$${ticketPromedio.toFixed(0)}`} color="bg-emerald-600" />
-          <MetricCard icon={Package} label="Con repuestos" value={expedientesConRepuesto} color="bg-purple-500" />
-          <MetricCard icon={Wrench} label="Sin repuestos" value={expedientesSinRepuesto} color="bg-gray-500" />
-          <MetricCard icon={AlertCircle} label="Con daños al recibir" value={inspeccionesConDaños} sub={`${totalDaños} daños registrados`} color="bg-red-500" />
-          <MetricCard icon={CheckCircle} label="Inspecciones totales" value={inspecciones.length} color="bg-indigo-500" />
-        </div>
-
-        {/* Inspecciones por periodo */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <MetricCard icon={Calendar} label="Esta semana" value={inspSemana} color="bg-blue-500" />
-          <MetricCard icon={Calendar} label="Este mes" value={inspMes} color="bg-emerald-500" />
-          <MetricCard icon={Calendar} label="Este trimestre" value={inspTrimestre} color="bg-purple-500" />
-          <MetricCard icon={Calendar} label="Este año" value={inspAnio} color="bg-amber-500" />
-        </div>
-
         {vista === "reporte" ? (
           <ReporteInspecciones
             inspecciones={inspecciones}
