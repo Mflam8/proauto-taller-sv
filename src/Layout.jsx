@@ -19,7 +19,8 @@ import {
   LogOut,
   ChevronRight,
   FolderOpen,
-  LayoutGrid
+  LayoutGrid,
+  Receipt
 } from "lucide-react";
 import {
   Sidebar,
@@ -102,6 +103,11 @@ const navigationItems = [
     title: "Reportes",
     url: createPageUrl("Reportes"),
     icon: BarChart3,
+  },
+  {
+    title: "Informe Remesas",
+    url: "/InformeRemesas",
+    icon: Receipt,
   },
 ];
 

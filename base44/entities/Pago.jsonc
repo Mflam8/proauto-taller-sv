@@ -30,6 +30,11 @@
       "format": "date-time",
       "description": "Fecha del pago"
     },
+    "fecha_remesa": {
+      "type": "string",
+      "format": "date",
+      "description": "Fecha de remesa/cheque (cuando se deposit\u00f3 al banco)"
+    },
     "recibido_por": {
       "type": "string",
       "description": "Usuario que recibi\u00f3 el pago"

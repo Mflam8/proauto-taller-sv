@@ -17,6 +17,7 @@ import ExpedienteVista from './pages/ExpedienteVista';
 import Inspecciones from './pages/Inspecciones';
 import LinkTree from './pages/LinkTree';
 import OrdenesTrabajos from './pages/OrdenesTrabajos';
+import InformeRemesas from './pages/InformeRemesas';
 import TableroDiario from './pages/TableroDiario';
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -77,6 +78,7 @@ const AuthenticatedApp = () => {
       <Route path="/Inspecciones" element={<LayoutWrapper currentPageName="Inspecciones"><Inspecciones /></LayoutWrapper>} />
       <Route path="/links" element={<LinkTree />} />
       <Route path="/OrdenesTrabajos" element={<LayoutWrapper currentPageName="OrdenesTrabajos"><OrdenesTrabajos /></LayoutWrapper>} />
+      <Route path="/InformeRemesas" element={<LayoutWrapper currentPageName="InformeRemesas"><InformeRemesas /></LayoutWrapper>} />
       <Route path="/TableroDiario" element={<LayoutWrapper currentPageName="TableroDiario"><TableroDiario /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
