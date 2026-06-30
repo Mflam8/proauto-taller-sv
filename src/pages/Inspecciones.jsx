@@ -13,6 +13,8 @@ import {
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import ReporteInspecciones from "@/components/inspeccion/ReporteInspecciones";
+import { BarChart3, List } from "lucide-react";
 
 const condicionColor = {
   "Bueno": "bg-green-100 text-green-800",
@@ -40,6 +42,7 @@ function MetricCard({ icon: Icon, label, value, sub, color }) {
 export default function Inspecciones() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedInsp, setSelectedInsp] = useState(null);
+  const [vista, setVista] = useState("lista");
 
   const { data: inspecciones = [], isLoading } = useQuery({
     queryKey: ['inspecciones'],
@@ -162,6 +165,24 @@ export default function Inspecciones() {
           </div>
         </motion.div>
 
+        {/* Toggle de vista */}
+        <div className="flex items-center gap-2">
+          <Button
+            variant={vista === "lista" ? "default" : "outline"}
+            onClick={() => setVista("lista")}
+            className={vista === "lista" ? "bg-[#E31E24] hover:bg-[#B71C1C]" : "border-gray-200"}
+          >
+            <List className="w-4 h-4 mr-2" /> Lista
+          </Button>
+          <Button
+            variant={vista === "reporte" ? "default" : "outline"}
+            onClick={() => setVista("reporte")}
+            className={vista === "reporte" ? "bg-[#E31E24] hover:bg-[#B71C1C]" : "border-gray-200"}
+          >
+            <BarChart3 className="w-4 h-4 mr-2" /> Reporte
+          </Button>
+        </div>
+
         {/* Métricas principales */}
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
           <MetricCard icon={Car} label="Vehículos recibidos" value={vehiculosRecibidos} color="bg-blue-500" />
@@ -182,6 +203,33 @@ export default function Inspecciones() {
           <MetricCard icon={Calendar} label="Este año" value={inspAnio} color="bg-amber-500" />
         </div>
 
+        {vista === "reporte" ? (
+          <ReporteInspecciones
+            inspecciones={inspecciones}
+            expedientes={expedientes}
+            vehiculos={vehiculos}
+            clientes={clientes}
+            trabajos={trabajos}
+            vehiculoMap={vehiculoMap}
+            clienteMap={clienteMap}
+            expedienteMap={expedienteMap}
+            inspSemana={inspSemana}
+            inspMes={inspMes}
+            inspTrimestre={inspTrimestre}
+            inspAnio={inspAnio}
+            vehiculosRecibidos={vehiculosRecibidos}
+            diasPromedio={diasPromedio}
+            totalPagado={totalPagado}
+            ticketPromedio={ticketPromedio}
+            expedientesConRepuesto={expedientesConRepuesto}
+            expedientesSinRepuesto={expedientesSinRepuesto}
+            inspeccionesConDaños={inspeccionesConDaños}
+            totalDaños={totalDaños}
+            topModelos={topModelos}
+            trabajosPorTipo={trabajosPorTipo}
+          />
+        ) : (
+        <>
         {/* Modelos y trabajos */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Modelos más frecuentes */}
@@ -318,6 +366,8 @@ export default function Inspecciones() {
               </p>
             </CardContent>
           </Card>
+        )}
+        </>
         )}
       </div>
 
