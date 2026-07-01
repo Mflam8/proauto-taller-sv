@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -34,6 +34,21 @@ export default function GenerarFacturaForm({ expediente, cliente, vehiculo, onSu
   const [numeroFactura, setNumeroFactura] = useState("");
   const [newItem, setNewItem] = useState({ descripcion: "", cantidad: 1, precio_unitario: 0 });
 
+  // Fetch next auto-generated invoice number
+  const { data: numeroAuto } = useQuery({
+    queryKey: ["nextFacturaNumber"],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('generarNumeroFactura', {});
+      return res.data?.numero_factura || "1";
+    },
+  });
+
+  useEffect(() => {
+    if (numeroAuto && !numeroFactura) {
+      setNumeroFactura(numeroAuto);
+    }
+  }, [numeroAuto]);
+
   // Initialize items from trabajos once loaded
   const displayItems = items ?? initialItems;
 
@@ -58,7 +73,7 @@ export default function GenerarFacturaForm({ expediente, cliente, vehiculo, onSu
   const createFacturaMutation = useMutation({
     mutationFn: async () => {
       const facturaData = {
-        numero_factura: numeroFactura || `FAC-${Date.now().toString().slice(-8)}`,
+        numero_factura: numeroFactura,
         expediente_id: expediente.id,
         fecha_emision: new Date().toISOString(),
         cliente_id: expediente.cliente_id,
@@ -120,12 +135,11 @@ export default function GenerarFacturaForm({ expediente, cliente, vehiculo, onSu
       {/* Factura fields */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-1">
-          <Label className="text-xs font-semibold text-gray-600">N° Factura</Label>
+          <Label className="text-xs font-semibold text-gray-600">N° Factura (automático)</Label>
           <Input
-            value={numeroFactura}
-            onChange={(e) => setNumeroFactura(e.target.value)}
-            placeholder="Ej: 201600415 (auto si vacío)"
-            className="h-10"
+            value={numeroFactura || "..."}
+            readOnly
+            className="h-10 bg-gray-100 font-mono font-semibold text-gray-700 cursor-not-allowed"
           />
         </div>
         <div className="space-y-1">
