@@ -47,29 +47,35 @@ export default function FacturaDetalle({ factura }) {
 
     setEnviandoCorreo(true);
     try {
-      const items = (factura.items || []).map(it => ({
-        descripcion: it.descripcion || "",
-        cantidad: it.cantidad || 0,
-        precio_unitario: it.precio_unitario || 0,
-        subtotal: it.subtotal || (it.cantidad || 0) * (it.precio_unitario || 0),
-      }));
-      const res = await base44.functions.invoke('enviarCorreo', {
+      const res = await base44.functions.invoke('enviarFacturaPDF', {
         to: correo,
-        subject: `Recibo ${factura.numero_factura || factura.id.slice(0, 8)} - PROAUTO Taller SV`,
-        body: `Estimado/a ${cliente?.nombre_completo || ""},\n\nAdjunto el detalle de su recibo:\n\n` +
-          `Recibo: ${factura.numero_factura || factura.id.slice(0, 8)}\n` +
-          `Fecha: ${factura.fecha_emision ? new Date(factura.fecha_emision).toLocaleDateString("es-SV") : new Date().toLocaleDateString("es-SV")}\n` +
-          `Forma de Pago: ${factura.forma_pago || "Contado"}\n` +
-          `Vehículo: ${vehiculo ? `${vehiculo.marca} ${vehiculo.modelo} - ${vehiculo.placa}` : "N/A"}\n\n` +
-          `DETALLE DE SERVICIOS:\n` +
-          items.map(it => `  ${it.cantidad}x ${it.descripcion} — $${it.precio_unitario.toFixed(2)} = $${it.subtotal.toFixed(2)}`).join("\n") +
-          `\n\nSubtotal: $${(factura.subtotal || 0).toFixed(2)}\n` +
-          (factura.iva > 0 ? `IVA (13%): $${(factura.iva || 0).toFixed(2)}\n` : "") +
-          `TOTAL: $${(factura.total || 0).toFixed(2)}\n` +
-          `Pagado: $${(factura.monto_pagado || 0).toFixed(2)}\n` +
-          `Saldo: $${factura.estado_pago === "Pagada" ? "0.00" : ((factura.saldo_pendiente != null ? factura.saldo_pendiente : (factura.total || 0) - (factura.monto_pagado || 0))).toFixed(2)}\n\n` +
-          `Estado: ${factura.estado_pago}\n\n` +
-          `¡Gracias por preferirnos!\n\nPROAUTO Taller SV\n8 Av Sur Entre 27 y 29 Calle Pte, Santa Ana\nTel: 6866-0952 / 2406-8129`,
+        factura: {
+          id: factura.id,
+          numero_factura: factura.numero_factura,
+          fecha_emision: factura.fecha_emision,
+          fecha_vencimiento: factura.fecha_vencimiento,
+          forma_pago: factura.forma_pago,
+          items: factura.items || [],
+          subtotal: factura.subtotal || 0,
+          importe_neto: factura.importe_neto,
+          iva: factura.iva || 0,
+          total: factura.total || 0,
+          monto_pagado: factura.monto_pagado || 0,
+          saldo_pendiente: factura.saldo_pendiente,
+          estado_pago: factura.estado_pago,
+        },
+        cliente: cliente ? {
+          nombre_completo: cliente.nombre_completo,
+          telefono: cliente.telefono,
+          email: cliente.email,
+        } : null,
+        vehiculo: vehiculo ? {
+          marca: vehiculo.marca,
+          modelo: vehiculo.modelo,
+          placa: vehiculo.placa,
+          anio: vehiculo.anio,
+          color: vehiculo.color,
+        } : null,
       });
       if (res.data?.error) throw new Error(res.data.error);
       toast({
