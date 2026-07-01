@@ -53,7 +53,7 @@ export default function FacturaDetalle({ factura }) {
         precio_unitario: it.precio_unitario || 0,
         subtotal: it.subtotal || (it.cantidad || 0) * (it.precio_unitario || 0),
       }));
-      await base44.integrations.Core.SendEmail({
+      const res = await base44.functions.invoke('enviarCorreo', {
         to: correo,
         subject: `Recibo ${factura.numero_factura || factura.id.slice(0, 8)} - PROAUTO Taller SV`,
         body: `Estimado/a ${cliente?.nombre_completo || ""},\n\nAdjunto el detalle de su recibo:\n\n` +
@@ -71,6 +71,7 @@ export default function FacturaDetalle({ factura }) {
           `Estado: ${factura.estado_pago}\n\n` +
           `¡Gracias por preferirnos!\n\nPROAUTO Taller SV\n8 Av Sur Entre 27 y 29 Calle Pte, Santa Ana\nTel: 6866-0952 / 2406-8129`,
       });
+      if (res.data?.error) throw new Error(res.data.error);
       toast({
         title: "Correo enviado",
         description: `El recibo se envió a ${correo}`,
