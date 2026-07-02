@@ -46,22 +46,33 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
   const handleSave = async () => {
     if (!form.descripcion) return;
     setSaving(true);
-    const data = { ...form, expediente_id: expediente.id, subtotal: calcSubtotal(form) };
-    await base44.entities.TrabajoExpediente.create(data);
-    // Actualizar totales en expediente
-    const allTrabajos = [...trabajos, data];
-    const total = allTrabajos.reduce((s, t) => s + (t.subtotal || 0), 0);
-    await base44.entities.Expediente.update(expediente.id, {
-      total_cobrado: total,
-      saldo_pendiente: total - (expediente.total_pagado || 0)
-    });
-    qc.invalidateQueries(["trabajos", expediente.id]);
-    qc.invalidateQueries(["expediente", expediente.id]);
-    if (onTotalesChange) onTotalesChange();
-    setForm(emptyTrabajo);
-    setShowForm(false);
-    setSaving(false);
-    refetch();
+    try {
+      const data = {
+        ...form,
+        expediente_id: expediente.id,
+        cantidad: parseFloat(form.cantidad) || 1,
+        precio_unitario: parseFloat(form.precio_unitario) || 0,
+        subtotal: calcSubtotal(form),
+      };
+      await base44.entities.TrabajoExpediente.create(data);
+      // Actualizar totales en expediente
+      const allTrabajos = [...trabajos, data];
+      const total = allTrabajos.reduce((s, t) => s + (t.subtotal || 0), 0);
+      await base44.entities.Expediente.update(expediente.id, {
+        total_cobrado: total,
+        saldo_pendiente: total - (expediente.total_pagado || 0)
+      });
+      qc.invalidateQueries(["trabajos", expediente.id]);
+      qc.invalidateQueries(["expediente", expediente.id]);
+      if (onTotalesChange) onTotalesChange();
+      setForm(emptyTrabajo);
+      setShowForm(false);
+    } catch (error) {
+      alert("Error al guardar el trabajo: " + (error.message || error));
+    } finally {
+      setSaving(false);
+      refetch();
+    }
   };
 
   const handleDelete = async (t) => {
