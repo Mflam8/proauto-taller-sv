@@ -8,7 +8,7 @@ import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import {
   Phone, MapPin, Clock, CheckCircle, Wrench,
-  Cpu, Shield, Droplets, Car, ChevronDown,
+  Cpu, Shield, Droplets, Car, ChevronDown, Menu, X,
   Instagram, Facebook, MessageCircle, Star, Zap, Heart, Settings } from
 "lucide-react";
 
@@ -31,6 +31,7 @@ export default function SitioWeb() {
   const { scrollYProgress } = useScroll();
   const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     base44.auth.isAuthenticated().then(setIsLoggedIn);
@@ -65,7 +66,7 @@ export default function SitioWeb() {
         
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <motion.div
-            className="w-12 h-12 rounded-full overflow-hidden border-2 border-white/20 bg-white flex items-center justify-center"
+            className="w-12 h-12 rounded-full overflow-hidden border-2 border-white/20 bg-white flex items-center justify-center flex-shrink-0"
             whileHover={{ scale: 1.1, rotate: 5 }}
             transition={{ type: "spring", stiffness: 300 }}>
             <img src={logoUrl} alt="PROAUTO Taller" className="w-10 h-10 object-contain" />
@@ -92,13 +93,49 @@ export default function SitioWeb() {
           </button>
           <motion.a
             href="tel:+50368660952"
-            className="bg-[#E31E24] hover:bg-[#B71C1C] px-6 py-2 rounded-full font-bold transition-colors"
+            className="hidden sm:flex bg-[#E31E24] hover:bg-[#B71C1C] px-6 py-2 rounded-full font-bold transition-colors"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.97 }}>
             
             ¡Llámanos!
           </motion.a>
+          {/* Botón menú móvil */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden text-white p-2 cursor-pointer"
+            aria-label="Abrir menú">
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
         </div>
+
+        {/* Menú móvil desplegable */}
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="md:hidden bg-black/95 backdrop-blur-lg border-b border-white/10 px-4 py-6 flex flex-col gap-4">
+            {["Servicios", "Nosotros", "Contacto"].map((item) =>
+            <a
+              key={item}
+              href={`#${item.toLowerCase()}`}
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-white/80 hover:text-[#E31E24] transition-colors font-medium text-lg">
+              {item}
+            </a>
+            )}
+            <button
+              onClick={() => { setMobileMenuOpen(false); handleGestion(); }}
+              className="flex items-center gap-2 text-white/60 hover:text-white transition-colors text-sm font-medium">
+              <Settings className="w-4 h-4" />
+              {isLoggedIn ? "Panel" : "Gestión"}
+            </button>
+            <a
+              href="tel:+50368660952"
+              className="bg-[#E31E24] hover:bg-[#B71C1C] px-6 py-3 rounded-full font-bold transition-colors text-center">
+              ¡Llámanos!
+            </a>
+          </motion.div>
+        )}
       </motion.nav>
 
       {/* Hero Section */}
@@ -156,26 +193,26 @@ export default function SitioWeb() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center">
+            className="flex flex-col sm:flex-row gap-4 justify-center px-4">
             
             <motion.a
               href="https://wa.me/50368660952"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-3 bg-[#25D366] text-white text-xl px-12 py-5 rounded-xl font-bold shadow-lg shadow-[#25D366]/40"
+              className="flex items-center justify-center gap-2 sm:gap-3 bg-[#25D366] text-white text-base sm:text-xl px-6 sm:px-12 py-4 sm:py-5 rounded-xl font-bold shadow-lg shadow-[#25D366]/40"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.97 }}>
               
-              <WhatsAppIcon className="w-7 h-7" />
+              <WhatsAppIcon className="w-6 h-6 sm:w-7 sm:h-7" />
               Escríbenos por WhatsApp
             </motion.a>
             <motion.a
               href="tel:+50368660952"
-              className="flex items-center justify-center gap-3 bg-[#E31E24] text-white text-xl px-12 py-5 rounded-xl font-bold shadow-lg shadow-[#E31E24]/40"
+              className="flex items-center justify-center gap-2 sm:gap-3 bg-[#E31E24] text-white text-base sm:text-xl px-6 sm:px-12 py-4 sm:py-5 rounded-xl font-bold shadow-lg shadow-[#E31E24]/40"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.97 }}>
               
-              <Phone className="w-7 h-7" />
+              <Phone className="w-6 h-6 sm:w-7 sm:h-7" />
               Llámanos ahora
             </motion.a>
           </motion.div>
@@ -217,10 +254,10 @@ export default function SitioWeb() {
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-16">
+            className="text-center mb-10 md:mb-16">
             
-            <p className="text-[#E31E24] font-bold mb-4 tracking-widest">NUESTROS SERVICIOS</p>
-            <h2 className="text-4xl md:text-6xl font-black">
+            <p className="text-[#E31E24] font-bold mb-4 tracking-widest text-sm md:text-base">NUESTROS SERVICIOS</p>
+            <h2 className="text-3xl sm:text-4xl md:text-6xl font-black">
               SERVICIOS ESPECIALIZADOS DE <span className="text-[#E31E24]">ALTA CALIDAD</span>
             </h2>
           </motion.div>
@@ -261,11 +298,11 @@ export default function SitioWeb() {
               viewport={{ once: true }}
               transition={{ duration: 0.7 }}>
               
-              <p className="text-[#E31E24] font-bold mb-4 tracking-widest">¿QUIÉNES SOMOS?</p>
-              <h2 className="text-4xl md:text-5xl font-black mb-6">
+              <p className="text-[#E31E24] font-bold mb-4 tracking-widest text-sm md:text-base">¿QUIÉNES SOMOS?</p>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black mb-6">
                 PERSONAL ALTAMENTE <span className="text-[#E31E24]">CAPACITADO</span>
               </h2>
-              <p className="text-xl text-white/70 mb-8">
+              <p className="text-lg md:text-xl text-white/70 mb-8">
                 Especialistas en el mantenimiento preventivo y correctivo de vehículos, con un enfoque corporativo
                 para flotas empresariales. <strong className="text-white">Nuestro compromiso es garantizar la productividad
                 de tu empresa</strong> reduciendo tiempos de inactividad y optimizando la seguridad de tu flota.
@@ -330,11 +367,11 @@ export default function SitioWeb() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}>
             
-            <p className="text-[#E31E24] font-bold mb-4 tracking-widest">CONTÁCTANOS</p>
-            <h2 className="text-4xl md:text-6xl font-black mb-6">
+            <p className="text-[#E31E24] font-bold mb-4 tracking-widest text-sm md:text-base">CONTÁCTANOS</p>
+            <h2 className="text-3xl sm:text-4xl md:text-6xl font-black mb-6">
               ¿LISTO PARA <span className="text-[#E31E24]">AGENDAR?</span>
             </h2>
-            <p className="text-white/70 text-xl mb-12 max-w-2xl mx-auto">
+            <p className="text-white/70 text-lg md:text-xl mb-10 md:mb-12 max-w-2xl mx-auto">
               Comunícate con nosotros por el canal que prefieras. Estamos listos para atenderte.
             </p>
           </motion.div>
