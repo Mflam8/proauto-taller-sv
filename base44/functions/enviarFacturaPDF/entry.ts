@@ -3,7 +3,7 @@ import { jsPDF } from 'npm:jspdf@2.5.2';
 
 const LOGO_URL = "https://media.base44.com/images/public/691be028b7c98b3edbc7aec7/3462a2501_527724637_10228100711375307_2433035938491200389_n.jpg";
 
-const RED = "#E31E24";
+const RED = "#e10e1d";
 const RED_DARK = "#B71C1C";
 const DARK = "#1A1A1A";
 const GRAY_DARK = "#424242";
@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
     const contentW = pageW - margin * 2;
 
     // ---- Header band (red) ----
-    doc.setFillColor(227, 30, 36);
+    doc.setFillColor(225, 14, 29);
     doc.rect(0, 0, pageW, 38, 'F');
 
     // Logo
@@ -176,7 +176,7 @@ Deno.serve(async (req) => {
     const colTotal = 30;
 
     // Table header
-    doc.setFillColor(227, 30, 36);
+    doc.setFillColor(225, 14, 29);
     doc.rect(tableX, y, tableW, 7, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
@@ -255,7 +255,7 @@ Deno.serve(async (req) => {
     }
 
     // Total box
-    doc.setFillColor(227, 30, 36);
+    doc.setFillColor(225, 14, 29);
     doc.rect(totalsX - 2, y - 2, totalsW, 9, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
