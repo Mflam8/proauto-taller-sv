@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Save, Receipt, User, Car, Trash2, Plus } from "lucide-react";
+import { Save, Receipt, User, Car, Trash2, Plus, UserCheck } from "lucide-react";
+import ClienteCombobox from "@/components/clientes/ClienteCombobox";
 
 const IVA_RATE = 0.13;
 
@@ -32,7 +33,15 @@ export default function GenerarFacturaForm({ expediente, cliente, vehiculo, onSu
   const [formaPago, setFormaPago] = useState("Contado");
   const [aplicaIva, setAplicaIva] = useState(true);
   const [numeroFactura, setNumeroFactura] = useState("");
+  const [clienteFacturacionId, setClienteFacturacionId] = useState(expediente.cliente_id || "");
   const [newItem, setNewItem] = useState({ descripcion: "", cantidad: 1, precio_unitario: 0 });
+
+  const { data: clientes = [] } = useQuery({
+    queryKey: ["clientes"],
+    queryFn: () => base44.entities.Cliente.list(),
+  });
+
+  const clienteFacturacion = clientes.find(c => c.id === clienteFacturacionId) || cliente;
 
   // Fetch next auto-generated invoice number
   const { data: numeroAuto } = useQuery({
@@ -76,7 +85,7 @@ export default function GenerarFacturaForm({ expediente, cliente, vehiculo, onSu
         numero_factura: numeroFactura,
         expediente_id: expediente.id,
         fecha_emision: new Date().toISOString(),
-        cliente_id: expediente.cliente_id,
+        cliente_id: clienteFacturacionId,
         vehiculo_id: expediente.vehiculo_id,
         forma_pago: formaPago,
         aplica_iva: aplicaIva,
@@ -112,13 +121,23 @@ export default function GenerarFacturaForm({ expediente, cliente, vehiculo, onSu
     <div className="space-y-5 max-h-[75vh] overflow-y-auto pr-1">
       {/* Header info */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border">
-          <User className="w-5 h-5 text-gray-400" />
-          <div>
-            <p className="text-xs text-gray-500">Cliente</p>
-            <p className="font-semibold text-sm">{cliente?.nombre_completo || "N/A"}</p>
-            {cliente?.direccion && <p className="text-xs text-gray-500">{cliente.direccion}</p>}
+        <div className="p-3 bg-gray-50 rounded-lg border">
+          <div className="flex items-center gap-2 mb-2">
+            <UserCheck className="w-4 h-4 text-[#E31E24]" />
+            <p className="text-xs font-semibold text-gray-600">Facturar a (cliente para facturación)</p>
           </div>
+          <ClienteCombobox
+            clientes={clientes}
+            value={clienteFacturacionId}
+            onChange={setClienteFacturacionId}
+            placeholder="Seleccionar cliente para facturar..."
+          />
+          {clienteFacturacion?.direccion && (
+            <p className="text-xs text-gray-500 mt-1">{clienteFacturacion.direccion}</p>
+          )}
+          {clienteFacturacion?.dui && (
+            <p className="text-xs text-gray-500">DUI: {clienteFacturacion.dui}{clienteFacturacion.nit ? ` · NIT: ${clienteFacturacion.nit}` : ""}</p>
+          )}
         </div>
         <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border">
           <Car className="w-5 h-5 text-gray-400" />
