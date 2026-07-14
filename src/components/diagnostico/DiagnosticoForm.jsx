@@ -66,7 +66,7 @@ export default function DiagnosticoForm({ expediente, empleados, onSave, diagnos
         <Select value={form.tecnico_nombre} onValueChange={v => set("tecnico_nombre", v)}>
           <SelectTrigger><SelectValue placeholder="Seleccionar técnico..." /></SelectTrigger>
           <SelectContent>
-            {empleados.filter(e => e.activo && ["Técnico", "Administración", "Gerencia"].includes(e.tipo)).map(e => (
+            {empleados.filter(e => e.activo && ["Técnico", "Pintura", "Carwash", "Administración", "Gerencia"].includes(e.tipo)).map(e => (
               <SelectItem key={e.id} value={e.nombre_completo}>{e.nombre_completo} — {e.tipo}</SelectItem>
             ))}
           </SelectContent>

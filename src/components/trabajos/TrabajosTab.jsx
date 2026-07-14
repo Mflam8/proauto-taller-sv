@@ -33,7 +33,7 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
     enabled: !!expediente.id,
   });
 
-  const tecnicos = empleados.filter(e => e.tipo === "Técnico" && e.activo !== false);
+  const tecnicos = empleados.filter(e => ["Técnico", "Pintura", "Carwash"].includes(e.tipo) && e.activo !== false);
 
   const calcSubtotal = (f) => (parseFloat(f.cantidad) || 0) * (parseFloat(f.precio_unitario) || 0);
 
