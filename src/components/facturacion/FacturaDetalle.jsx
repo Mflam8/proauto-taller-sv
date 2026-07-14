@@ -20,11 +20,15 @@ export default function FacturaDetalle({ factura }) {
   const [cerrando, setCerrando] = useState(false);
 
   const handleCerrarFactura = async () => {
+    if (!motivoCierre.trim()) {
+      toast({ variant: "destructive", title: "Motivo requerido", description: "Debes ingresar el motivo del cierre." });
+      return;
+    }
     setCerrando(true);
     try {
       await base44.entities.Factura.update(factura.id, {
         estado_pago: "Cerrada",
-        motivo_cierre: motivoCierre || "Sin motivo especificado",
+        motivo_cierre: motivoCierre.trim(),
       });
       queryClient.invalidateQueries({ queryKey: ['facturas'] });
       queryClient.invalidateQueries({ queryKey: ['pagos-factura', factura.id] });
@@ -402,7 +406,7 @@ export default function FacturaDetalle({ factura }) {
               <Button variant="outline" onClick={() => setShowCerrarDialog(false)}>Cancelar</Button>
               <Button
                 onClick={handleCerrarFactura}
-                disabled={cerrando}
+                disabled={cerrando || !motivoCierre.trim()}
                 className="bg-slate-600 hover:bg-slate-700 text-white gap-2"
               >
                 {cerrando ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
