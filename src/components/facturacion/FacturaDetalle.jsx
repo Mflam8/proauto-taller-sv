@@ -1,16 +1,42 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Receipt, User, Car, Calendar, CreditCard, DollarSign, Printer, Mail, Loader2 } from "lucide-react";
+import { Receipt, User, Car, Calendar, CreditCard, DollarSign, Printer, Mail, Loader2, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import ReciboPrint from "@/components/facturacion/ReciboPrint";
 import { useToast } from "@/components/ui/use-toast";
 
 export default function FacturaDetalle({ factura }) {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [enviandoCorreo, setEnviandoCorreo] = useState(false);
+  const [showCerrarDialog, setShowCerrarDialog] = useState(false);
+  const [motivoCierre, setMotivoCierre] = useState("");
+  const [cerrando, setCerrando] = useState(false);
+
+  const handleCerrarFactura = async () => {
+    setCerrando(true);
+    try {
+      await base44.entities.Factura.update(factura.id, {
+        estado_pago: "Cerrada",
+        motivo_cierre: motivoCierre || "Sin motivo especificado",
+      });
+      queryClient.invalidateQueries({ queryKey: ['facturas'] });
+      queryClient.invalidateQueries({ queryKey: ['pagos-factura', factura.id] });
+      toast({ title: "Factura cerrada", description: "La factura se marcó como Cerrada." });
+      setShowCerrarDialog(false);
+      setMotivoCierre("");
+    } catch (error) {
+      toast({ variant: "destructive", title: "Error", description: error.message });
+    } finally {
+      setCerrando(false);
+    }
+  };
   const { data: cliente } = useQuery({
     queryKey: ['cliente', factura.cliente_id],
     queryFn: () => base44.entities.Cliente.list().then(clientes => clientes.find(c => c.id === factura.cliente_id)),
@@ -135,13 +161,26 @@ export default function FacturaDetalle({ factura }) {
                 )}
                 {enviandoCorreo ? "Enviando..." : "Enviar Correo"}
               </Button>
-              <Badge className={`
-                ${factura.estado_pago === 'Pagada' ? 'bg-green-500' : 
-                  factura.estado_pago === 'Parcial' ? 'bg-yellow-500' : 'bg-red-500'} 
-                text-white border-0 text-lg px-4 py-2
-              `}>
-                {factura.estado_pago}
-              </Badge>
+              <div className="flex items-center gap-3">
+                {factura.estado_pago !== 'Pagada' && factura.estado_pago !== 'Cerrada' && (
+                  <Button
+                    onClick={() => setShowCerrarDialog(true)}
+                    className="bg-white text-slate-600 hover:bg-slate-100 gap-2 border border-slate-300"
+                    size="sm"
+                  >
+                    <Lock className="w-4 h-4" />
+                    Cerrar
+                  </Button>
+                )}
+                <Badge className={`
+                  ${factura.estado_pago === 'Pagada' ? 'bg-green-500' : 
+                    factura.estado_pago === 'Parcial' ? 'bg-yellow-500' : 
+                    factura.estado_pago === 'Cerrada' ? 'bg-slate-500' : 'bg-red-500'} 
+                  text-white border-0 text-lg px-4 py-2
+                `}>
+                  {factura.estado_pago}
+                </Badge>
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -184,6 +223,16 @@ export default function FacturaDetalle({ factura }) {
                 <p className="font-semibold text-gray-900">
                   {new Date(factura.fecha_vencimiento).toLocaleDateString()}
                 </p>
+              </div>
+            </div>
+          )}
+
+          {factura.estado_pago === 'Cerrada' && factura.motivo_cierre && (
+            <div className="mt-4 flex items-center gap-2 p-3 bg-slate-100 rounded-lg border border-slate-200">
+              <Lock className="w-5 h-5 text-slate-500" />
+              <div>
+                <p className="text-sm text-slate-600">Motivo de cierre</p>
+                <p className="font-semibold text-slate-800">{factura.motivo_cierre}</p>
               </div>
             </div>
           )}
@@ -322,6 +371,47 @@ export default function FacturaDetalle({ factura }) {
           </CardContent>
         </Card>
       )}
+
+      {/* Dialog Cerrar Factura */}
+      <Dialog open={showCerrarDialog} onOpenChange={setShowCerrarDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Lock className="w-5 h-5 text-slate-600" />
+              Cerrar Factura #{factura.numero_factura}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
+              <p className="text-sm text-amber-800">
+                Al cerrar esta factura, se marcará como <strong>Cerrada</strong> y no aparecerá como pendiente de cobro.
+                El saldo pendiente actual es <strong>${saldoPendiente.toFixed(2)}</strong>.
+                Esta acción deja un registro permanente del motivo.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">Motivo del cierre</Label>
+              <Textarea
+                placeholder="Ej: Cliente se fue sin pagar, factura incobrable, acuerdo fuera del sistema..."
+                value={motivoCierre}
+                onChange={(e) => setMotivoCierre(e.target.value)}
+                rows={3}
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowCerrarDialog(false)}>Cancelar</Button>
+              <Button
+                onClick={handleCerrarFactura}
+                disabled={cerrando}
+                className="bg-slate-600 hover:bg-slate-700 text-white gap-2"
+              >
+                {cerrando ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
+                {cerrando ? "Cerrando..." : "Cerrar Factura"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

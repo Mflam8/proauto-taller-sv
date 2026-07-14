@@ -80,10 +80,15 @@
         "Pendiente",
         "Parcial",
         "Pagada",
-        "Vencida"
+        "Vencida",
+        "Cerrada"
       ],
       "default": "Pendiente",
       "description": "Estado del pago"
+    },
+    "motivo_cierre": {
+      "type": "string",
+      "description": "Motivo por el que se cerr\u00f3 la factura sin cobro completo"
     },
     "monto_pagado": {
       "type": "number",

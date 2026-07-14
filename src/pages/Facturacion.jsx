@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, Search, Plus, Eye, Receipt, CreditCard, AlertCircle, CheckCircle, Clock } from "lucide-react";
+import { DollarSign, Search, Plus, Eye, Receipt, CreditCard, AlertCircle, CheckCircle, Clock, Lock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import FacturaDetalle from "../components/facturacion/FacturaDetalle.jsx";
 import PagoForm from "../components/facturacion/PagoForm.jsx";
@@ -72,7 +72,8 @@ export default function Facturacion() {
       'Pendiente': { color: 'bg-red-100 text-red-800 border-red-200', icon: AlertCircle },
       'Parcial': { color: 'bg-yellow-100 text-yellow-800 border-yellow-200', icon: Clock },
       'Pagada': { color: 'bg-green-100 text-green-800 border-green-200', icon: CheckCircle },
-      'Vencida': { color: 'bg-gray-100 text-gray-800 border-gray-200', icon: AlertCircle }
+      'Vencida': { color: 'bg-gray-100 text-gray-800 border-gray-200', icon: AlertCircle },
+      'Cerrada': { color: 'bg-slate-200 text-slate-700 border-slate-300', icon: Lock }
     };
     return configs[estado] || configs['Pendiente'];
   };
@@ -80,7 +81,7 @@ export default function Facturacion() {
   // Estadísticas
   const totalFacturado = facturas.reduce((sum, f) => sum + (f.total || 0), 0);
   const totalCobrado = pagos.reduce((sum, p) => sum + (p.monto || 0), 0);
-  const facturasConDeuda = facturas.filter(f => (f.saldo_pendiente || 0) > 0 && f.estado_pago !== 'Pagada');
+  const facturasConDeuda = facturas.filter(f => (f.saldo_pendiente || 0) > 0 && f.estado_pago !== 'Pagada' && f.estado_pago !== 'Cerrada');
   const pendienteCobro = facturasConDeuda.reduce((sum, f) => sum + (f.saldo_pendiente || 0), 0);
   const facturasPendientes = facturasConDeuda.length;
 
@@ -176,6 +177,7 @@ export default function Facturacion() {
                   <SelectItem value="Parcial">Parcial</SelectItem>
                   <SelectItem value="Pagada">Pagada</SelectItem>
                   <SelectItem value="Vencida">Vencida</SelectItem>
+                  <SelectItem value="Cerrada">Cerrada</SelectItem>
                 </SelectContent>
               </Select>
             </div>
