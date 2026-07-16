@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { BarChart3, DollarSign, TrendingUp, TrendingDown, Calendar, FileText, Users, Car, Wrench, Truck } from "lucide-react";
 import { motion } from "framer-motion";
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import ReporteExport from "@/components/reportes/ReporteExport";
 
 const PERIODO_LABELS = {
   semana: "Última Semana",
@@ -251,6 +252,13 @@ export default function Reportes() {
               <SelectItem value="anio">Año</SelectItem>
             </SelectContent>
           </Select>
+          <ReporteExport
+            facturas={facturasPeriodo}
+            pagos={pagosPeriodo}
+            clientes={clientes}
+            vehiculos={vehiculos}
+            periodoLabel={PERIODO_LABELS[periodo]}
+          />
         </motion.div>
 
         {/* Métricas Principales */}
