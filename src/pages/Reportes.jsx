@@ -20,6 +20,7 @@ const COLORS = ['#E31E24', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899'
 
 export default function Reportes() {
   const [periodo, setPeriodo] = useState("mes");
+  const [anioSel, setAnioSel] = useState(new Date().getFullYear());
 
   const { data: facturas = [] } = useQuery({
     queryKey: ['facturas'],
@@ -60,14 +61,18 @@ export default function Reportes() {
   // === RANGO DEL PERIODO SELECCIONADO ===
   const { inicio, fin } = useMemo(() => {
     const ahora = new Date();
-    const ini = new Date();
+    let ini = new Date();
+    let end = ahora;
     if (periodo === 'semana') ini.setDate(ahora.getDate() - 7);
     else if (periodo === 'mes') ini.setMonth(ahora.getMonth() - 1);
     else if (periodo === 'trimestre') ini.setMonth(ahora.getMonth() - 3);
-    else ini.setFullYear(ahora.getFullYear() - 1);
+    else {
+      ini = new Date(anioSel, 0, 1);
+      end = new Date(anioSel, 11, 31, 23, 59, 59, 999);
+    }
     ini.setHours(0, 0, 0, 0);
-    return { inicio: ini, fin: ahora };
-  }, [periodo]);
+    return { inicio: ini, fin: end };
+  }, [periodo, anioSel]);
 
   const enPeriodo = (item, dateField) => {
     const fecha = new Date(item[dateField] || item.created_date);
@@ -114,15 +119,15 @@ export default function Reportes() {
         cursor.setDate(cursor.getDate() + 7);
       }
     } else {
-      // Mensual: 12 meses
-      for (let i = 11; i >= 0; i--) {
-        const mes = new Date(); mes.setDate(1); mes.setHours(0, 0, 0, 0); mes.setMonth(mes.getMonth() - i);
-        const mesFin = new Date(mes); mesFin.setMonth(mesFin.getMonth() + 1);
+      // Mensual: 12 meses del año seleccionado
+      for (let i = 0; i < 12; i++) {
+        const mes = new Date(anioSel, i, 1, 0, 0, 0, 0);
+        const mesFin = new Date(anioSel, i + 1, 0, 23, 59, 59, 999);
         result.push({ label: mes.toLocaleDateString('es', { month: 'short' }), inicio: mes, fin: mesFin });
       }
     }
     return result;
-  }, [periodo, inicio, fin]);
+  }, [periodo, inicio, fin, anioSel]);
 
   const enBucket = (item, bucket, dateField) => {
     const fecha = new Date(item[dateField] || item.created_date);
@@ -197,6 +202,15 @@ export default function Reportes() {
     .sort((a, b) => b.total - a.total)
     .slice(0, 8);
 
+  // === CLIENTES NUEVOS VS REPETIDOS ===
+  const clientesUnicosPeriodo = [...new Set(facturasPeriodo.map(f => f.cliente_id).filter(Boolean))];
+  const clientesNuevosCount = clientesUnicosPeriodo.filter(cid => {
+    return !facturas.some(f => f.cliente_id === cid && new Date(f.fecha_emision || f.created_date) < inicio);
+  }).length;
+  const clientesRepetidosCount = clientesUnicosPeriodo.length - clientesNuevosCount;
+  const pctNuevos = clientesUnicosPeriodo.length > 0 ? (clientesNuevosCount / clientesUnicosPeriodo.length * 100) : 0;
+  const pctRepetidos = clientesUnicosPeriodo.length > 0 ? (clientesRepetidosCount / clientesUnicosPeriodo.length * 100) : 0;
+
   // === TOP TRABAJOS (periodo) ===
   const trabajosCount = {};
   trabajosPeriodo.forEach(t => {
@@ -252,12 +266,34 @@ export default function Reportes() {
               <SelectItem value="anio">Año</SelectItem>
             </SelectContent>
           </Select>
+          {periodo === 'anio' && (
+            <Select value={String(anioSel)} onValueChange={(v) => setAnioSel(Number(v))}>
+              <SelectTrigger className="w-28">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="2025">2025</SelectItem>
+                <SelectItem value="2026">2026</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
           <ReporteExport
             facturas={facturasPeriodo}
             pagos={pagosPeriodo}
             clientes={clientes}
             vehiculos={vehiculos}
-            periodoLabel={PERIODO_LABELS[periodo]}
+            chartFacturacion={chartFacturacion}
+            topClientes={topClientes.slice(0, 20)}
+            topTrabajos={topTrabajos}
+            ventasPorTipo={ventasPorTipo}
+            totalFacturado={totalFacturado}
+            totalCobrado={totalCobrado}
+            pendienteCobro={pendienteCobro}
+            clientesNuevosCount={clientesNuevosCount}
+            clientesRepetidosCount={clientesRepetidosCount}
+            pctNuevos={pctNuevos}
+            pctRepetidos={pctRepetidos}
+            periodoLabel={periodo === 'anio' ? `Año ${anioSel}` : PERIODO_LABELS[periodo]}
           />
         </motion.div>
 

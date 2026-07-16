@@ -3,194 +3,311 @@ import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { jsPDF } from "jspdf";
 
-export default function ReporteExport({ facturas, pagos, clientes, vehiculos, periodoLabel }) {
+export default function ReporteExport({
+  facturas, pagos, clientes, vehiculos,
+  chartFacturacion, topClientes, topTrabajos, ventasPorTipo,
+  totalFacturado, totalCobrado, pendienteCobro,
+  clientesNuevosCount, clientesRepetidosCount, pctNuevos, pctRepetidos,
+  periodoLabel,
+}) {
   const handleDownload = () => {
-    const clienteMap = Object.fromEntries((clientes || []).map(c => [c.id, c]));
-    const vehMap = Object.fromEntries((vehiculos || []).map(v => [v.id, v]));
-
-    const totalFacturado = facturas.reduce((s, f) => s + (f.total || 0), 0);
-    const totalCobrado = (pagos || []).reduce((s, p) => s + (p.monto || 0), 0);
-    const pendiente = facturas
-      .filter(f => (f.saldo_pendiente || 0) > 0 && f.estado_pago !== "Pagada")
-      .reduce((s, f) => s + (f.saldo_pendiente || 0), 0);
-
-    const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
     const pageW = doc.internal.pageSize.getWidth();
-    const margin = 14;
-
-    // === HEADER ===
-    doc.setFillColor(227, 14, 29);
-    doc.rect(0, 0, pageW, 28, "F");
-
-    doc.setTextColor(255, 255, 255);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(20);
-    doc.text("PROAUTO Taller SV", margin, 13);
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.text("Reporte de Ventas", margin, 20);
-    doc.text(`Periodo: ${periodoLabel}`, margin, 25);
-
-    doc.setFontSize(9);
+    const pageH = doc.internal.pageSize.getHeight();
+    const M = 14;
     const fechaGen = new Date().toLocaleString("es-SV");
-    doc.text(`Generado: ${fechaGen}`, pageW - margin, 13, { align: "right" });
-    doc.text("Documento Confidencial", pageW - margin, 20, { align: "right" });
 
-    // === RESUMEN ===
-    let y = 38;
-    doc.setTextColor(50, 50, 50);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
-    doc.text("Resumen Financiero", margin, y);
-
-    y += 4;
-    doc.setDrawColor(227, 14, 29);
-    doc.setLineWidth(0.8);
-    doc.line(margin, y, pageW - margin, y);
-
-    y += 6;
-    const colW = (pageW - margin * 2) / 4;
-    const cards = [
-      { label: "Facturacion Total", value: totalFacturado, color: [16, 185, 129] },
-      { label: "Total Cobrado", value: totalCobrado, color: [59, 130, 246] },
-      { label: "Pendiente de Cobro", value: pendiente, color: [239, 68, 68] },
-      { label: "Cantidad de Facturas", value: facturas.length, color: [147, 51, 234], isCount: true },
-    ];
-
-    cards.forEach((card, i) => {
-      const x = margin + i * colW;
-      doc.setFillColor(248, 248, 248);
-      doc.roundedRect(x + 2, y, colW - 4, 18, 2, 2, "F");
-
-      doc.setFontSize(7);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(120, 120, 120);
-      doc.text(card.label.toUpperCase(), x + 4, y + 5);
-
-      doc.setFontSize(13);
+    // === HEADER (todas las páginas via addHeader) ===
+    const addHeader = () => {
+      doc.setFillColor(227, 14, 29);
+      doc.rect(0, 0, pageW, 26, "F");
+      doc.setTextColor(255, 255, 255);
       doc.setFont("helvetica", "bold");
-      doc.setTextColor(...card.color);
-      doc.text(card.isCount ? String(card.value) : `$${card.value.toFixed(2)}`, x + 4, y + 13);
-    });
-
-    // === TABLA DE FACTURAS ===
-    y += 26;
-    doc.setTextColor(50, 50, 50);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
-    doc.text("Detalle de Facturas", margin, y);
-
-    y += 4;
-    doc.line(margin, y, pageW - margin, y);
-
-    y += 5;
-    const headers = ["No. Factura", "Fecha", "Cliente", "Vehiculo", "Forma Pago", "Subtotal", "IVA", "Total", "Pagado", "Saldo", "Estado"];
-    const colWidths = [28, 22, 45, 42, 22, 22, 18, 22, 22, 22, 24];
-    const tableW = colWidths.reduce((a, b) => a + b, 0);
-    let x = margin;
-
-    // Header row
-    doc.setFillColor(227, 14, 29);
-    doc.rect(x, y - 4, tableW, 7, "F");
-    doc.setTextColor(255, 255, 255);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(7);
-    headers.forEach((h, i) => {
-      doc.text(h, x + 1, y, { align: i >= 5 ? "right" : "left" });
-      x += colWidths[i];
-    });
-
-    y += 4;
-
-    // Data rows
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(7);
-    const rowH = 5;
-    let alt = false;
-
-    facturas.forEach((f) => {
-      if (y > doc.internal.pageSize.getHeight() - 15) {
-        doc.addPage();
-        y = 20;
-        // Repeat header
-        let hx = margin;
-        doc.setFillColor(227, 14, 29);
-        doc.rect(hx, y - 4, tableW, 7, "F");
-        doc.setTextColor(255, 255, 255);
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(7);
-        headers.forEach((h, i) => {
-          doc.text(h, hx + 1, y, { align: i >= 5 ? "right" : "left" });
-          hx += colWidths[i];
-        });
-        y += 4;
-        doc.setFont("helvetica", "normal");
-        alt = false;
-      }
-
-      const cli = clienteMap[f.cliente_id];
-      const veh = vehMap[f.vehiculo_id];
-      const vals = [
-        f.numero_factura || "-",
-        fmtFecha(f.fecha_emision),
-        cli ? trunc(cli.nombre_completo, 26) : "-",
-        veh ? trunc(`${veh.placa} ${veh.marca} ${veh.modelo}`, 24) : "-",
-        f.forma_pago || "-",
-        (f.subtotal || 0).toFixed(2),
-        (f.iva || 0).toFixed(2),
-        (f.total || 0).toFixed(2),
-        (f.monto_pagado || 0).toFixed(2),
-        (f.saldo_pendiente || 0).toFixed(2),
-        f.estado_pago || "-",
-      ];
-
-      if (alt) {
-        doc.setFillColor(245, 245, 245);
-        doc.rect(margin, y - 3, tableW, rowH, "F");
-      }
-      alt = !alt;
-
-      doc.setTextColor(40, 40, 40);
-      x = margin;
-      vals.forEach((v, i) => {
-        if (i >= 5 && i <= 9) {
-          doc.text(`$${v}`, x + colWidths[i] - 1, y, { align: "right" });
-        } else {
-          doc.text(String(v), x + 1, y);
-        }
-        x += colWidths[i];
-      });
-      y += rowH;
-    });
-
-    // === TOTALES ===
-    y += 2;
-    doc.setDrawColor(200, 200, 200);
-    doc.setLineWidth(0.3);
-    doc.line(margin, y, margin + tableW, y);
-    y += 4;
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
-    doc.setTextColor(227, 14, 29);
-    const totalX = margin + colWidths[0] + colWidths[1] + colWidths[2] + colWidths[3] + colWidths[4];
-    doc.text("TOTALES:", totalX + 1, y, { align: "right" });
-    doc.text(`$${facturas.reduce((s, f) => s + (f.subtotal || 0), 0).toFixed(2)}`, margin + colWidths[0] + colWidths[1] + colWidths[2] + colWidths[3] + colWidths[4] + colWidths[5] - 1, y, { align: "right" });
-    doc.text(`$${facturas.reduce((s, f) => s + (f.iva || 0), 0).toFixed(2)}`, margin + colWidths[0] + colWidths[1] + colWidths[2] + colWidths[3] + colWidths[4] + colWidths[5] + colWidths[6] - 1, y, { align: "right" });
-    doc.text(`$${totalFacturado.toFixed(2)}`, margin + colWidths[0] + colWidths[1] + colWidths[2] + colWidths[3] + colWidths[4] + colWidths[5] + colWidths[6] + colWidths[7] - 1, y, { align: "right" });
-    doc.text(`$${facturas.reduce((s, f) => s + (f.monto_pagado || 0), 0).toFixed(2)}`, margin + colWidths[0] + colWidths[1] + colWidths[2] + colWidths[3] + colWidths[4] + colWidths[5] + colWidths[6] + colWidths[7] + colWidths[8] - 1, y, { align: "right" });
-    doc.text(`$${facturas.reduce((s, f) => s + (f.saldo_pendiente || 0), 0).toFixed(2)}`, margin + colWidths[0] + colWidths[1] + colWidths[2] + colWidths[3] + colWidths[4] + colWidths[5] + colWidths[6] + colWidths[7] + colWidths[8] + colWidths[9] - 1, y, { align: "right" });
+      doc.setFontSize(18);
+      doc.text("PROAUTO Taller SV", M, 12);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.text("Reporte de Ventas", M, 19);
+      doc.text(`Periodo: ${periodoLabel}`, M, 24);
+      doc.setFontSize(8);
+      doc.text(`Generado: ${fechaGen}`, pageW - M, 12, { align: "right" });
+      doc.text("Documento Confidencial", pageW - M, 19, { align: "right" });
+    };
 
     // === FOOTER ===
-    const pageH = doc.internal.pageSize.getHeight();
+    const addFooter = () => {
+      doc.setDrawColor(227, 14, 29);
+      doc.setLineWidth(0.5);
+      doc.line(M, pageH - 12, pageW - M, pageH - 12);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(120, 120, 120);
+      doc.text("PROAUTO Taller SV - Reporte Confidencial", M, pageH - 7);
+      doc.text(`Generado el ${fechaGen}`, pageW - M, pageH - 7, { align: "right" });
+    };
+
+    const checkPage = (y, needed = 20) => {
+      if (y + needed > pageH - 16) {
+        addFooter();
+        doc.addPage();
+        addHeader();
+        return 34;
+      }
+      return y;
+    };
+
+    addHeader();
+    let y = 34;
+
+    // === SECCIÓN 1: RESUMEN FINANCIERO ===
+    doc.setTextColor(50, 50, 50);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.text("Resumen Financiero", M, y);
+    y += 3;
     doc.setDrawColor(227, 14, 29);
-    doc.setLineWidth(0.5);
-    doc.line(margin, pageH - 12, pageW - margin, pageH - 12);
-    doc.setFont("helvetica", "normal");
+    doc.setLineWidth(0.8);
+    doc.line(M, y, pageW - M, y);
+    y += 6;
+
+    const ivaTotal = facturas.reduce((s, f) => s + (f.iva || 0), 0);
+    const cards = [
+      { label: "Facturacion Total", value: `$${(totalFacturado || 0).toFixed(2)}`, color: [16, 185, 129] },
+      { label: "Total Cobrado", value: `$${(totalCobrado || 0).toFixed(2)}`, color: [59, 130, 246] },
+      { label: "Pendiente de Cobro", value: `$${(pendienteCobro || 0).toFixed(2)}`, color: [239, 68, 68] },
+      { label: "IVA Recaudado", value: `$${ivaTotal.toFixed(2)}`, color: [245, 158, 11] },
+      { label: "Cantidad de Facturas", value: String(facturas.length), color: [147, 51, 234] },
+    ];
+    const cardW = (pageW - M * 2 - 16) / 5;
+    cards.forEach((card, i) => {
+      const x = M + i * (cardW + 4);
+      doc.setFillColor(248, 248, 248);
+      doc.roundedRect(x, y, cardW, 20, 2, 2, "F");
+      doc.setFontSize(6);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(120, 120, 120);
+      doc.text(card.label.toUpperCase(), x + 2, y + 5);
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(...card.color);
+      doc.text(card.value, x + 2, y + 13);
+    });
+    y += 28;
+
+    // === SECCIÓN 2: VENTAS POR MES ===
+    y = checkPage(y, 40);
+    doc.setTextColor(50, 50, 50);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.text("Ventas por Mes", M, y);
+    y += 3;
+    doc.setDrawColor(227, 14, 29);
+    doc.line(M, y, pageW - M, y);
+    y += 5;
+
+    const colW2 = (pageW - M * 2) / Math.max(chartFacturacion.length, 1);
+    const barMaxH = 30;
+    const maxVal = Math.max(...chartFacturacion.map(c => c.monto || 0), 1);
+
+    chartFacturacion.forEach((c) => {
+      const barH = ((c.monto || 0) / maxVal) * barMaxH;
+      const x = M + chartFacturacion.indexOf(c) * colW2;
+      doc.setFillColor(227, 14, 29);
+      doc.rect(x + 1, y + barMaxH - barH, colW2 - 2, barH, "F");
+      doc.setFontSize(6);
+      doc.setTextColor(80, 80, 80);
+      doc.text(c.label, x + colW2 / 2, y + barMaxH + 3, { align: "center" });
+      if (c.monto > 0) {
+        doc.setTextColor(50, 50, 50);
+        doc.text(`$${(c.monto / 1000).toFixed(0)}k`, x + colW2 / 2, y + barMaxH - barH - 1, { align: "center" });
+      }
+    });
+    y += barMaxH + 8;
+
+    // === SECCIÓN 3: CLIENTES NUEVOS VS REPETIDOS ===
+    y = checkPage(y, 30);
+    doc.setTextColor(50, 50, 50);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.text("Clientes Nuevos vs Repetidos", M, y);
+    y += 3;
+    doc.setDrawColor(227, 14, 29);
+    doc.line(M, y, pageW - M, y);
+    y += 6;
+
+    const totalClientes = clientesNuevosCount + clientesRepetidosCount;
+    const halfW = (pageW - M * 2 - 6) / 2;
+
+    // Nuevos
+    doc.setFillColor(219, 234, 254);
+    doc.roundedRect(M, y, halfW, 24, 2, 2, "F");
+    doc.setFillColor(59, 130, 246);
+    doc.circle(M + 8, y + 8, 3, "F");
     doc.setFontSize(7);
-    doc.setTextColor(120, 120, 120);
-    doc.text("PROAUTO Taller SV - Reporte Confidencial", margin, pageH - 7);
-    doc.text(`Generado el ${fechaGen}`, pageW - margin, pageH - 7, { align: "right" });
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(80, 80, 80);
+    doc.text("CLIENTES NUEVOS", M + 14, y + 8);
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(59, 130, 246);
+    doc.text(String(clientesNuevosCount), M + 4, y + 19);
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(80, 80, 80);
+    doc.text(`${pctNuevos.toFixed(1)}% del total`, M + 14, y + 19);
+
+    // Repetidos
+    const x2 = M + halfW + 6;
+    doc.setFillColor(254, 226, 226);
+    doc.roundedRect(x2, y, halfW, 24, 2, 2, "F");
+    doc.setFillColor(239, 68, 68);
+    doc.circle(x2 + 8, y + 8, 3, "F");
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(80, 80, 80);
+    doc.text("CLIENTES REPETIDOS", x2 + 14, y + 8);
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(239, 68, 68);
+    doc.text(String(clientesRepetidosCount), x2 + 4, y + 19);
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(80, 80, 80);
+    doc.text(`${pctRepetidos.toFixed(1)}% del total`, x2 + 14, y + 19);
+    y += 30;
+
+    // === SECCIÓN 4: VENTAS POR TIPO ===
+    y = checkPage(y, 25);
+    doc.setTextColor(50, 50, 50);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.text("Ventas por Tipo", M, y);
+    y += 3;
+    doc.setDrawColor(227, 14, 29);
+    doc.line(M, y, pageW - M, y);
+    y += 5;
+
+    const tipos = Object.entries(ventasPorTipo || {});
+    const tipoColors = { "Mano de Obra": [59, 130, 246], "Repuesto": [227, 14, 29], "Insumo": [245, 158, 11], "Diagnóstico": [139, 92, 246], "Otro": [107, 114, 128] };
+    const totalTipos = tipos.reduce((s, [, v]) => s + v, 0) || 1;
+    const tipoW = (pageW - M * 2) / Math.max(tipos.length, 1);
+    tipos.forEach(([tipo, monto], i) => {
+      const x = M + i * tipoW;
+      const pct = (monto / totalTipos * 100);
+      doc.setFillColor(...(tipoColors[tipo] || [107, 114, 128]));
+      doc.roundedRect(x + 2, y, tipoW - 4, 16, 2, 2, "F");
+      doc.setFontSize(6);
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.text(tipo.toUpperCase(), x + tipoW / 2, y + 5, { align: "center" });
+      doc.setFontSize(8);
+      doc.text(`$${monto.toFixed(0)}`, x + tipoW / 2, y + 10, { align: "center" });
+      doc.setFontSize(6);
+      doc.setFont("helvetica", "normal");
+      doc.text(`${pct.toFixed(1)}%`, x + tipoW / 2, y + 14, { align: "center" });
+    });
+    y += 22;
+
+    // === SECCIÓN 5: TOP 10 CLIENTES CON MAYOR CONSUMO ===
+    y = checkPage(y, 40);
+    doc.setTextColor(50, 50, 50);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.text("Top 10 Clientes con Mayor Consumo", M, y);
+    y += 3;
+    doc.setDrawColor(227, 14, 29);
+    doc.line(M, y, pageW - M, y);
+    y += 5;
+
+    const tHeaders = ["#", "Cliente", "Facturas", "Total Consumo"];
+    const tWidths = [12, 90, 30, 40];
+    const tW = tWidths.reduce((a, b) => a + b, 0);
+    let x = M;
+    doc.setFillColor(227, 14, 29);
+    doc.rect(x, y - 4, tW, 7, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    tHeaders.forEach((h, i) => {
+      doc.text(h, x + (i >= 2 ? tWidths[i] - 1 : 1), y, { align: i >= 2 ? "right" : "left" });
+      x += tWidths[i];
+    });
+    y += 4;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    let alt = false;
+    (topClientes || []).slice(0, 10).forEach((c, i) => {
+      y = checkPage(y, 6);
+      if (alt) {
+        doc.setFillColor(245, 245, 245);
+        doc.rect(M, y - 3, tW, 5.5, "F");
+      }
+      alt = !alt;
+      doc.setTextColor(40, 40, 40);
+      x = M;
+      doc.text(String(i + 1), x + 1, y);
+      x += tWidths[0];
+      doc.text(trunc(c.nombre, 48), x + 1, y);
+      x += tWidths[1];
+      doc.text(String(c.facturas), x + tWidths[2] - 1, y, { align: "right" });
+      x += tWidths[2];
+      doc.setFont("helvetica", "bold");
+      doc.text(`$${(c.total || 0).toFixed(2)}`, x + tWidths[3] - 1, y, { align: "right" });
+      doc.setFont("helvetica", "normal");
+      y += 5.5;
+    });
+    y += 4;
+
+    // === SECCIÓN 6: LO QUE MÁS SE VENDE ===
+    y = checkPage(y, 40);
+    doc.setTextColor(50, 50, 50);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.text("Lo Que Más Se Vende (Top 10)", M, y);
+    y += 3;
+    doc.setDrawColor(227, 14, 29);
+    doc.line(M, y, pageW - M, y);
+    y += 5;
+
+    const vHeaders = ["#", "Descripción", "Veces", "Monto Total"];
+    const vWidths = [12, 100, 25, 35];
+    const vW = vWidths.reduce((a, b) => a + b, 0);
+    x = M;
+    doc.setFillColor(227, 14, 29);
+    doc.rect(x, y - 4, vW, 7, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    vHeaders.forEach((h, i) => {
+      doc.text(h, x + (i >= 2 ? vWidths[i] - 1 : 1), y, { align: i >= 2 ? "right" : "left" });
+      x += vWidths[i];
+    });
+    y += 4;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    alt = false;
+    (topTrabajos || []).slice(0, 10).forEach((t, i) => {
+      y = checkPage(y, 6);
+      if (alt) {
+        doc.setFillColor(245, 245, 245);
+        doc.rect(M, y - 3, vW, 5.5, "F");
+      }
+      alt = !alt;
+      doc.setTextColor(40, 40, 40);
+      x = M;
+      doc.text(String(i + 1), x + 1, y);
+      x += vWidths[0];
+      doc.text(trunc(t.descripcion, 55), x + 1, y);
+      x += vWidths[1];
+      doc.text(String(t.count), x + vWidths[2] - 1, y, { align: "right" });
+      x += vWidths[2];
+      doc.setFont("helvetica", "bold");
+      doc.text(`$${(t.monto || 0).toFixed(2)}`, x + vWidths[3] - 1, y, { align: "right" });
+      doc.setFont("helvetica", "normal");
+      y += 5.5;
+    });
+
+    addFooter();
 
     const fechaArchivo = new Date().toISOString().split("T")[0];
     doc.save(`reporte_ventas_${fechaArchivo}.pdf`);
@@ -202,13 +319,6 @@ export default function ReporteExport({ facturas, pagos, clientes, vehiculos, pe
       Descargar PDF
     </Button>
   );
-}
-
-function fmtFecha(d) {
-  if (!d) return "-";
-  const date = new Date(d);
-  if (isNaN(date)) return String(d);
-  return date.toLocaleDateString("es-SV");
 }
 
 function trunc(s, max) {
