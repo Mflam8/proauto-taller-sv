@@ -143,5 +143,15 @@
     "cliente_id",
     "vehiculo_id",
     "motivo_visita"
-  ]
+  ],
+  "rls": {
+    "create": null,
+    "read": null,
+    "update": null,
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
 }

@@ -155,5 +155,15 @@
   "required": [
     "expediente_id",
     "vehiculo_id"
-  ]
+  ],
+  "rls": {
+    "create": null,
+    "read": null,
+    "update": null,
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
 }

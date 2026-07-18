@@ -83,5 +83,15 @@
   "required": [
     "nombre_completo",
     "telefono"
-  ]
+  ],
+  "rls": {
+    "create": null,
+    "read": null,
+    "update": null,
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
 }

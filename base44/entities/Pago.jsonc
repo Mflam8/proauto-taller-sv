@@ -64,5 +64,15 @@
     "factura_id",
     "monto",
     "metodo_pago"
-  ]
+  ],
+  "rls": {
+    "create": null,
+    "read": null,
+    "update": null,
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
 }
