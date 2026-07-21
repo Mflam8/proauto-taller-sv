@@ -17,7 +17,7 @@ const ESTADOS_ACTIVOS = [
   "En Reparación", "Esperando Repuesto", "En Pintura", "En Lavado", "Listo para Entrega"
 ];
 
-export default function TableroDiario() {
+export default function OperacionDiaria() {
   const [showExpedienteForm, setShowExpedienteForm] = useState(false);
   const [showPagoForm, setShowPagoForm] = useState(false);
   const qc = useQueryClient();

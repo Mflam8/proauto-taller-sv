@@ -41,7 +41,7 @@ import { Button } from "@/components/ui/button";
 const navigationItems = [
   {
     title: "Tablero Diario",
-    url: "/TableroDiario",
+    url: "/OperacionDiaria",
     icon: LayoutGrid,
   },
   {

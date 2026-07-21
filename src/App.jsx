@@ -18,7 +18,7 @@ import Inspecciones from './pages/Inspecciones';
 import LinkTree from './pages/LinkTree';
 import OrdenesTrabajos from './pages/OrdenesTrabajos';
 import InformeRemesas from './pages/InformeRemesas';
-import TableroDiario from './pages/TableroDiario';
+import OperacionDiaria from './pages/OperacionDiaria';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -79,7 +79,7 @@ const AuthenticatedApp = () => {
       <Route path="/links" element={<LinkTree />} />
       <Route path="/OrdenesTrabajos" element={<LayoutWrapper currentPageName="OrdenesTrabajos"><OrdenesTrabajos /></LayoutWrapper>} />
       <Route path="/InformeRemesas" element={<LayoutWrapper currentPageName="InformeRemesas"><InformeRemesas /></LayoutWrapper>} />
-      <Route path="/TableroDiario" element={<LayoutWrapper currentPageName="TableroDiario"><TableroDiario /></LayoutWrapper>} />
+      <Route path="/OperacionDiaria" element={<LayoutWrapper currentPageName="OperacionDiaria"><OperacionDiaria /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
