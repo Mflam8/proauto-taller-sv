@@ -345,16 +345,24 @@ function InspeccionDetalle({ inspeccion, vehiculo, cliente }) {
       <div className="bg-white border rounded-xl p-4">
         <h3 className="font-semibold text-gray-800 mb-3">Condición del Vehículo</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
-          {condicionFields.map(([label, val]) => val && (
+          {condicionFields.map(([label, val]) => (
             <div key={label} className="flex items-center justify-between py-1.5 border-b border-gray-50">
               <span className="text-sm text-gray-600">{label}</span>
-              <Badge className={condicionColor[val] || "bg-gray-100 text-gray-700"}>{val}</Badge>
+              {val ? (
+                <Badge className={condicionColor[val] || "bg-gray-100 text-gray-700"}>{val}</Badge>
+              ) : (
+                <span className="text-xs text-gray-400">Sin evaluar</span>
+              )}
             </div>
           ))}
-          {siNoFields.map(([label, val]) => val && (
+          {siNoFields.map(([label, val]) => (
             <div key={label} className="flex items-center justify-between py-1.5 border-b border-gray-50">
               <span className="text-sm text-gray-600">{label}</span>
-              <Badge className={val === "Sí" || val === "Funciona" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>{val}</Badge>
+              {val ? (
+                <Badge className={val === "Sí" || val === "Funciona" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>{val}</Badge>
+              ) : (
+                <span className="text-xs text-gray-400">Sin evaluar</span>
+              )}
             </div>
           ))}
         </div>
@@ -371,7 +379,7 @@ function InspeccionDetalle({ inspeccion, vehiculo, cliente }) {
           ))}
         </div>
         {inspeccion.accesorios_recibidos && (
-          <p className="text-sm text-gray-600">Otros: {inspeccion.accesorios_recibidos}</p>
+          <p className="text-sm text-gray-600 whitespace-pre-line">Otros: {inspeccion.accesorios_recibidos}</p>
         )}
       </div>
 
@@ -382,11 +390,12 @@ function InspeccionDetalle({ inspeccion, vehiculo, cliente }) {
           <div className="space-y-2">
             {inspeccion.daños.map((d, i) => (
               <div key={i} className="flex items-start gap-2 p-2 bg-red-50 rounded-lg">
-                <Badge className="bg-red-100 text-red-800 text-xs">{d.tipo}</Badge>
-                <div className="text-sm">
+                <Badge className="bg-red-100 text-red-800 text-xs flex-shrink-0">{d.tipo}</Badge>
+                <div className="text-sm flex-1">
                   <span className="font-medium text-gray-800">{d.ubicacion}</span>
                   {d.descripcion && <span className="text-gray-500"> — {d.descripcion}</span>}
                 </div>
+                {d.foto_url && <img src={d.foto_url} alt={`Daño ${i + 1}`} className="w-16 h-16 object-cover rounded-lg flex-shrink-0" />}
               </div>
             ))}
           </div>
@@ -397,7 +406,19 @@ function InspeccionDetalle({ inspeccion, vehiculo, cliente }) {
       {inspeccion.observaciones && (
         <div className="bg-white border rounded-xl p-4">
           <h3 className="font-semibold text-gray-800 mb-2">Observaciones</h3>
-          <p className="text-sm text-gray-600">{inspeccion.observaciones}</p>
+          <p className="text-sm text-gray-600 whitespace-pre-line">{inspeccion.observaciones}</p>
+        </div>
+      )}
+
+      {/* Fotos de evidencia */}
+      {inspeccion.fotos?.length > 0 && (
+        <div className="bg-white border rounded-xl p-4">
+          <h3 className="font-semibold text-gray-800 mb-3">Fotos de Evidencia ({inspeccion.fotos.length})</h3>
+          <div className="grid grid-cols-3 gap-2">
+            {inspeccion.fotos.map((url, i) => (
+              <img key={i} src={url} alt={`Foto ${i + 1}`} className="w-full h-24 object-cover rounded-lg" />
+            ))}
+          </div>
         </div>
       )}
     </div>
