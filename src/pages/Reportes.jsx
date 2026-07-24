@@ -8,6 +8,8 @@ import { BarChart3, DollarSign, TrendingUp, TrendingDown, Calendar, FileText, Us
 import { motion } from "framer-motion";
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import ReporteExport from "@/components/reportes/ReporteExport";
+import ReportePintura from "@/components/reportes/ReportePintura";
+import ExpedientesSinFacturar from "@/components/reportes/ExpedientesSinFacturar";
 
 const PERIODO_LABELS = {
   semana: "Última Semana",
@@ -55,6 +57,11 @@ export default function Reportes() {
   const { data: cajaChica = [] } = useQuery({
     queryKey: ['cajaChica-reportes'],
     queryFn: () => base44.entities.CajaChica.list('-created_date'),
+    initialData: [],
+  });
+  const { data: expedientes = [] } = useQuery({
+    queryKey: ['expedientes-reportes'],
+    queryFn: () => base44.entities.Expediente.list('-fecha_ingreso'),
     initialData: [],
   });
 
@@ -179,14 +186,30 @@ export default function Reportes() {
   });
   const manoObraVsRepuestos = [
     { name: 'Mano de Obra', value: ventasPorTipo['Mano de Obra'] || 0, color: '#3B82F6' },
+    { name: 'Mano de Obra Pintura', value: ventasPorTipo['Mano de Obra Pintura'] || 0, color: '#A855F7' },
     { name: 'Repuestos', value: ventasPorTipo['Repuesto'] || 0, color: '#E31E24' },
     { name: 'Insumos', value: ventasPorTipo['Insumo'] || 0, color: '#F59E0B' },
-    { name: 'Diagnóstico', value: ventasPorTipo['Diagnóstico'] || 0, color: '#8B5CF6' },
+    { name: 'Diagnóstico', value: ventasPorTipo['Diagnóstico'] || 0, color: '#10B981' },
     { name: 'Otros', value: ventasPorTipo['Otro'] || 0, color: '#6B7280' },
   ].filter(i => i.value > 0);
   const montoManoObra = ventasPorTipo['Mano de Obra'] || 0;
   const montoRepuestos = ventasPorTipo['Repuesto'] || 0;
   const piezasCompradas = trabajosPeriodo.filter(t => t.tipo === 'Repuesto').length;
+
+  // === REPORTE DE PINTURA ===
+  const totalVendidoPintura = ventasPorTipo['Mano de Obra Pintura'] || 0;
+  const expedientesConPintura = new Set(
+    trabajosPeriodo.filter(t => t.tipo === 'Mano de Obra Pintura').map(t => t.expediente_id)
+  );
+  const facturasPinturaIds = new Set(
+    facturas.filter(f => expedientesConPintura.has(f.expediente_id)).map(f => f.id)
+  );
+  const totalCobradoPintura = pagosPeriodo
+    .filter(p => facturasPinturaIds.has(p.factura_id))
+    .reduce((s, p) => s + (p.monto || 0), 0);
+
+  // === VEHICULO MAP PARA EXPEDIENTES SIN FACTURAR ===
+  const vehiculoMap = Object.fromEntries(vehiculos.map(v => [v.id, v]));
 
   // === TOP CLIENTES (periodo) ===
   const gastoPorCliente = {};
@@ -638,6 +661,16 @@ export default function Reportes() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Reporte de Pintura */}
+        <ReportePintura totalVendido={totalVendidoPintura} totalCobrado={totalCobradoPintura} />
+
+        {/* Expedientes Sin Facturar */}
+        <ExpedientesSinFacturar
+          expedientes={expedientes}
+          clienteMap={clienteMap}
+          vehiculoMap={vehiculoMap}
+        />
 
         {/* Estado de Facturas */}
         <Card className="border-0 shadow-lg">

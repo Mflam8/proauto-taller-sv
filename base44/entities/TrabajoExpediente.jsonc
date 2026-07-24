@@ -22,6 +22,7 @@
       "type": "string",
       "enum": [
         "Mano de Obra",
+        "Mano de Obra Pintura",
         "Repuesto",
         "Insumo",
         "Diagn\u00f3stico",
@@ -69,15 +70,5 @@
     "expediente_id",
     "descripcion",
     "tipo"
-  ],
-  "rls": {
-    "create": null,
-    "read": null,
-    "update": null,
-    "delete": {
-      "user_condition": {
-        "role": "admin"
-      }
-    }
-  }
+  ]
 }

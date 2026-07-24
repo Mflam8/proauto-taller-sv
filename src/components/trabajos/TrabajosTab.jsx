@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, CheckCircle, Clock, Wrench } from "lucide-react";
 
-const TIPOS = ["Mano de Obra", "Repuesto", "Insumo", "Diagnóstico", "Otro"];
+const TIPOS = ["Mano de Obra", "Mano de Obra Pintura", "Repuesto", "Insumo", "Diagnóstico", "Otro"];
 
 const estadoColor = {
   "Pendiente": "bg-yellow-100 text-yellow-800",
