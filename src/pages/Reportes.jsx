@@ -560,6 +560,54 @@ export default function Reportes() {
           </Card>
         </div>
 
+        {/* Desglose mensual de facturación */}
+        <Card className="border-0 shadow-lg">
+          <CardHeader className="border-b">
+            <CardTitle className="flex items-center gap-2"><BarChart3 className="w-5 h-5 text-[#E31E24]" /> Desglose Mensual de Facturación ({periodo === 'anio' ? anioSel : PERIODO_LABELS[periodo]})</CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-100">
+                    <th className="text-left py-2 px-3 text-xs font-semibold text-gray-500 uppercase">{periodo === 'anio' ? 'Mes' : 'Periodo'}</th>
+                    <th className="text-right py-2 px-3 text-xs font-semibold text-gray-500 uppercase">Facturas</th>
+                    <th className="text-right py-2 px-3 text-xs font-semibold text-gray-500 uppercase">Clientes</th>
+                    <th className="text-right py-2 px-3 text-xs font-semibold text-gray-500 uppercase">Ventas Totales</th>
+                    <th className="text-right py-2 px-3 text-xs font-semibold text-gray-500 uppercase">% del Total</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {chartFacturacion.map((c, i) => {
+                    const granTotal = chartFacturacion.reduce((s, x) => s + (x.monto || 0), 0) || 1;
+                    const pct = ((c.monto || 0) / granTotal * 100).toFixed(1);
+                    return (
+                      <tr key={i} className="hover:bg-gray-50">
+                        <td className="py-2.5 px-3 font-medium text-gray-900 capitalize">{c.label}</td>
+                        <td className="py-2.5 px-3 text-right text-gray-700">{c.facturas || 0}</td>
+                        <td className="py-2.5 px-3 text-right">
+                          <Badge className="bg-blue-100 text-blue-800">{c.clientes || 0}</Badge>
+                        </td>
+                        <td className="py-2.5 px-3 text-right font-bold text-gray-900">${(c.monto || 0).toFixed(2)}</td>
+                        <td className="py-2.5 px-3 text-right text-gray-500">{pct}%</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+                <tfoot>
+                  <tr className="border-t-2 border-gray-200 bg-gray-50 font-bold">
+                    <td className="py-2.5 px-3 text-gray-900">TOTAL</td>
+                    <td className="py-2.5 px-3 text-right text-gray-900">{chartFacturacion.reduce((s, c) => s + (c.facturas || 0), 0)}</td>
+                    <td className="py-2.5 px-3 text-right text-gray-900">{chartFacturacion.reduce((s, c) => s + (c.clientes || 0), 0)}</td>
+                    <td className="py-2.5 px-3 text-right text-[#E31E24]">${chartFacturacion.reduce((s, c) => s + (c.monto || 0), 0).toFixed(2)}</td>
+                    <td className="py-2.5 px-3 text-right text-gray-500">100%</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Qué se vende más */}
         <Card className="border-0 shadow-lg">
           <CardHeader className="border-b">
