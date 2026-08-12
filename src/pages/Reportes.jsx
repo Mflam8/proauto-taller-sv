@@ -142,10 +142,15 @@ export default function Reportes() {
   };
 
   // Gráfico principal: facturación por bucket
-  const chartFacturacion = buckets.map(b => ({
-    label: b.label,
-    monto: facturas.filter(f => enBucket(f, b, 'fecha_emision')).reduce((s, f) => s + (f.total || 0), 0),
-  }));
+  const chartFacturacion = buckets.map(b => {
+    const fs = facturas.filter(f => enBucket(f, b, 'fecha_emision'));
+    return {
+      label: b.label,
+      monto: fs.reduce((s, f) => s + (f.total || 0), 0),
+      facturas: fs.length,
+      clientes: new Set(fs.map(f => f.cliente_id).filter(Boolean)).size,
+    };
+  });
 
   // Clientes nuevos por bucket
   const clientesNuevosData = buckets.map(b => ({

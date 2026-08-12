@@ -122,7 +122,66 @@ export default function ReporteExport({
         doc.text(`$${(c.monto / 1000).toFixed(0)}k`, x + colW2 / 2, y + barMaxH - barH - 1, { align: "center" });
       }
     });
-    y += barMaxH + 8;
+    y += barMaxH + 6;
+
+    // Tabla descriptiva mensual: mes | facturas | clientes | ventas totales
+    y = checkPage(y, 30);
+    const mHeaders = ["Mes", "Facturas", "Clientes", "Ventas Totales"];
+    const mWidths = [50, 35, 35, 55];
+    const mW = mWidths.reduce((a, b) => a + b, 0);
+    x = M;
+    doc.setFillColor(120, 120, 120);
+    doc.rect(x, y - 4, mW, 7, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    mHeaders.forEach((h, i) => {
+      doc.text(h, x + (i >= 1 ? mWidths[i] - 1 : 1), y, { align: i >= 1 ? "right" : "left" });
+      x += mWidths[i];
+    });
+    y += 4;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    let altMes = false;
+    const sumFacturas = chartFacturacion.reduce((s, c) => s + (c.facturas || 0), 0);
+    const sumClientes = chartFacturacion.reduce((s, c) => s + (c.clientes || 0), 0);
+    const sumVentas = chartFacturacion.reduce((s, c) => s + (c.monto || 0), 0);
+    chartFacturacion.forEach((c) => {
+      y = checkPage(y, 6);
+      if (altMes) {
+        doc.setFillColor(245, 245, 245);
+        doc.rect(M, y - 3, mW, 5.5, "F");
+      }
+      altMes = !altMes;
+      doc.setTextColor(40, 40, 40);
+      x = M;
+      doc.text(c.label, x + 1, y);
+      x += mWidths[0];
+      doc.text(String(c.facturas || 0), x + mWidths[1] - 1, y, { align: "right" });
+      x += mWidths[1];
+      doc.text(String(c.clientes || 0), x + mWidths[2] - 1, y, { align: "right" });
+      x += mWidths[2];
+      doc.setFont("helvetica", "bold");
+      doc.text(`$${(c.monto || 0).toFixed(2)}`, x + mWidths[3] - 1, y, { align: "right" });
+      doc.setFont("helvetica", "normal");
+      y += 5.5;
+    });
+    // Fila de totales
+    y = checkPage(y, 7);
+    doc.setDrawColor(227, 14, 29);
+    doc.setLineWidth(0.4);
+    doc.line(M, y - 3, M + mW, y - 3);
+    doc.setTextColor(227, 14, 29);
+    doc.setFont("helvetica", "bold");
+    x = M;
+    doc.text("TOTAL", x + 1, y);
+    x += mWidths[0];
+    doc.text(String(sumFacturas), x + mWidths[1] - 1, y, { align: "right" });
+    x += mWidths[1];
+    doc.text(String(sumClientes), x + mWidths[2] - 1, y, { align: "right" });
+    x += mWidths[2];
+    doc.text(`$${sumVentas.toFixed(2)}`, x + mWidths[3] - 1, y, { align: "right" });
+    y += 10;
 
     // === SECCIÓN 3: CLIENTES NUEVOS VS REPETIDOS ===
     y = checkPage(y, 30);
