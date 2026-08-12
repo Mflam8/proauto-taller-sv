@@ -58,6 +58,7 @@ export default function ReporteExport({
 
     addHeader();
     let y = 34;
+    let x;
 
     // === SECCIÓN 1: RESUMEN FINANCIERO ===
     doc.setTextColor(50, 50, 50);
@@ -281,7 +282,7 @@ export default function ReporteExport({
     const tHeaders = ["#", "Cliente", "Facturas", "Total Consumo"];
     const tWidths = [12, 90, 30, 40];
     const tW = tWidths.reduce((a, b) => a + b, 0);
-    let x = M;
+    x = M;
     doc.setFillColor(227, 14, 29);
     doc.rect(x, y - 4, tW, 7, "F");
     doc.setTextColor(255, 255, 255);
