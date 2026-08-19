@@ -15,14 +15,14 @@ import TrabajosTab from "@/components/trabajos/TrabajosTab";
 import CajaChicaTab from "@/components/caja/CajaChicaTab";
 import CierreTab from "@/components/cierre/CierreTab";
 import GenerarFacturaForm from "@/components/facturacion/GenerarFacturaForm";
-import AutorizacionTab from "@/components/autorizacion/AutorizacionTab";
+import RecepcionTab from "@/components/autorizacion/RecepcionTab";
 
 const TABS = [
   { id: "resumen", label: "Resumen", icon: FolderOpen },
   { id: "inspeccion", label: "Inspección", icon: ClipboardList },
   { id: "diagnostico", label: "Diagnóstico", icon: Stethoscope },
   { id: "trabajos", label: "Trabajos", icon: Wrench },
-  { id: "autorizacion", label: "Autorización", icon: ShieldCheck },
+  { id: "recepcion", label: "Recepción", icon: ShieldCheck },
   { id: "caja", label: "Caja", icon: DollarSign },
   { id: "cierre", label: "Cierre", icon: TruckIcon },
 ];
@@ -294,10 +294,10 @@ export default function ExpedienteVista() {
         </div>
       )}
 
-      {/* TAB: Autorizacion del cliente */}
-      {tab === "autorizacion" && (
+      {/* TAB: Recepcion del vehiculo */}
+      {tab === "recepcion" && (
         <div className="bg-white border rounded-xl p-5">
-          <AutorizacionTab
+          <RecepcionTab
             expediente={expediente}
             cliente={cliente}
             vehiculo={vehiculo}

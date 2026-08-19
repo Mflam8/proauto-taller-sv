@@ -5,13 +5,13 @@ const DARK = [26, 26, 26];
 const GRAY = [120, 120, 120];
 const LIGHT = [240, 240, 240];
 
-export default function generarAutorizacionPDF({
+export default function generarRecepcionPDF({
   expediente,
   cliente,
   vehiculo,
   inspeccion,
   trabajos = [],
-  autorizacion = {},
+  recepcion = {},
 }) {
   const doc = new jsPDF({ unit: "mm", format: "letter" });
   const pageW = doc.internal.pageSize.getWidth();
@@ -34,26 +34,26 @@ export default function generarAutorizacionPDF({
     doc.setFontSize(7);
     doc.setTextColor(...GRAY);
     doc.text(
-      "PROAUTO Taller SV · Documento de autorizaci\u00f3n y conformidad",
+      "PROAUTO Taller SV \u00b7 Conformidad de recepci\u00f3n del veh\u00edculo",
       pageW / 2,
       pageH - 8,
       { align: "center" }
     );
   };
 
-  // ===== P\u00e1gina 1: Autorizaci\u00f3n =====
-  header("Autorizaci\u00f3n y Conformidad");
+  // ===== P\u00e1gina 1: Conformidad de recepci\u00f3n =====
+  header("Recepci\u00f3n y Conformidad");
   y = 30;
   doc.setTextColor(...DARK);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(13);
-  doc.text("AUTORIZACI\u00d3N DE PRESUPUESTO", margin, y);
+  doc.text("CONFORMIDAD DE RECEPCI\u00d3N DEL VEH\u00cdCULO", margin, y);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
-  y += 5;
-  doc.text(`Expediente: ${expediente.numero_expediente || expediente.id || "—"}`, margin, y);
+  y += 6;
+  doc.text(`Expediente: ${expediente.numero_expediente || expediente.id || "\u2014"}`, margin, y);
   doc.text(
-    `Fecha: ${new Date().toLocaleDateString("es-SV")}`,
+    `Fecha de entrega: ${recepcion.fecha_recepcion ? new Date(recepcion.fecha_recepcion).toLocaleDateString("es-SV") : new Date().toLocaleDateString("es-SV")}`,
     pageW - margin,
     y,
     { align: "right" }
@@ -69,67 +69,57 @@ export default function generarAutorizacionPDF({
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   const placaLabel = vehiculo?.placa === "SIN PLACA"
-    ? `Sin placa${vehiculo.poliza ? " · P\u00f3liza " + vehiculo.poliza : ""}`
-    : vehiculo?.placa || "—";
+    ? `Sin placa${vehiculo.poliza ? " \u00b7 P\u00f3liza " + vehiculo.poliza : ""}`
+    : vehiculo?.placa || "\u2014";
   const clienteLines = [
-    cliente?.nombre_completo || "—",
+    cliente?.nombre_completo || "\u2014",
     cliente?.telefono || "",
     cliente?.direccion || "",
   ].filter(Boolean);
   const vehLines = [
-    vehiculo ? `${vehiculo.marca} ${vehiculo.modelo} ${vehiculo.anio || ""}` : "—",
+    vehiculo ? `${vehiculo.marca} ${vehiculo.modelo} ${vehiculo.anio || ""}` : "\u2014",
     `Placa: ${placaLabel}`,
-    `Color: ${vehiculo?.color || "—"}`,
-  ];
+    `Color: ${vehiculo?.color || "\u2014"}`,
+    expediente.kilometraje_entrada ? `Km entrada: ${expediente.kilometraje_entrada}` : "",
+  ].filter(Boolean);
   doc.text(clienteLines, margin, y);
   doc.text(vehLines, pageW / 2, y);
   y += Math.max(clienteLines.length, vehLines.length) * 4 + 4;
 
-  // Presupuesto de trabajos
+  // Trabajos realizados
   if (y > pageH - 70) { doc.addPage(); y = margin; }
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
-  doc.text("PRESUPUESTO DE TRABAJOS", margin, y);
+  doc.text("TRABAJOS REALIZADOS", margin, y);
   y += 5;
   doc.setFillColor(...LIGHT);
   doc.rect(margin, y, pageW - margin * 2, 7, "F");
   doc.setFontSize(8);
   doc.text("Descripci\u00f3n", margin + 2, y + 5);
   doc.text("Tipo", margin + 110, y + 5);
-  doc.text("Cant.", pageW - margin - 35, y + 5);
-  doc.text("Precio", pageW - margin - 15, y + 5, { align: "right" });
+  doc.text("Estado", pageW - margin - 30, y + 5);
   y += 8;
   doc.setFont("helvetica", "normal");
-  let total = 0;
   if (trabajos.length === 0) {
     doc.text("(Sin trabajos registrados)", margin + 2, y);
     y += 5;
   }
   trabajos.forEach((t) => {
     if (y > pageH - 50) { doc.addPage(); y = margin; }
-    const desc = (t.descripcion || "—").slice(0, 65);
+    const desc = (t.descripcion || "\u2014").slice(0, 65);
     doc.text(desc, margin + 2, y);
     doc.text((t.tipo || "").slice(0, 18), margin + 110, y);
-    doc.text(String(t.cantidad ?? 1), pageW - margin - 35, y);
-    doc.text(`$${(t.precio_unitario || 0).toFixed(2)}`, pageW - margin - 15, y, { align: "right" });
-    total += t.subtotal || (t.cantidad || 1) * (t.precio_unitario || 0);
+    doc.text((t.estado || "").slice(0, 14), pageW - margin - 30, y);
     y += 5;
   });
-  y += 2;
-  doc.setFillColor(...PRIMARY);
-  doc.rect(pageW - margin - 55, y, 55, 8, "F");
-  doc.setTextColor(255, 255, 255);
-  doc.setFont("helvetica", "bold");
-  doc.text(`TOTAL: $${total.toFixed(2)}`, pageW - margin - 2, y + 5.5, { align: "right" });
-  doc.setTextColor(...DARK);
-  y += 13;
+  y += 4;
 
-  // Estado del veh\u00edculo (inspecci\u00f3n)
+  // Estado del veh\u00edculo (inspecci\u00f3n de ingreso)
   if (inspeccion) {
-    if (y > pageH - 70) { doc.addPage(); y = margin; }
+    if (y > pageH - 60) { doc.addPage(); y = margin; }
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
-    doc.text("ESTADO DEL VEHI\u0301CULO (INSPECCI\u00d3N)", margin, y);
+    doc.text("ESTADO DEL VEH\u00cdCULO AL INGRESO", margin, y);
     y += 5;
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8.5);
@@ -140,8 +130,6 @@ export default function generarAutorizacionPDF({
       ["Pintura", inspeccion.estado_pintura],
       ["Tapicer\u00eda", inspeccion.estado_tapiceria],
       ["A/C", inspeccion.aire_acondicionado],
-      ["Direcci\u00f3n hidr.", inspeccion.direccion_hidraulica],
-      ["Alarma", inspeccion.alarma],
     ].filter(([, v]) => v);
     cond.forEach(([k, v], i) => {
       const col = i % 3;
@@ -151,19 +139,19 @@ export default function generarAutorizacionPDF({
     y += Math.ceil(cond.length / 3) * 5 + 2;
     if (inspeccion.daños && inspeccion.daños.length) {
       doc.setFont("helvetica", "bold");
-      doc.text(`Da\u00f1os registrados: ${inspeccion.daños.length}`, margin, y);
+      doc.text(`Da\u00f1os preexistentes declarados: ${inspeccion.daños.length}`, margin, y);
       y += 4;
       doc.setFont("helvetica", "normal");
       inspeccion.daños.forEach((d) => {
         if (y > pageH - 40) { doc.addPage(); y = margin; }
-        doc.text(`\u2022 ${d.tipo} \u2014 ${d.ubicacion || ""}${d.descripcion ? " · " + d.descripcion : ""}`, margin + 2, y);
+        doc.text(`\u2022 ${d.tipo} \u2014 ${d.ubicacion || ""}`, margin + 2, y);
         y += 4;
       });
       y += 2;
     }
   }
 
-  // Declaraci\u00f3n del cliente
+  // Declaraci\u00f3n de recepci\u00f3n
   if (y > pageH - 75) { doc.addPage(); y = margin; }
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
@@ -172,11 +160,11 @@ export default function generarAutorizacionPDF({
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8.5);
   const texto = [
-    "El suscrito cliente declara que ha revisado y aprobado el presupuesto de trabajos detallado arriba, as\u00ed",
-    "como el estado en que se recibe el veh\u00edculo seg\u00fan la inspecci\u00f3n realizada. Autoriza al taller PROAUTO",
-    "Taller SV a realizar los trabajos descritos. Entiende que los precios pueden variar si se detectan da\u00f1os",
-    "adicionales, los cuales ser\u00e1n comunicados previamente. Libera al taller de responsabilidad por da\u00f1os",
-    "preexistentes declarados en la inspecci\u00f3n. Los t\u00e9rminos de garant\u00eda constan en el reverso de este documento.",
+    "El suscrito cliente declara que ha recibido el veh\u00edculo descrito en este documento, que lo prob\u00f3 y",
+    "manej\u00f3 personalmente, y que se encuentra satisfecho con los trabajos realizados y con el estado en",
+    "que recibe la unidad al momento de su retiro. Confirma que se le entregaron las llaves y accesorios",
+    "correspondientes. A partir de este momento, el taller queda liberado de responsabilidad sobre el",
+    "funcionamiento del veh\u00edculo, salvo lo contemplado en la garant\u00eda que consta en el reverso de este documento.",
   ];
   texto.forEach((line) => {
     if (y > pageH - 45) { doc.addPage(); y = margin; }
@@ -187,9 +175,9 @@ export default function generarAutorizacionPDF({
 
   // Firma del cliente
   if (y > pageH - 45) { doc.addPage(); y = margin; }
-  if (autorizacion.firma_data_url) {
+  if (recepcion.firma_data_url) {
     try {
-      doc.addImage(autorizacion.firma_data_url, "PNG", margin, y, 50, 18);
+      doc.addImage(recepcion.firma_data_url, "PNG", margin, y, 50, 18);
     } catch (e) {
       /* firma inv\u00e1lida, se omite */
     }
@@ -199,16 +187,21 @@ export default function generarAutorizacionPDF({
   doc.line(margin, y, margin + 70, y);
   doc.line(pageW - margin - 70, y, pageW - margin, y);
   doc.setFontSize(8);
-  doc.text(`Firma del cliente: ${autorizacion.nombre_firma || ""}`, margin, y + 5);
+  doc.text(`Firma del cliente: ${recepcion.nombre_firma || ""}`, margin, y + 5);
   doc.text("Firma taller PROAUTO", pageW - margin - 70, y + 5);
   doc.text(
-    `Fecha: ${autorizacion.fecha_autorizacion ? new Date(autorizacion.fecha_autorizacion).toLocaleDateString("es-SV") : ""}`,
+    `Fecha: ${recepcion.fecha_recepcion ? new Date(recepcion.fecha_recepcion).toLocaleDateString("es-SV") : ""}`,
     margin,
     y + 11
   );
   doc.setTextColor(...GRAY);
   doc.setFontSize(7);
-  doc.text(`M\u00e9todo: ${autorizacion.metodo || "—"}`, pageW - margin, y + 11, { align: "right" });
+  const checks = [
+    recepcion.vehiculo_recibido ? "Recibi\u00f3 el veh\u00edculo" : null,
+    recepcion.vehiculo_probado ? "Lo prob\u00f3" : null,
+    recepcion.conforme_estado ? "Conforme con el estado" : null,
+  ].filter(Boolean).join(" \u00b7 ");
+  doc.text(checks || "Conformidad registrada", pageW - margin, y + 11, { align: "right" });
 
   footer();
 
@@ -245,7 +238,7 @@ export default function generarAutorizacionPDF({
     ["p", "dentro del periodo de vigencia. El taller evaluar\u00e1 la falla y, si corresponde a la garant\u00eda, realizar\u00e1 la"],
     ["p", "reparaci\u00f3n a la mayor brevedad posible."],
     ["", ""],
-    ["p", "El cliente acepta los t\u00e9rminos de esta garant\u00eda al firmar la autorizaci\u00f3n de presupuesto en el anverso."],
+    ["p", "El cliente acepta los t\u00e9rminos de esta garant\u00eda al firmar la conformidad de recepci\u00f3n en el anverso."],
   ];
 
   garantia.forEach(([style, line]) => {
@@ -262,7 +255,7 @@ export default function generarAutorizacionPDF({
 
   doc.setFontSize(7);
   doc.setTextColor(...GRAY);
-  doc.text("PROAUTO Taller SV · T\u00e9rminos de garant\u00eda", pageW / 2, pageH - 8, { align: "center" });
+  doc.text("PROAUTO Taller SV \u00b7 T\u00e9rminos de garant\u00eda", pageW / 2, pageH - 8, { align: "center" });
 
-  doc.save(`Autorizacion_${expediente.numero_expediente || expediente.id || "expediente"}.pdf`);
+  doc.save(`Recepcion_${expediente.numero_expediente || expediente.id || "expediente"}.pdf`);
 }

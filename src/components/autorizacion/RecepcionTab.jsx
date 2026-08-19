@@ -7,17 +7,18 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ShieldCheck, FileSignature, Download, CheckCircle2, AlertTriangle, Lock } from "lucide-react";
 import SignaturePad from "./SignaturePad";
-import generarAutorizacionPDF from "./AutorizacionPDF";
+import generarRecepcionPDF from "./RecepcionPDF";
 
-export default function AutorizacionTab({ expediente, cliente, vehiculo, inspeccion }) {
+export default function RecepcionTab({ expediente, cliente, vehiculo, inspeccion }) {
   const qc = useQueryClient();
-  const auth = expediente.autorizacion_cliente || {};
-  const yaAutorizado = !!auth.fecha_autorizacion;
+  const rec = expediente.recepcion_cliente || {};
+  const yaRecibido = !!rec.fecha_recepcion;
 
-  const [presupuesto, setPresupuesto] = useState(!!auth.presupuesto_aprobado);
-  const [estadoVeh, setEstadoVeh] = useState(!!auth.estado_vehiculo_aprobado);
-  const [nombre, setNombre] = useState(auth.nombre_firma || cliente?.nombre_completo || "");
-  const [firma, setFirma] = useState(auth.firma_data_url || "");
+  const [recibido, setRecibido] = useState(!!rec.vehiculo_recibido);
+  const [probado, setProbado] = useState(!!rec.vehiculo_probado);
+  const [conforme, setConforme] = useState(!!rec.conforme_estado);
+  const [nombre, setNombre] = useState(rec.nombre_firma || cliente?.nombre_completo || "");
+  const [firma, setFirma] = useState(rec.firma_data_url || "");
   const [saving, setSaving] = useState(false);
 
   const { data: trabajos = [] } = useQuery({
@@ -25,18 +26,13 @@ export default function AutorizacionTab({ expediente, cliente, vehiculo, inspecc
     queryFn: () => base44.entities.TrabajoExpediente.filter({ expediente_id: expediente.id }),
   });
 
-  const totalPresupuesto = trabajos.reduce(
-    (sum, t) => sum + (t.subtotal || (t.cantidad || 1) * (t.precio_unitario || 0)),
-    0
-  );
-
   const handleSave = async () => {
-    if (!presupuesto || !estadoVeh) {
-      alert("Debe marcar la aprobaci\u00f3n del presupuesto y la conformidad con el estado del veh\u00edculo.");
+    if (!recibido || !probado || !conforme) {
+      alert("Confirme las tres casillas: recibi\u00f3 el veh\u00edculo, lo prob\u00f3 y est\u00e1 conforme con el estado.");
       return;
     }
     if (!nombre.trim()) {
-      alert("Ingrese el nombre de quien autoriza.");
+      alert("Ingrese el nombre de quien retira el veh\u00edculo.");
       return;
     }
     if (!firma) {
@@ -46,10 +42,11 @@ export default function AutorizacionTab({ expediente, cliente, vehiculo, inspecc
     setSaving(true);
     try {
       await base44.entities.Expediente.update(expediente.id, {
-        autorizacion_cliente: {
-          presupuesto_aprobado: presupuesto,
-          estado_vehiculo_aprobado: estadoVeh,
-          fecha_autorizacion: new Date().toISOString(),
+        recepcion_cliente: {
+          vehiculo_recibido: recibido,
+          vehiculo_probado: probado,
+          conforme_estado: conforme,
+          fecha_recepcion: new Date().toISOString(),
           nombre_firma: nombre.trim(),
           firma_data_url: firma,
           metodo: "Digital",
@@ -57,33 +54,33 @@ export default function AutorizacionTab({ expediente, cliente, vehiculo, inspecc
       });
       qc.invalidateQueries(["expediente", expediente.id]);
     } catch (e) {
-      alert("Error al guardar la autorizaci\u00f3n.");
+      alert("Error al guardar la conformidad de recepci\u00f3n.");
     }
     setSaving(false);
   };
 
   const handleDownload = () => {
-    generarAutorizacionPDF({
+    generarRecepcionPDF({
       expediente,
       cliente,
       vehiculo,
       inspeccion,
       trabajos,
-      autorizacion: auth,
+      recepcion: rec,
     });
   };
 
   return (
     <div className="space-y-5">
       {/* Banner de estado */}
-      {yaAutorizado ? (
+      {yaRecibido ? (
         <div className="flex items-start gap-3 bg-green-50 border border-green-200 rounded-xl p-4">
           <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
           <div className="flex-1">
-            <p className="font-semibold text-green-900">Autorizaci\u00f3n registrada</p>
+            <p className="font-semibold text-green-900">Recepci\u00f3n confirmada</p>
             <p className="text-sm text-green-800">
-              Firmada por <strong>{auth.nombre_firma}</strong> el{" "}
-              {new Date(auth.fecha_autorizacion).toLocaleString("es-SV")}. M\u00e9todo: {auth.metodo}.
+              El veh\u00edculo fue retirado por <strong>{rec.nombre_firma}</strong> el{" "}
+              {new Date(rec.fecha_recepcion).toLocaleString("es-SV")}. M\u00e9todo: {rec.metodo}.
             </p>
           </div>
           <Button onClick={handleDownload} className="gap-1.5 bg-[#E31E24] hover:bg-[#B71C1C]">
@@ -94,10 +91,10 @@ export default function AutorizacionTab({ expediente, cliente, vehiculo, inspecc
         <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4">
           <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
           <div className="flex-1">
-            <p className="font-semibold text-amber-900">Pendiente de autorizaci\u00f3n</p>
+            <p className="font-semibold text-amber-900">Pendiente de conformidad de recepci\u00f3n</p>
             <p className="text-sm text-amber-800">
-              Seg\u00fan recomendaci\u00f3n legal, el cliente debe aprobar el presupuesto y firmar conforme con el
-              estado del veh\u00edculo para evitar reclamos o demandas posteriores.
+              Seg\u00fan recomendaci\u00f3n legal, el cliente debe firmar que recibi\u00f3 el veh\u00edculo, lo prob\u00f3
+              y est\u00e1 satisfecho al momento del retiro, para evitar reclamos o demandas posteriores.
             </p>
           </div>
         </div>
@@ -106,15 +103,11 @@ export default function AutorizacionTab({ expediente, cliente, vehiculo, inspecc
       {/* Resumen r\u00e1pido */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="bg-white border rounded-xl p-3">
-          <p className="text-xs text-gray-500">Trabajos del presupuesto</p>
+          <p className="text-xs text-gray-500">Trabajos realizados</p>
           <p className="text-lg font-bold text-gray-900">{trabajos.length}</p>
         </div>
         <div className="bg-white border rounded-xl p-3">
-          <p className="text-xs text-gray-500">Total presupuestado</p>
-          <p className="text-lg font-bold text-[#E31E24]">${totalPresupuesto.toFixed(2)}</p>
-        </div>
-        <div className="bg-white border rounded-xl p-3">
-          <p className="text-xs text-gray-500">Inspecci\u00f3n</p>
+          <p className="text-xs text-gray-500">Inspecci\u00f3n de ingreso</p>
           <p className="text-lg font-bold text-gray-900">
             {inspeccion ? (
               <Badge className="bg-green-100 text-green-800">{inspeccion.estado || "Completada"}</Badge>
@@ -123,14 +116,18 @@ export default function AutorizacionTab({ expediente, cliente, vehiculo, inspecc
             )}
           </p>
         </div>
+        <div className="bg-white border rounded-xl p-3">
+          <p className="text-xs text-gray-500">Da\u00f1os preexistentes</p>
+          <p className="text-lg font-bold text-gray-900">{inspeccion?.da\u00f1os?.length || 0}</p>
+        </div>
       </div>
 
-      {/* Formulario de aprobaci\u00f3n */}
+      {/* Formulario de recepci\u00f3n */}
       <div className="bg-white border rounded-xl p-5 space-y-5">
         <div className="flex items-center gap-2">
           <FileSignature className="w-5 h-5 text-[#E31E24]" />
           <h3 className="font-semibold text-gray-900">
-            {yaAutorizado ? "Autorizaci\u00f3n registrada" : "Registrar autorizaci\u00f3n del cliente"}
+            {yaRecibido ? "Conformidad de recepci\u00f3n registrada" : "Registrar conformidad de recepci\u00f3n"}
           </h3>
         </div>
 
@@ -138,42 +135,51 @@ export default function AutorizacionTab({ expediente, cliente, vehiculo, inspecc
           <label className="flex items-start gap-3 cursor-pointer">
             <input
               type="checkbox"
-              checked={presupuesto}
-              disabled={yaAutorizado}
-              onChange={(e) => setPresupuesto(e.target.checked)}
+              checked={recibido}
+              disabled={yaRecibido}
+              onChange={(e) => setRecibido(e.target.checked)}
               className="w-5 h-5 mt-0.5 accent-[#E31E24] disabled:opacity-50"
             />
             <div>
-              <p className="font-medium text-gray-900">Aprobaci\u00f3n del presupuesto</p>
-              <p className="text-sm text-gray-500">
-                El cliente revis\u00f3 y aprueba el presupuesto de trabajos (${totalPresupuesto.toFixed(2)}).
-              </p>
+              <p className="font-medium text-gray-900">Recibi\u00f3 el veh\u00edculo</p>
+              <p className="text-sm text-gray-500">El cliente confirma haber recibido la unidad y las llaves.</p>
             </div>
           </label>
 
           <label className="flex items-start gap-3 cursor-pointer">
             <input
               type="checkbox"
-              checked={estadoVeh}
-              disabled={yaAutorizado}
-              onChange={(e) => setEstadoVeh(e.target.checked)}
+              checked={probado}
+              disabled={yaRecibido}
+              onChange={(e) => setProbado(e.target.checked)}
               className="w-5 h-5 mt-0.5 accent-[#E31E24] disabled:opacity-50"
             />
             <div>
-              <p className="font-medium text-gray-900">Conformidad con el estado del veh\u00edculo</p>
-              <p className="text-sm text-gray-500">
-                El cliente est\u00e1 conforme con el estado del veh\u00edculo seg\u00fan la inspecci\u00f3n
-                {inspeccion ? ` (${inspeccion.daños?.length || 0} da\u00f1os registrados)` : " (a\u00fan sin inspecci\u00f3n)"}.
-              </p>
+              <p className="font-medium text-gray-900">Lo prob\u00f3 y est\u00e1 satisfecho</p>
+              <p className="text-sm text-gray-500">El cliente prob\u00f3/manej\u00f3 el veh\u00edculo y est\u00e1 conforme hasta este momento.</p>
+            </div>
+          </label>
+
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={conforme}
+              disabled={yaRecibido}
+              onChange={(e) => setConforme(e.target.checked)}
+              className="w-5 h-5 mt-0.5 accent-[#E31E24] disabled:opacity-50"
+            />
+            <div>
+              <p className="font-medium text-gray-900">Conforme con el estado al recibirlo</p>
+              <p className="text-sm text-gray-500">El cliente est\u00e1 de acuerdo con el estado en que recibe la unidad.</p>
             </div>
           </label>
         </div>
 
         <div>
-          <Label className="mb-1.5 block">Nombre de quien autoriza *</Label>
+          <Label className="mb-1.5 block">Nombre de quien retira el veh\u00edculo *</Label>
           <Input
             value={nombre}
-            disabled={yaAutorizado}
+            disabled={yaRecibido}
             onChange={(e) => setNombre(e.target.value)}
             placeholder="Nombre completo del cliente o representante"
             className="h-11 border-gray-300 focus:border-[#E31E24]"
@@ -182,16 +188,16 @@ export default function AutorizacionTab({ expediente, cliente, vehiculo, inspecc
 
         <div>
           <Label className="mb-1.5 block">Firma del cliente *</Label>
-          {yaAutorizado && auth.firma_data_url ? (
+          {yaRecibido && rec.firma_data_url ? (
             <div className="border-2 border-gray-200 rounded-xl bg-white p-2">
-              <img src={auth.firma_data_url} alt="Firma del cliente" className="w-full h-40 object-contain" />
+              <img src={rec.firma_data_url} alt="Firma del cliente" className="w-full h-40 object-contain" />
             </div>
           ) : (
-            <SignaturePad value={firma} onChange={setFirma} disabled={yaAutorizado} />
+            <SignaturePad value={firma} onChange={setFirma} disabled={yaRecibido} />
           )}
         </div>
 
-        {!yaAutorizado && (
+        {!yaRecibido && (
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
             <Button
               onClick={handleSave}
@@ -199,24 +205,18 @@ export default function AutorizacionTab({ expediente, cliente, vehiculo, inspecc
               className="flex-1 gap-2 bg-gradient-to-r from-[#E31E24] to-[#B71C1C] hover:from-[#B71C1C] hover:to-[#E31E24] text-white"
             >
               <ShieldCheck className="w-4 h-4" />
-              {saving ? "Guardando..." : "Guardar autorizaci\u00f3n"}
+              {saving ? "Guardando..." : "Guardar conformidad de recepci\u00f3n"}
             </Button>
-            <Button
-              variant="outline"
-              onClick={handleDownload}
-              disabled={trabajos.length === 0}
-              className="gap-2"
-              title={trabajos.length === 0 ? "Agregue trabajos antes de generar el PDF" : ""}
-            >
+            <Button variant="outline" onClick={handleDownload} className="gap-2">
               <Download className="w-4 h-4" /> Previsualizar PDF
             </Button>
           </div>
         )}
       </div>
 
-      {yaAutorizado && (
+      {yaRecibido && (
         <p className="text-xs text-gray-400 flex items-center gap-1.5 justify-center">
-          <Lock className="w-3 h-3" /> La autorizaci\u00f3n est\u00e1 bloqueada. Para corregir, contacte al administrador.
+          <Lock className="w-3 h-3" /> La conformidad est\u00e1 bloqueada. Para corregir, contacte al administrador.
         </p>
       )}
     </div>

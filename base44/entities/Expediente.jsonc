@@ -138,26 +138,30 @@
       "type": "boolean",
       "default": false
     },
-    "autorizacion_cliente": {
+    "recepcion_cliente": {
       "type": "object",
-      "description": "Autorizaci\u00f3n y firma del cliente aprobando presupuesto y estado del veh\u00edculo",
+      "description": "Conformidad de recepci\u00f3n del veh\u00edculo firmada por el cliente al retirarlo",
       "properties": {
-        "presupuesto_aprobado": {
+        "vehiculo_recibido": {
           "type": "boolean",
-          "description": "Si el cliente aprob\u00f3 el presupuesto de trabajos"
+          "description": "El cliente confirma haber recibido el veh\u00edculo"
         },
-        "estado_vehiculo_aprobado": {
+        "vehiculo_probado": {
           "type": "boolean",
-          "description": "Si el cliente est\u00e1 conforme con el estado del veh\u00edculo inspeccionado"
+          "description": "El cliente prob\u00f3/manej\u00f3 el veh\u00edculo y est\u00e1 satisfecho hasta ese momento"
         },
-        "fecha_autorizacion": {
+        "conforme_estado": {
+          "type": "boolean",
+          "description": "El cliente est\u00e1 conforme con el estado en que recibe el veh\u00edculo"
+        },
+        "fecha_recepcion": {
           "type": "string",
           "format": "date-time",
-          "description": "Fecha y hora de la autorizaci\u00f3n"
+          "description": "Fecha y hora en que el cliente retir\u00f3 el veh\u00edculo"
         },
         "nombre_firma": {
           "type": "string",
-          "description": "Nombre de quien firma (cliente o representante)"
+          "description": "Nombre de quien firma la recepci\u00f3n (cliente o representante)"
         },
         "firma_data_url": {
           "type": "string",
@@ -170,10 +174,6 @@
             "F\u00edsica"
           ],
           "description": "M\u00e9todo de captura de la firma"
-        },
-        "registrado_por": {
-          "type": "string",
-          "description": "Usuario del taller que registr\u00f3 la autorizaci\u00f3n"
         }
       }
     }
