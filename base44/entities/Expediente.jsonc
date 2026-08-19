@@ -137,6 +137,45 @@
     "cierre_autorizado": {
       "type": "boolean",
       "default": false
+    },
+    "autorizacion_cliente": {
+      "type": "object",
+      "description": "Autorizaci\u00f3n y firma del cliente aprobando presupuesto y estado del veh\u00edculo",
+      "properties": {
+        "presupuesto_aprobado": {
+          "type": "boolean",
+          "description": "Si el cliente aprob\u00f3 el presupuesto de trabajos"
+        },
+        "estado_vehiculo_aprobado": {
+          "type": "boolean",
+          "description": "Si el cliente est\u00e1 conforme con el estado del veh\u00edculo inspeccionado"
+        },
+        "fecha_autorizacion": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Fecha y hora de la autorizaci\u00f3n"
+        },
+        "nombre_firma": {
+          "type": "string",
+          "description": "Nombre de quien firma (cliente o representante)"
+        },
+        "firma_data_url": {
+          "type": "string",
+          "description": "Imagen de la firma capturada (data URL PNG)"
+        },
+        "metodo": {
+          "type": "string",
+          "enum": [
+            "Digital",
+            "F\u00edsica"
+          ],
+          "description": "M\u00e9todo de captura de la firma"
+        },
+        "registrado_por": {
+          "type": "string",
+          "description": "Usuario del taller que registr\u00f3 la autorizaci\u00f3n"
+        }
+      }
     }
   },
   "required": [

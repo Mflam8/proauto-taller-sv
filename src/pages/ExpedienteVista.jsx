@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, FolderOpen, Car, User, ClipboardList, Stethoscope, Wrench, DollarSign, PackageMinus, TruckIcon, Receipt } from "lucide-react";
+import { ArrowLeft, FolderOpen, Car, User, ClipboardList, Stethoscope, Wrench, DollarSign, PackageMinus, TruckIcon, Receipt, ShieldCheck } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import InspeccionForm from "@/components/inspeccion/InspeccionForm";
@@ -15,12 +15,14 @@ import TrabajosTab from "@/components/trabajos/TrabajosTab";
 import CajaChicaTab from "@/components/caja/CajaChicaTab";
 import CierreTab from "@/components/cierre/CierreTab";
 import GenerarFacturaForm from "@/components/facturacion/GenerarFacturaForm";
+import AutorizacionTab from "@/components/autorizacion/AutorizacionTab";
 
 const TABS = [
   { id: "resumen", label: "Resumen", icon: FolderOpen },
   { id: "inspeccion", label: "Inspección", icon: ClipboardList },
   { id: "diagnostico", label: "Diagnóstico", icon: Stethoscope },
   { id: "trabajos", label: "Trabajos", icon: Wrench },
+  { id: "autorizacion", label: "Autorización", icon: ShieldCheck },
   { id: "caja", label: "Caja", icon: DollarSign },
   { id: "cierre", label: "Cierre", icon: TruckIcon },
 ];
@@ -289,6 +291,18 @@ export default function ExpedienteVista() {
       {tab === "trabajos" && (
         <div className="bg-white border rounded-xl p-5">
           <TrabajosTab expediente={expediente} empleados={empleados} />
+        </div>
+      )}
+
+      {/* TAB: Autorizacion del cliente */}
+      {tab === "autorizacion" && (
+        <div className="bg-white border rounded-xl p-5">
+          <AutorizacionTab
+            expediente={expediente}
+            cliente={cliente}
+            vehiculo={vehiculo}
+            inspeccion={inspeccion}
+          />
         </div>
       )}
 
