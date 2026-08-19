@@ -8,7 +8,11 @@
     },
     "placa": {
       "type": "string",
-      "description": "N\u00famero de placa"
+      "description": "N\u00famero de placa (vac\u00edo o 'SIN PLACA' si el veh\u00edculo a\u00fan no placa)"
+    },
+    "poliza": {
+      "type": "string",
+      "description": "N\u00famero de p\u00f3liza (obligatorio cuando el veh\u00edculo no tiene placa)"
     },
     "marca": {
       "type": "string",
@@ -90,7 +94,6 @@
   },
   "required": [
     "cliente_id",
-    "placa",
     "marca",
     "modelo"
   ],

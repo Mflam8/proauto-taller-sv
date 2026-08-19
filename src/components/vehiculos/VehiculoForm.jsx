@@ -10,17 +10,24 @@ import { Save, X } from "lucide-react";
 import ClienteCombobox from "@/components/clientes/ClienteCombobox";
 
 export default function VehiculoForm({ vehiculo, onClose }) {
-  const [formData, setFormData] = useState(vehiculo || {
-    cliente_id: "",
-    placa: "",
-    marca: "",
-    modelo: "",
-    anio: new Date().getFullYear(),
-    color: "",
-    vin: "",
-    tipo_combustible: "Gasolina",
-    kilometraje_actual: 0,
-    notas: ""
+  const [formData, setFormData] = useState(() => {
+    if (vehiculo) {
+      return { ...vehiculo, sin_placa: vehiculo.placa === "SIN PLACA", poliza: vehiculo.poliza || "" };
+    }
+    return {
+      cliente_id: "",
+      placa: "",
+      marca: "",
+      modelo: "",
+      anio: new Date().getFullYear(),
+      color: "",
+      vin: "",
+      tipo_combustible: "Gasolina",
+      kilometraje_actual: 0,
+      notas: "",
+      sin_placa: false,
+      poliza: "",
+    };
   });
 
   const queryClient = useQueryClient();
@@ -49,10 +56,13 @@ export default function VehiculoForm({ vehiculo, onClose }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (formData.sin_placa && !formData.poliza?.trim()) return;
+    const { sin_placa, ...data } = formData;
+    if (sin_placa) data.placa = "SIN PLACA";
     if (vehiculo?.id) {
-      updateMutation.mutate({ id: vehiculo.id, data: formData });
+      updateMutation.mutate({ id: vehiculo.id, data });
     } else {
-      createMutation.mutate(formData);
+      createMutation.mutate(data);
     }
   };
 
@@ -75,19 +85,49 @@ export default function VehiculoForm({ vehiculo, onClose }) {
           />
         </div>
 
+        <div className="space-y-2 md:col-span-2">
+          <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={formData.sin_placa}
+              onChange={(e) => {
+                handleChange('sin_placa', e.target.checked);
+                if (e.target.checked) handleChange('placa', '');
+              }}
+              className="w-4 h-4 accent-[#E31E24]"
+            />
+            Vehículo sin placa (nuevo) — registrar por póliza
+          </label>
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="placa" className="text-sm font-semibold text-gray-700">
-            Placa *
+            {formData.sin_placa ? "Placa" : "Placa *"}
           </Label>
           <Input
             id="placa"
-            value={formData.placa}
+            value={formData.sin_placa ? "" : formData.placa}
+            disabled={formData.sin_placa}
             onChange={(e) => handleChange('placa', e.target.value.toUpperCase())}
-            placeholder="Ej: P123456"
-            required
-            className="h-11 border-gray-300 focus:border-[#E31E24] transition-colors uppercase"
+            placeholder={formData.sin_placa ? "Sin placa" : "Ej: P123456"}
+            className="h-11 border-gray-300 focus:border-[#E31E24] transition-colors uppercase disabled:bg-gray-100"
           />
         </div>
+
+        {formData.sin_placa && (
+          <div className="space-y-2">
+            <Label htmlFor="poliza" className="text-sm font-semibold text-gray-700">
+              Póliza *
+            </Label>
+            <Input
+              id="poliza"
+              value={formData.poliza}
+              onChange={(e) => handleChange('poliza', e.target.value)}
+              placeholder="N° de póliza"
+              className="h-11 border-gray-300 focus:border-[#E31E24] transition-colors"
+            />
+          </div>
+        )}
 
         <div className="space-y-2">
           <Label htmlFor="vin" className="text-sm font-semibold text-gray-700">

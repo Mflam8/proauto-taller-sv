@@ -130,13 +130,16 @@ function PasoVehiculo({ cliente, vehiculos, onSelect }) {
   const [nuevo, setNuevo] = useState({
     cliente_id: cliente.id, placa: "", marca: "", modelo: "", anio: "",
     color: "", tipo_vehiculo: "Sedán", tipo_combustible: "Gasolina",
-    estado_actual: "En taller",
+    estado_actual: "En taller", sin_placa: false, poliza: "",
   });
 
   const handleCrear = async () => {
-    if (!nuevo.placa || !nuevo.marca || !nuevo.modelo) return;
+    const placaFinal = nuevo.sin_placa ? "SIN PLACA" : (nuevo.placa || "").trim().toUpperCase();
+    if (!placaFinal || !nuevo.marca || !nuevo.modelo) return;
+    if (nuevo.sin_placa && !(nuevo.poliza || "").trim()) return;
     setSaving(true);
-    const creado = await base44.entities.Vehiculo.create({ ...nuevo, anio: Number(nuevo.anio) || undefined });
+    const { sin_placa, ...payload } = nuevo;
+    const creado = await base44.entities.Vehiculo.create({ ...payload, placa: placaFinal, anio: Number(nuevo.anio) || undefined });
     setSaving(false);
     onSelect(creado);
   };
@@ -162,7 +165,7 @@ function PasoVehiculo({ cliente, vehiculos, onSelect }) {
               </div>
               <div>
                 <p className="font-medium text-gray-900">{v.marca} {v.modelo} {v.anio}</p>
-                <p className="text-xs text-gray-500">{v.placa} · {v.color}</p>
+                <p className="text-xs text-gray-500">{v.placa === "SIN PLACA" ? `Sin placa${v.poliza ? ' · Póliza ' + v.poliza : ''}` : v.placa} · {v.color}</p>
               </div>
               <ChevronRight className="w-4 h-4 text-gray-300 ml-auto" />
             </button>
@@ -181,11 +184,31 @@ function PasoVehiculo({ cliente, vehiculos, onSelect }) {
           <p className="text-sm font-semibold text-blue-800">
             {vehiculosCliente.length === 0 ? "Primera visita — Registrar vehículo" : "Nuevo Vehículo"}
           </p>
+          <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={nuevo.sin_placa}
+              onChange={e => setNuevo(n => ({ ...n, sin_placa: e.target.checked, placa: e.target.checked ? "" : n.placa }))}
+              className="w-4 h-4 accent-[#E31E24]"
+            />
+            Vehículo sin placa (nuevo) — registrar por póliza
+          </label>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label className="text-xs">Placa *</Label>
-              <Input value={nuevo.placa} onChange={e => setNuevo(n => ({ ...n, placa: e.target.value.toUpperCase() }))} placeholder="P-000-000" />
+              <Label className="text-xs">{nuevo.sin_placa ? "Placa" : "Placa *"}</Label>
+              <Input
+                value={nuevo.sin_placa ? "" : nuevo.placa}
+                disabled={nuevo.sin_placa}
+                onChange={e => setNuevo(n => ({ ...n, placa: e.target.value.toUpperCase() }))}
+                placeholder={nuevo.sin_placa ? "Sin placa" : "P-000-000"}
+              />
             </div>
+            {nuevo.sin_placa && (
+              <div>
+                <Label className="text-xs">Póliza *</Label>
+                <Input value={nuevo.poliza} onChange={e => setNuevo(n => ({ ...n, poliza: e.target.value }))} placeholder="N° de póliza" />
+              </div>
+            )}
             <div>
               <Label className="text-xs">Marca *</Label>
               <Input value={nuevo.marca} onChange={e => setNuevo(n => ({ ...n, marca: e.target.value }))} placeholder="Toyota" />
@@ -228,7 +251,7 @@ function PasoVehiculo({ cliente, vehiculos, onSelect }) {
           <Button
             className="w-full bg-[#E31E24] hover:bg-[#B71C1C]"
             onClick={handleCrear}
-            disabled={saving || !nuevo.placa || !nuevo.marca || !nuevo.modelo}
+            disabled={saving || (!nuevo.sin_placa && !nuevo.placa) || (nuevo.sin_placa && !nuevo.poliza) || !nuevo.marca || !nuevo.modelo}
           >
             {saving ? "Registrando..." : "Registrar y Continuar"}
           </Button>
@@ -315,7 +338,7 @@ function PasoRecepcion({ cliente, vehiculo, onSave }) {
           <User className="w-3 h-3 mr-1" />{cliente.nombre_completo}
         </Badge>
         <Badge className="bg-blue-50 text-blue-700 border-0">
-          <Car className="w-3 h-3 mr-1" />{vehiculo.marca} {vehiculo.modelo} · {vehiculo.placa}
+          <Car className="w-3 h-3 mr-1" />{vehiculo.marca} {vehiculo.modelo} · {vehiculo.placa === "SIN PLACA" ? `Sin placa${vehiculo.poliza ? ' · Póliza ' + vehiculo.poliza : ''}` : vehiculo.placa}
         </Badge>
       </div>
 
