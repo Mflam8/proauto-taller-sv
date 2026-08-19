@@ -1,20 +1,21 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Eraser } from "lucide-react";
 
+// SignaturePad: usa Pointer Events (mouse, touch y l\u00e1piz unificados) + canvas
+// de alta resoluci\u00f3n para firmas n\u00edtidas en celular y laptop.
 export default function SignaturePad({ value, onChange, disabled }) {
   const canvasRef = useRef(null);
-  const [drawing, setDrawing] = useState(false);
+  const wrapperRef = useRef(null);
   const [hasContent, setHasContent] = useState(false);
 
+  // (Re)dibuja la firma guardada cuando cambia el valor externo (p.ej. al cargar).
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
-    ctx.lineWidth = 2;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.strokeStyle = "#1A1A1A";
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    setHasContent(false);
     if (value) {
       const img = new Image();
       img.onload = () => {
@@ -23,77 +24,114 @@ export default function SignaturePad({ value, onChange, disabled }) {
       };
       img.src = value;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+
+  // Ajusta el canvas al tama\u00f1o real del contenedor con devicePixelRatio para nitidez.
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const wrapper = wrapperRef.current;
+    if (!canvas || !wrapper) return;
+
+    const resize = () => {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = wrapper.getBoundingClientRect();
+      const w = Math.max(rect.width, 200);
+      const h = 160;
+      // Guarda contenido previo
+      const prev = canvas.toDataURL("image/png");
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      canvas.style.width = `${w}px`;
+      canvas.style.height = `${h}px`;
+      const ctx = canvas.getContext("2d");
+      ctx.scale(dpr, dpr);
+      ctx.lineWidth = 2.2;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.strokeStyle = "#1A1A1A";
+      if (prev && prev !== "data:,") {
+        const img = new Image();
+        img.onload = () => {
+          ctx.drawImage(img, 0, 0, w, h);
+        };
+        img.src = prev;
+      }
+    };
+    resize();
+    const ro = new ResizeObserver(resize);
+    ro.observe(wrapper);
+    return () => ro.disconnect();
   }, []);
 
   const getPos = (e) => {
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    return {
-      x: (clientX - rect.left) * scaleX,
-      y: (clientY - rect.top) * scaleY,
-    };
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
   };
 
-  const start = (e) => {
+  const handlePointerDown = (e) => {
     if (disabled) return;
     e.preventDefault();
-    setDrawing(true);
-    const pos = getPos(e);
+    canvasRef.current.setPointerCapture(e.pointerId);
     const ctx = canvasRef.current.getContext("2d");
+    const pos = getPos(e);
     ctx.beginPath();
     ctx.moveTo(pos.x, pos.y);
   };
 
-  const draw = (e) => {
-    if (!drawing || disabled) return;
+  const handlePointerMove = (e) => {
+    if (disabled || !e.buttons || !e.pressure) {
+      // pressure 0 cuando no presiona; permite mouse sin bot\u00f3n
+    }
+    if (disabled) return;
+    if (e.buttons === 0 && e.pointerType === "mouse") return;
     e.preventDefault();
-    const pos = getPos(e);
     const ctx = canvasRef.current.getContext("2d");
+    const pos = getPos(e);
     ctx.lineTo(pos.x, pos.y);
     ctx.stroke();
-    setHasContent(true);
+    if (!hasContent) setHasContent(true);
   };
 
-  const end = (e) => {
-    if (!drawing) return;
-    if (e.preventDefault) e.preventDefault();
-    setDrawing(false);
-    const canvas = canvasRef.current;
-    onChange && onChange(canvas.toDataURL("image/png"));
+  const handlePointerUp = (e) => {
+    if (disabled) return;
+    e.preventDefault();
+    try {
+      canvasRef.current.releasePointerCapture(e.pointerId);
+    } catch (_) { /* noop */ }
+    const ctx = canvasRef.current.getContext("2d");
+    ctx.closePath();
+    onChange && onChange(canvasRef.current.toDataURL("image/png"));
   };
 
-  const clear = () => {
+  const clear = useCallback(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     setHasContent(false);
     onChange && onChange("");
-  };
+  }, [onChange]);
 
   return (
     <div className="w-full">
-      <div className="relative border-2 border-dashed border-gray-300 rounded-xl bg-white overflow-hidden">
+      <div
+        ref={wrapperRef}
+        className="relative border-2 border-dashed border-gray-300 rounded-xl bg-white overflow-hidden touch-none select-none"
+        style={{ height: 160 }}
+      >
         <canvas
           ref={canvasRef}
-          width={640}
-          height={200}
-          className="w-full h-40 touch-none block"
-          onMouseDown={start}
-          onMouseMove={draw}
-          onMouseUp={end}
-          onMouseLeave={end}
-          onTouchStart={start}
-          onTouchMove={draw}
-          onTouchEnd={end}
+          className="block w-full h-full touch-none"
+          style={{ touchAction: "none", height: 160 }}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+          onPointerLeave={handlePointerUp}
         />
         {!hasContent && !disabled && (
           <span className="absolute inset-0 flex items-center justify-center text-gray-300 text-sm pointer-events-none select-none">
-            Firme aquí
+            Firme aqu\u00ed
           </span>
         )}
       </div>

@@ -14,12 +14,12 @@ const TIPOS_DANO = ["Rayón", "Golpe", "Quebrado", "Faltante", "Óxido", "Vidrio
 const condicionColor = { "Bueno": "bg-green-100 text-green-800", "Regular": "bg-yellow-100 text-yellow-800", "Malo": "bg-red-100 text-red-800" };
 
 const CondicionSelect = ({ label, value, onChange }) => (
-  <div className="flex items-center justify-between py-2 border-b border-gray-50">
+  <div className="flex items-center justify-between py-2.5 border-b border-gray-50 gap-2">
     <span className="text-sm text-gray-700">{label}</span>
-    <div className="flex gap-1">
+    <div className="flex gap-1.5">
       {ESTADOS_CONDICION.map(e => (
         <button key={e} onClick={() => onChange(e)}
-          className={`px-2 py-0.5 rounded text-xs font-medium transition-all border ${value === e ? condicionColor[e] + " border-transparent" : "border-gray-200 text-gray-400 hover:border-gray-300"}`}>
+          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${value === e ? condicionColor[e] + " border-transparent" : "border-gray-200 text-gray-400 hover:border-gray-300"}`}>
           {e}
         </button>
       ))}
@@ -28,12 +28,12 @@ const CondicionSelect = ({ label, value, onChange }) => (
 );
 
 const SiNoSelect = ({ label, value, onChange }) => (
-  <div className="flex items-center justify-between py-2 border-b border-gray-50">
+  <div className="flex items-center justify-between py-2.5 border-b border-gray-50 gap-2">
     <span className="text-sm text-gray-700">{label}</span>
-    <div className="flex gap-1">
+    <div className="flex gap-1.5">
       {["Sí", "No"].map(v => (
         <button key={v} onClick={() => onChange(v)}
-          className={`px-3 py-0.5 rounded text-xs font-medium transition-all border ${value === v ? (v === "Sí" ? "bg-green-100 text-green-800 border-transparent" : "bg-red-100 text-red-800 border-transparent") : "border-gray-200 text-gray-400 hover:border-gray-300"}`}>
+          className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all border ${value === v ? (v === "Sí" ? "bg-green-100 text-green-800 border-transparent" : "bg-red-100 text-red-800 border-transparent") : "border-gray-200 text-gray-400 hover:border-gray-300"}`}>
           {v}
         </button>
       ))}
@@ -167,14 +167,14 @@ export default function InspeccionForm({ expediente, vehiculo, cliente, empleado
             <button onClick={() => quitarDano(i)} className="text-red-400 hover:text-red-600"><Trash2 className="w-3 h-3" /></button>
           </div>
         ))}
-        <div className="grid grid-cols-3 gap-2 mt-2">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
           <Select value={nuevoDano.tipo} onValueChange={v => setNuevoDano(n => ({ ...n, tipo: v }))}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>{TIPOS_DANO.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
           </Select>
           <Input placeholder="Ubicación (Ej: puerta delantera izq)" value={nuevoDano.ubicacion}
             onChange={e => setNuevoDano(n => ({ ...n, ubicacion: e.target.value }))} />
-          <Button variant="outline" onClick={agregarDano} className="gap-1"><Plus className="w-3 h-3" /> Agregar</Button>
+          <Button variant="outline" onClick={agregarDano} className="gap-1 h-10"><Plus className="w-3 h-3" /> Agregar</Button>
         </div>
         <Input className="mt-2" placeholder="Descripción del daño (opcional)"
           value={nuevoDano.descripcion} onChange={e => setNuevoDano(n => ({ ...n, descripcion: e.target.value }))} />
