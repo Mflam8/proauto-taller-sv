@@ -93,7 +93,13 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
     refetch();
   };
 
-  const total = trabajos.reduce((s, t) => s + (t.subtotal || 0), 0);
+  const trabajosOrdenados = [...trabajos].sort((a, b) => {
+    const fechaA = a.created_date ? new Date(a.created_date).getTime() : 0;
+    const fechaB = b.created_date ? new Date(b.created_date).getTime() : 0;
+    return fechaA - fechaB;
+  });
+
+  const total = trabajosOrdenados.reduce((s, t) => s + (t.subtotal || 0), 0);
 
   return (
     <div>
@@ -160,7 +166,7 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
             <p className="text-sm">No hay trabajos registrados</p>
           </div>
         )}
-        {trabajos.map(t => (
+        {trabajosOrdenados.map(t => (
           <div key={t.id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl border">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
