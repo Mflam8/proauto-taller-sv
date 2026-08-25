@@ -21,8 +21,14 @@ export default function GenerarFacturaForm({ expediente, cliente, vehiculo, onSu
     enabled: !!expediente.id,
   });
 
-  // Build items from trabajos
-  const initialItems = trabajos.map(t => ({
+  const trabajosOrdenados = [...trabajos].sort((a, b) => {
+    const fechaA = a.created_date ? new Date(a.created_date).getTime() : 0;
+    const fechaB = b.created_date ? new Date(b.created_date).getTime() : 0;
+    return fechaA - fechaB;
+  });
+
+  // Build invoice items in the same order the trabajos were captured.
+  const initialItems = trabajosOrdenados.map(t => ({
     descripcion: t.descripcion,
     cantidad: t.cantidad || 1,
     precio_unitario: t.precio_unitario || 0,
