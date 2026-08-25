@@ -59,10 +59,20 @@ export default function FacturaDetalle({ factura }) {
     initialData: [],
   });
 
+  const { data: trabajosFactura = [] } = useQuery({
+    queryKey: ['trabajos-factura', factura.expediente_id],
+    queryFn: () => base44.entities.TrabajoExpediente.filter({ expediente_id: factura.expediente_id }),
+    enabled: !!factura.expediente_id,
+    initialData: [],
+  });
+
+  const itemsFacturadosOrdenados = ordenarItemsPorTrabajos(factura.items || [], trabajosFactura);
+  const facturaConItemsOrdenados = { ...factura, items: itemsFacturadosOrdenados };
+
   const saldoCalculado = factura.saldo_pendiente != null ? factura.saldo_pendiente : (factura.total || 0) - (factura.monto_pagado || 0);
   const saldoPendiente = factura.estado_pago === 'Pagada' ? 0 : saldoCalculado;
 
-  const handlePrintRecibo = ReciboPrint({ factura, cliente, vehiculo });
+  const handlePrintRecibo = ReciboPrint({ factura: facturaConItemsOrdenados, cliente, vehiculo });
 
   const handleEnviarCorreo = async () => {
     const correo = cliente?.email;
@@ -85,7 +95,7 @@ export default function FacturaDetalle({ factura }) {
           fecha_emision: factura.fecha_emision,
           fecha_vencimiento: factura.fecha_vencimiento,
           forma_pago: factura.forma_pago,
-          items: factura.items || [],
+          items: itemsFacturadosOrdenados,
           subtotal: factura.subtotal || 0,
           importe_neto: factura.importe_neto,
           iva: factura.iva || 0,
@@ -250,7 +260,7 @@ export default function FacturaDetalle({ factura }) {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {factura.items?.map((item, index) => (
+            {itemsFacturadosOrdenados.map((item, index) => (
               <div key={index} className="flex justify-between p-4 bg-gray-50 rounded-lg">
                 <div className="flex-1">
                   <p className="font-semibold text-gray-900">{item.descripcion}</p>
@@ -418,4 +428,38 @@ export default function FacturaDetalle({ factura }) {
       </Dialog>
     </div>
   );
+}
+
+function ordenarItemsPorTrabajos(items, trabajos) {
+  if (!items.length || !trabajos.length) return items;
+
+  const trabajosOrdenados = [...trabajos].sort((a, b) => {
+    const fechaA = a.created_date ? new Date(a.created_date).getTime() : 0;
+    const fechaB = b.created_date ? new Date(b.created_date).getTime() : 0;
+    return fechaA - fechaB;
+  });
+
+  const usados = new Set();
+  const ordenados = [];
+
+  trabajosOrdenados.forEach((trabajo) => {
+    const matchIndex = items.findIndex((item, index) => {
+      if (usados.has(index)) return false;
+      return item.descripcion === trabajo.descripcion &&
+        Number(item.cantidad || 1) === Number(trabajo.cantidad || 1) &&
+        Number(item.precio_unitario || 0) === Number(trabajo.precio_unitario || 0);
+    });
+
+    if (matchIndex >= 0) {
+      usados.add(matchIndex);
+      ordenados.push(items[matchIndex]);
+    }
+  });
+
+  if (ordenados.length === 0) return items;
+
+  return [
+    ...ordenados,
+    ...items.filter((_, index) => !usados.has(index)),
+  ];
 }
