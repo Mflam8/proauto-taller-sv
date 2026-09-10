@@ -389,7 +389,7 @@ function PasoRecepcion({ cliente, vehiculo, onSave }) {
             <Select value={inspeccion.estado_pintura} onValueChange={v => setInsp("estado_pintura", v)}>
               <SelectTrigger><SelectValue placeholder="Estado..." /></SelectTrigger>
               <SelectContent>
-                {["Buena", "Regular", "Mala", "Golpeada", "Rayada", "Descolorida"].map(e => (
+                {["Bueno", "Regular", "Malo"].map(e => (
                   <SelectItem key={e} value={e}>{e}</SelectItem>
                 ))}
               </SelectContent>
@@ -400,7 +400,7 @@ function PasoRecepcion({ cliente, vehiculo, onSave }) {
             <Select value={inspeccion.estado_llantas} onValueChange={v => setInsp("estado_llantas", v)}>
               <SelectTrigger><SelectValue placeholder="Estado..." /></SelectTrigger>
               <SelectContent>
-                {["Buenas", "Regulares", "Malas"].map(e => (
+                {["Bueno", "Regular", "Malo"].map(e => (
                   <SelectItem key={e} value={e}>{e}</SelectItem>
                 ))}
               </SelectContent>
@@ -411,7 +411,7 @@ function PasoRecepcion({ cliente, vehiculo, onSave }) {
             <Select value={inspeccion.estado_vidrios} onValueChange={v => setInsp("estado_vidrios", v)}>
               <SelectTrigger><SelectValue placeholder="Estado..." /></SelectTrigger>
               <SelectContent>
-                {["Buenos", "Regulares", "Malos", "Rajados"].map(e => (
+                {["Bueno", "Regular", "Malo"].map(e => (
                   <SelectItem key={e} value={e}>{e}</SelectItem>
                 ))}
               </SelectContent>
