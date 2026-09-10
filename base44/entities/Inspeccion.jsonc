@@ -25,6 +25,31 @@
     "kilometraje": {
       "type": "number"
     },
+    "aseguradora": {
+      "type": "string",
+      "description": "Aseguradora asociada a esta recepci\u00f3n, si aplica"
+    },
+    "orden_trabajo_referencia": {
+      "type": "string",
+      "description": "N\u00famero de orden anotado al recibir"
+    },
+    "vehiculo_agencia_importado": {
+      "type": "boolean",
+      "default": false,
+      "description": "Indica si el veh\u00edculo es de agencia o importado"
+    },
+    "tipo_croquis": {
+      "type": "string",
+      "enum": [
+        "Sed\u00e1n",
+        "Pick-up",
+        "Camioneta / SUV",
+        "Cami\u00f3n",
+        "Microb\u00fas",
+        "Otro"
+      ],
+      "description": "Croquis usado para documentar da\u00f1os"
+    },
     "aire_acondicionado": {
       "type": "string",
       "enum": [
@@ -118,6 +143,27 @@
       "type": "string",
       "description": "Lista de accesorios recibidos"
     },
+    "evaluaciones": {
+      "type": "array",
+      "description": "Revisi\u00f3n detallada de elementos de carrocer\u00eda, interior y sistemas",
+      "items": {
+        "type": "object",
+        "properties": {
+          "categoria": {
+            "type": "string"
+          },
+          "elemento": {
+            "type": "string"
+          },
+          "estado": {
+            "type": "string"
+          },
+          "detalle": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "da\u00f1os": {
       "type": "array",
       "items": {
@@ -154,6 +200,32 @@
         "type": "string"
       },
       "description": "URLs de fotos de evidencia"
+    },
+    "firma_ingreso": {
+      "type": "object",
+      "description": "Confirmaci\u00f3n del cliente al entregar el veh\u00edculo",
+      "properties": {
+        "nombre_firma": {
+          "type": "string"
+        },
+        "firma_data_url": {
+          "type": "string"
+        },
+        "fecha": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "tecnico_nombre": {
+          "type": "string"
+        },
+        "metodo": {
+          "type": "string",
+          "enum": [
+            "Digital",
+            "F\u00edsica"
+          ]
+        }
+      }
     },
     "observaciones": {
       "type": "string"
