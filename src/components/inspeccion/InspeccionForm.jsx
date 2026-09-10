@@ -6,7 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, CheckCircle } from "lucide-react";
+import { Plus, Trash2, CheckCircle, Camera } from "lucide-react";
+import SignaturePad from "@/components/autorizacion/SignaturePad";
 
 const ESTADOS_CONDICION = ["Bueno", "Regular", "Malo"];
 const TIPOS_DANO = ["Rayón", "Golpe", "Quebrado", "Faltante", "Óxido", "Vidrio dañado", "Daño eléctrico", "Otro"];
@@ -45,6 +46,10 @@ export default function InspeccionForm({ expediente, vehiculo, cliente, empleado
   const [form, setForm] = useState(inspeccionExistente || {
     realizada_por: "",
     kilometraje: vehiculo?.kilometraje_actual || "",
+    aseguradora: "",
+    orden_trabajo_referencia: "",
+    vehiculo_agencia_importado: false,
+    tipo_croquis: vehiculo?.tipo_vehiculo === "SUV" ? "Camioneta / SUV" : (vehiculo?.tipo_vehiculo || "Otro"),
     aire_acondicionado: "",
     direccion_hidraulica: "",
     alarma: "",
@@ -60,8 +65,10 @@ export default function InspeccionForm({ expediente, vehiculo, cliente, empleado
     daños: [],
     observaciones: "",
     fotos: [],
+    firma_ingreso: { nombre_firma: cliente?.nombre_completo || "", firma_data_url: "", metodo: "Digital" },
   });
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [nuevoDano, setNuevoDano] = useState({ tipo: "Rayón", ubicacion: "", descripcion: "" });
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
@@ -74,6 +81,24 @@ export default function InspeccionForm({ expediente, vehiculo, cliente, empleado
 
   const quitarDano = (i) => set("daños", form.daños.filter((_, idx) => idx !== i));
 
+  const handleFotos = async (event) => {
+    const files = Array.from(event.target.files || []);
+    if (!files.length) return;
+    setUploading(true);
+    try {
+      const uploaded = await Promise.all(files.map(async (file) => {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        return file_url;
+      }));
+      set("fotos", [...(form.fotos || []), ...uploaded]);
+    } catch (error) {
+      alert("No se pudieron cargar las fotos. Intente nuevamente.");
+    } finally {
+      setUploading(false);
+      event.target.value = "";
+    }
+  };
+
   const handleSave = async () => {
     setSaving(true);
     const data = {
@@ -83,6 +108,11 @@ export default function InspeccionForm({ expediente, vehiculo, cliente, empleado
       cliente_id: cliente.id,
       fecha: new Date().toISOString(),
       estado: "Completada",
+      firma_ingreso: form.firma_ingreso?.firma_data_url ? {
+        ...form.firma_ingreso,
+        fecha: new Date().toISOString(),
+        tecnico_nombre: form.realizada_por || "",
+      } : undefined,
     };
     if (inspeccionExistente) {
       await base44.entities.Inspeccion.update(inspeccionExistente.id, data);
@@ -120,6 +150,13 @@ export default function InspeccionForm({ expediente, vehiculo, cliente, empleado
           <Label>Kilometraje</Label>
           <Input type="number" value={form.kilometraje} onChange={e => set("kilometraje", e.target.value)} />
         </div>
+      </div>
+
+      {/* Datos de recepción */}
+      <div className="bg-white border rounded-xl p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div><Label>Aseguradora</Label><Input value={form.aseguradora || ""} onChange={e => set("aseguradora", e.target.value)} placeholder="Si aplica" /></div>
+        <div><Label>Referencia de orden</Label><Input value={form.orden_trabajo_referencia || ""} onChange={e => set("orden_trabajo_referencia", e.target.value)} placeholder="N.º de orden" /></div>
+        <label className="flex items-center gap-2 text-sm text-gray-700 sm:col-span-2"><input type="checkbox" checked={!!form.vehiculo_agencia_importado} onChange={e => set("vehiculo_agencia_importado", e.target.checked)} className="w-4 h-4 accent-[#E31E24]" /> Vehículo de agencia o importado</label>
       </div>
 
       {/* Sistemas */}
@@ -180,10 +217,21 @@ export default function InspeccionForm({ expediente, vehiculo, cliente, empleado
           value={nuevoDano.descripcion} onChange={e => setNuevoDano(n => ({ ...n, descripcion: e.target.value }))} />
       </div>
 
-      {/* Observaciones */}
+      {/* Fotos y confirmación inicial */}
+      <div className="bg-white border rounded-xl p-4 space-y-3">
+        <div className="flex items-center justify-between"><h3 className="font-semibold text-gray-800">Fotos de recepción</h3><label className="cursor-pointer text-sm font-medium text-[#E31E24]"><Camera className="inline w-4 h-4 mr-1" />{uploading ? "Cargando..." : "Agregar fotos"}<input type="file" accept="image/*" capture="environment" multiple className="hidden" onChange={handleFotos} disabled={uploading} /></label></div>
+        {(form.fotos || []).length > 0 && <div className="grid grid-cols-3 gap-2">{form.fotos.map((url, i) => <img key={url + i} src={url} alt={`Evidencia ${i + 1}`} className="h-20 w-full object-cover rounded-lg" />)}</div>}
+      </div>
+
       <div>
         <Label>Observaciones generales</Label>
         <Textarea value={form.observaciones} onChange={e => set("observaciones", e.target.value)} rows={3} />
+      </div>
+
+      <div className="bg-white border rounded-xl p-4 space-y-3">
+        <h3 className="font-semibold text-gray-800">Confirmación de ingreso</h3>
+        <div><Label>Nombre del cliente o representante</Label><Input value={form.firma_ingreso?.nombre_firma || ""} onChange={e => set("firma_ingreso", { ...(form.firma_ingreso || {}), nombre_firma: e.target.value, metodo: "Digital" })} /></div>
+        <div><Label>Firma del cliente</Label><SignaturePad value={form.firma_ingreso?.firma_data_url || ""} onChange={firma_data_url => set("firma_ingreso", { ...(form.firma_ingreso || {}), firma_data_url, metodo: "Digital" })} /></div>
       </div>
 
       <Button className="w-full bg-[#E31E24] hover:bg-[#B71C1C] gap-2" onClick={handleSave} disabled={saving}>
