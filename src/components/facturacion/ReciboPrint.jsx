@@ -32,7 +32,7 @@ export default function ReciboPrint({ factura, cliente, vehiculo }) {
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Recibo ${factura.numero_factura || factura.id}</title>
+<title>Recibo ${escapeHtml(factura.numero_factura || factura.id)}</title>
 <style>
   @page {
     size: 80mm auto;
