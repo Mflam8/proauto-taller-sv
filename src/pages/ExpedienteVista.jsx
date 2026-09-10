@@ -6,12 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, FolderOpen, Car, User, ClipboardList, Stethoscope, Wrench, DollarSign, PackageMinus, TruckIcon, Receipt, ShieldCheck } from "lucide-react";
+import { ArrowLeft, FolderOpen, Car, User, ClipboardList, Stethoscope, Wrench, DollarSign, Package, TruckIcon, Receipt, ShieldCheck } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import InspeccionForm from "@/components/inspeccion/InspeccionForm";
 import DiagnosticoForm from "@/components/diagnostico/DiagnosticoForm";
 import TrabajosTab from "@/components/trabajos/TrabajosTab";
+import MaterialesTab from "@/components/materiales/MaterialesTab";
 import CajaChicaTab from "@/components/caja/CajaChicaTab";
 import CierreTab from "@/components/cierre/CierreTab";
 import GenerarFacturaForm from "@/components/facturacion/GenerarFacturaForm";
@@ -22,6 +23,7 @@ const TABS = [
   { id: "inspeccion", label: "Inspección", icon: ClipboardList },
   { id: "diagnostico", label: "Diagnóstico", icon: Stethoscope },
   { id: "trabajos", label: "Trabajos", icon: Wrench },
+  { id: "materiales", label: "Materiales", icon: Package },
   { id: "recepcion", label: "Recepción", icon: ShieldCheck },
   { id: "caja", label: "Caja", icon: DollarSign },
   { id: "cierre", label: "Cierre", icon: TruckIcon },
@@ -293,6 +295,13 @@ export default function ExpedienteVista() {
       {tab === "trabajos" && (
         <div className="bg-white border rounded-xl p-5">
           <TrabajosTab expediente={expediente} empleados={empleados} />
+        </div>
+      )}
+
+      {/* TAB: Materiales */}
+      {tab === "materiales" && (
+        <div className="bg-white border rounded-xl p-5">
+          <MaterialesTab expediente={expediente} />
         </div>
       )}
 
