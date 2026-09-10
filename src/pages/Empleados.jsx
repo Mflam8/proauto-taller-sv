@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Search, UserCircle, Phone, Mail, Wrench } from "lucide-react";
+import { Plus, Search, UserCircle, Phone, Mail, Wrench, Cake } from "lucide-react";
 import { motion } from "framer-motion";
 
 const TIPOS = ["Recepción", "Técnico", "Administración", "Gerencia", "Carwash", "Pintura", "Otro"];
@@ -23,7 +23,17 @@ const tipoColor = {
   "Otro": "bg-gray-100 text-gray-800",
 };
 
-const empty = { nombre_completo: "", telefono: "", email: "", cargo: "", tipo: "Técnico", especialidad: "", fecha_ingreso: "", dui: "", activo: true, notas: "" };
+const empty = { nombre_completo: "", telefono: "", email: "", cargo: "", tipo: "Técnico", especialidad: "", fecha_ingreso: "", fecha_nacimiento: "", dui: "", activo: true, notas: "" };
+
+const esHoyCumple = (fecha) => {
+  if (!fecha) return false;
+  const f = new Date(fecha);
+  const hoy = new Date();
+  return f.getDate() === hoy.getDate() && f.getMonth() === hoy.getMonth();
+};
+
+const formatoCumple = (fecha) =>
+  new Date(fecha).toLocaleDateString("es-SV", { day: "numeric", month: "long" });
 
 export default function Empleados() {
   const [search, setSearch] = useState("");
@@ -52,7 +62,7 @@ export default function Empleados() {
   });
 
   const openNew = () => { setEditing(null); setForm(empty); setShowForm(true); };
-  const openEdit = (e) => { setEditing(e); setForm({ ...e }); setShowForm(true); };
+  const openEdit = (e) => { setEditing(e); setForm({ ...empty, ...e }); setShowForm(true); };
 
   const filtered = empleados.filter(e => {
     const matchSearch = e.nombre_completo?.toLowerCase().includes(search.toLowerCase()) ||
@@ -62,6 +72,7 @@ export default function Empleados() {
   });
 
   const activos = empleados.filter(e => e.activo).length;
+  const cumplenHoy = empleados.filter(e => e.activo && esHoyCumple(e.fecha_nacimiento));
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -75,6 +86,17 @@ export default function Empleados() {
           <Plus className="w-4 h-4" /> Nuevo Empleado
         </Button>
       </div>
+
+      {/* Recordatorio de cumpleaños */}
+      {cumplenHoy.length > 0 && (
+        <div className="mb-6 flex items-center gap-3 bg-pink-50 border border-pink-200 rounded-xl p-4">
+          <Cake className="w-5 h-5 text-pink-500 shrink-0" />
+          <p className="text-sm text-pink-800">
+            <span className="font-semibold">¡Hoy es su cumpleaños!</span>{" "}
+            {cumplenHoy.map(e => e.nombre_completo).join(" · ")}
+          </p>
+        </div>
+      )}
 
       {/* Filtros */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
@@ -120,6 +142,13 @@ export default function Empleados() {
               {emp.telefono && <p className="flex items-center gap-2"><Phone className="w-3 h-3" />{emp.telefono}</p>}
               {emp.email && <p className="flex items-center gap-2"><Mail className="w-3 h-3" />{emp.email}</p>}
               {emp.especialidad && <p className="flex items-center gap-2"><Wrench className="w-3 h-3" />{emp.especialidad}</p>}
+              {emp.fecha_nacimiento && (
+                <p className="flex items-center gap-2">
+                  <Cake className="w-3 h-3" />
+                  {formatoCumple(emp.fecha_nacimiento)}
+                  {esHoyCumple(emp.fecha_nacimiento) && <span className="text-pink-600 font-semibold">· ¡Hoy!</span>}
+                </p>
+              )}
             </div>
             {!emp.activo && <p className="mt-2 text-xs text-red-500 font-medium">Inactivo</p>}
           </motion.div>
@@ -174,6 +203,10 @@ export default function Empleados() {
               <div>
                 <Label>Fecha de ingreso</Label>
                 <Input type="date" value={form.fecha_ingreso} onChange={e => setForm({ ...form, fecha_ingreso: e.target.value })} />
+              </div>
+              <div>
+                <Label>Fecha de nacimiento</Label>
+                <Input type="date" value={form.fecha_nacimiento} onChange={e => setForm({ ...form, fecha_nacimiento: e.target.value })} />
               </div>
               <div className="col-span-2">
                 <Label>Notas / Observaciones</Label>

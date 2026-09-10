@@ -1,0 +1,45 @@
+{
+  "name": "Recordatorio Cumplea\u00f1os",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "recordatorio_cumpleanos",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "enviar_recordatorio": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "recordatorioCumpleanos",
+            "args": {}
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Revisar cumplea\u00f1os y avisar al admin",
+            "description": "Diario 8:00 AM"
+          }
+        }
+      }
+    ]
+  },
+  "description": "Env\u00eda un correo diario a los administradores cuando un empleado cumple a\u00f1os",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 8 * * *",
+      "one_time_date": null,
+      "timezone": "America/El_Salvador",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  }
+}
