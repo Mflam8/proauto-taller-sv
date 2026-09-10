@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, CheckCircle, Clock, Wrench } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Plus, Trash2, CheckCircle, Clock, Wrench, ShieldCheck } from "lucide-react";
 
 const TIPOS = ["Mano de Obra", "Mano de Obra Pintura", "Repuesto", "Insumo", "Diagnóstico", "Otro"];
 
@@ -28,6 +29,8 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
   const [form, setForm] = useState(emptyTrabajo);
   const [saving, setSaving] = useState(false);
   const [busquedaCatalogo, setBusquedaCatalogo] = useState("");
+  const [trabajoEnRevision, setTrabajoEnRevision] = useState(null);
+  const [ajuste, setAjuste] = useState({ precio_aprobado: "", motivo: "", aprobado_por_nombre: "" });
 
   const { data: trabajos = [], refetch } = useQuery({
     queryKey: ["trabajos", expediente.id],
@@ -76,6 +79,59 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
     updated.subtotal = calcSubtotal(updated);
     setForm(updated);
     setBusquedaCatalogo("");
+  };
+
+  const abrirRevision = (trabajo) => {
+    const sugerido = trabajo.precio_sugerido ?? trabajo.precio_unitario ?? 0;
+    setTrabajoEnRevision(trabajo);
+    setAjuste({
+      precio_aprobado: String(trabajo.precio_unitario ?? sugerido),
+      motivo: "",
+      aprobado_por_nombre: "",
+    });
+  };
+
+  const guardarRevision = async () => {
+    if (!trabajoEnRevision || !ajuste.aprobado_por_nombre) return;
+    const precioSugerido = trabajoEnRevision.precio_sugerido ?? trabajoEnRevision.precio_unitario ?? 0;
+    const precioAprobado = Number(ajuste.precio_aprobado);
+    if (!Number.isFinite(precioAprobado) || precioAprobado < 0) return;
+
+    setSaving(true);
+    try {
+      const subtotal = (Number(trabajoEnRevision.cantidad) || 0) * precioAprobado;
+      await base44.entities.AjustePrecioTrabajo.create({
+        trabajo_id: trabajoEnRevision.id,
+        expediente_id: expediente.id,
+        catalogo_precio_id: trabajoEnRevision.catalogo_precio_id || "",
+        precio_sugerido: precioSugerido,
+        precio_aprobado: precioAprobado,
+        motivo: ajuste.motivo.trim() || "Precio sugerido aprobado",
+        aprobado_por_nombre: ajuste.aprobado_por_nombre,
+        fecha: new Date().toISOString(),
+      });
+      await base44.entities.TrabajoExpediente.update(trabajoEnRevision.id, {
+        precio_unitario: precioAprobado,
+        subtotal,
+        precio_ajustado_por: ajuste.aprobado_por_nombre,
+        motivo_ajuste_precio: ajuste.motivo.trim() || "Precio sugerido aprobado",
+        fecha_ajuste_precio: new Date().toISOString(),
+      });
+      const total = trabajos.reduce((s, trabajo) =>
+        s + (trabajo.id === trabajoEnRevision.id ? subtotal : (trabajo.subtotal || 0)), 0);
+      await base44.entities.Expediente.update(expediente.id, {
+        total_cobrado: total,
+        saldo_pendiente: total - (expediente.total_pagado || 0),
+      });
+      qc.invalidateQueries(["trabajos", expediente.id]);
+      qc.invalidateQueries(["expediente", expediente.id]);
+      setTrabajoEnRevision(null);
+      refetch();
+    } catch (error) {
+      alert("Error al revisar el precio: " + (error.message || error));
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleSave = async () => {
