@@ -281,7 +281,7 @@ function PasoRecepcion({ cliente, vehiculo, onSave }) {
   const [inspeccion, setInspeccion] = useState({
     llanta_repuesto: false, herramientas: false, caja_herramientas: false,
     documentos: false, gato_mecanico: false, cables_corriente: false,
-    carroceria_pintura: "", llantas_estado: "", vidrios_estado: "",
+    estado_pintura: "", estado_llantas: "", estado_vidrios: "",
     observaciones: "",
   });
 
@@ -386,7 +386,7 @@ function PasoRecepcion({ cliente, vehiculo, onSave }) {
         <div className="grid grid-cols-2 gap-3">
           <div>
             <Label className="text-xs">Carrocería / Pintura</Label>
-            <Select value={inspeccion.carroceria_pintura} onValueChange={v => setInsp("carroceria_pintura", v)}>
+            <Select value={inspeccion.estado_pintura} onValueChange={v => setInsp("estado_pintura", v)}>
               <SelectTrigger><SelectValue placeholder="Estado..." /></SelectTrigger>
               <SelectContent>
                 {["Buena", "Regular", "Mala", "Golpeada", "Rayada", "Descolorida"].map(e => (
@@ -397,7 +397,7 @@ function PasoRecepcion({ cliente, vehiculo, onSave }) {
           </div>
           <div>
             <Label className="text-xs">Llantas</Label>
-            <Select value={inspeccion.llantas_estado} onValueChange={v => setInsp("llantas_estado", v)}>
+            <Select value={inspeccion.estado_llantas} onValueChange={v => setInsp("estado_llantas", v)}>
               <SelectTrigger><SelectValue placeholder="Estado..." /></SelectTrigger>
               <SelectContent>
                 {["Buenas", "Regulares", "Malas"].map(e => (
@@ -408,7 +408,7 @@ function PasoRecepcion({ cliente, vehiculo, onSave }) {
           </div>
           <div>
             <Label className="text-xs">Vidrios</Label>
-            <Select value={inspeccion.vidrios_estado} onValueChange={v => setInsp("vidrios_estado", v)}>
+            <Select value={inspeccion.estado_vidrios} onValueChange={v => setInsp("estado_vidrios", v)}>
               <SelectTrigger><SelectValue placeholder="Estado..." /></SelectTrigger>
               <SelectContent>
                 {["Buenos", "Regulares", "Malos", "Rajados"].map(e => (
