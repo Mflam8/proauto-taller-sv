@@ -95,6 +95,21 @@
       "type": "boolean",
       "default": false
     },
+    "caja_herramientas": {
+      "type": "boolean",
+      "default": false,
+      "description": "Caja de herramientas recibida"
+    },
+    "gato_mecanico": {
+      "type": "boolean",
+      "default": false,
+      "description": "Gato mec\u00e1nico recibido"
+    },
+    "cables_corriente": {
+      "type": "boolean",
+      "default": false,
+      "description": "Cables de corriente recibidos"
+    },
     "documentos": {
       "type": "boolean",
       "default": false
