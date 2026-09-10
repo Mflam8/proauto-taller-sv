@@ -1,0 +1,50 @@
+{
+  "name": "AjustePrecioTrabajo",
+  "type": "object",
+  "properties": {
+    "trabajo_id": {
+      "type": "string",
+      "description": "Trabajo cuyo precio fue revisado"
+    },
+    "expediente_id": {
+      "type": "string",
+      "description": "Expediente relacionado"
+    },
+    "catalogo_precio_id": {
+      "type": "string",
+      "description": "Referencia de la sugerencia"
+    },
+    "precio_sugerido": {
+      "type": "number",
+      "description": "Precio original propuesto por la lista"
+    },
+    "precio_aprobado": {
+      "type": "number",
+      "description": "Precio aprobado para cotizar"
+    },
+    "motivo": {
+      "type": "string",
+      "description": "Motivo del cambio o confirmaci\u00f3n"
+    },
+    "aprobado_por_id": {
+      "type": "string",
+      "description": "Empleado que aprob\u00f3"
+    },
+    "aprobado_por_nombre": {
+      "type": "string",
+      "description": "Nombre del responsable"
+    },
+    "fecha": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "trabajo_id",
+    "expediente_id",
+    "precio_sugerido",
+    "precio_aprobado",
+    "aprobado_por_nombre",
+    "fecha"
+  ]
+}

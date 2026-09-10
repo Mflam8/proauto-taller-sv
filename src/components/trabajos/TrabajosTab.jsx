@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,8 @@ const estadoColor = {
 const emptyTrabajo = {
   descripcion: "", tipo: "Mano de Obra", cantidad: 1,
   precio_unitario: 0, subtotal: 0, estado: "Pendiente",
-  aprobado_cliente: false, tecnico_nombre: "", notas: ""
+  aprobado_cliente: false, tecnico_nombre: "", notas: "",
+  catalogo_precio_id: "", precio_sugerido: 0, origen_precio: "Manual"
 };
 
 export default function TrabajosTab({ expediente, empleados, onTotalesChange }) {
@@ -26,6 +27,7 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(emptyTrabajo);
   const [saving, setSaving] = useState(false);
+  const [busquedaCatalogo, setBusquedaCatalogo] = useState("");
 
   const { data: trabajos = [], refetch } = useQuery({
     queryKey: ["trabajos", expediente.id],
@@ -33,7 +35,20 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
     enabled: !!expediente.id,
   });
 
+  const { data: catalogo = [] } = useQuery({
+    queryKey: ["catalogo-precios-activos"],
+    queryFn: () => base44.entities.CatalogoPrecio.filter({ activo: true }),
+  });
+
   const tecnicos = empleados.filter(e => ["Técnico", "Pintura"].includes(e.tipo) && e.activo !== false);
+
+  const coincidenciasCatalogo = useMemo(() => {
+    const q = busquedaCatalogo.trim().toLowerCase();
+    if (q.length < 2) return [];
+    return catalogo.filter(item =>
+      `${item.codigo_catalogo} ${item.descripcion} ${item.rubro}`.toLowerCase().includes(q)
+    ).slice(0, 8);
+  }, [catalogo, busquedaCatalogo]);
 
   const calcSubtotal = (f) => (parseFloat(f.cantidad) || 0) * (parseFloat(f.precio_unitario) || 0);
 
@@ -41,6 +56,26 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
     const updated = { ...form, [field]: value };
     updated.subtotal = calcSubtotal(updated);
     setForm(updated);
+  };
+
+  const seleccionarCatalogo = (item) => {
+    const precio = item.precio_verificado ?? item.precio_base ?? 0;
+    const tipo = item.rubro?.includes("PINTURA") ? "Mano de Obra Pintura"
+      : item.rubro?.includes("REPUEST") ? "Repuesto"
+      : item.rubro?.includes("LUBRIC") || item.rubro?.includes("MATERIAL") ? "Insumo"
+      : "Mano de Obra";
+    const updated = {
+      ...form,
+      descripcion: item.descripcion,
+      tipo,
+      catalogo_precio_id: item.id,
+      precio_sugerido: precio,
+      precio_unitario: precio,
+      origen_precio: "Catálogo",
+    };
+    updated.subtotal = calcSubtotal(updated);
+    setForm(updated);
+    setBusquedaCatalogo("");
   };
 
   const handleSave = async () => {
