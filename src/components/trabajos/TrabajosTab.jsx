@@ -320,6 +320,52 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
           <span className="text-xl font-bold">${total.toFixed(2)}</span>
         </div>
       )}
+
+      <Dialog open={!!trabajoEnRevision} onOpenChange={open => !open && setTrabajoEnRevision(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Revisar precio del trabajo</DialogTitle>
+          </DialogHeader>
+          {trabajoEnRevision && (
+            <div className="space-y-4">
+              <div className="rounded-lg bg-gray-50 p-3">
+                <p className="font-medium text-sm">{trabajoEnRevision.descripcion}</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Precio sugerido: ${(trabajoEnRevision.precio_sugerido ?? trabajoEnRevision.precio_unitario ?? 0).toFixed(2)}
+                </p>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-600 mb-1 block">Responsable de la revisión *</label>
+                <Select value={ajuste.aprobado_por_nombre} onValueChange={v => setAjuste({ ...ajuste, aprobado_por_nombre: v })}>
+                  <SelectTrigger><SelectValue placeholder="Seleccionar responsable" /></SelectTrigger>
+                  <SelectContent>
+                    {empleados.filter(e => e.activo !== false).map(e => (
+                      <SelectItem key={e.id} value={e.nombre_completo}>{e.nombre_completo} · {e.cargo || e.tipo}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-600 mb-1 block">Precio aprobado *</label>
+                <Input type="number" min="0" step="0.01" value={ajuste.precio_aprobado}
+                  onChange={e => setAjuste({ ...ajuste, precio_aprobado: e.target.value })} />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-600 mb-1 block">Motivo del cambio</label>
+                <Input placeholder="Obligatorio si cambia el precio sugerido" value={ajuste.motivo}
+                  onChange={e => setAjuste({ ...ajuste, motivo: e.target.value })} />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setTrabajoEnRevision(null)}>Cancelar</Button>
+                <Button disabled={saving || !ajuste.aprobado_por_nombre} onClick={guardarRevision}
+                  className="bg-[#E31E24] hover:bg-[#B71C1C]">
+                  {saving ? "Guardando..." : "Guardar revisión"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
