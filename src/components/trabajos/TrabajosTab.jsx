@@ -295,7 +295,7 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
               </div>
               {t.tecnico_nombre && <p className="text-xs text-gray-500 mt-0.5">Técnico: {t.tecnico_nombre}</p>}
               <p className="text-xs text-gray-500">{t.cantidad} × ${(t.precio_unitario || 0).toFixed(2)} = <span className="font-semibold text-gray-800">${(t.subtotal || 0).toFixed(2)}</span></p>
-              {t.precio_ajustado_por && <p className="text-[11px] text-green-700 mt-1">Revisado por: {t.precio_ajustado_por}{t.motivo_ajuste_precio ? ` · ${t.motivo_ajuste_precio}` : ""}</p>
+              {t.precio_ajustado_por && <p className="text-[11px] text-green-700 mt-1">Revisado por: {t.precio_ajustado_por}{t.motivo_ajuste_precio ? ` · ${t.motivo_ajuste_precio}` : ""}</p>}
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               <Button size="sm" variant="outline" className="h-7 gap-1 px-2 text-xs" onClick={() => abrirRevision(t)}>
