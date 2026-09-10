@@ -1,0 +1,84 @@
+{
+  "name": "MaterialTrabajo",
+  "type": "object",
+  "properties": {
+    "expediente_id": {
+      "type": "string",
+      "description": "Expediente donde se utiliza o recibe el material"
+    },
+    "trabajo_id": {
+      "type": "string",
+      "description": "Trabajo t\u00e9cnico relacionado, si aplica"
+    },
+    "origen": {
+      "type": "string",
+      "enum": [
+        "Inventario del taller",
+        "Compra para este veh\u00edculo",
+        "Proporcionado por el cliente"
+      ],
+      "description": "Origen del material"
+    },
+    "item_inventario_id": {
+      "type": "string",
+      "description": "\u00cdtem de inventario cuando sale del taller"
+    },
+    "catalogo_precio_id": {
+      "type": "string",
+      "description": "Referencia al cat\u00e1logo cuando aplica"
+    },
+    "descripcion": {
+      "type": "string",
+      "description": "Descripci\u00f3n del material o repuesto"
+    },
+    "numero_parte": {
+      "type": "string",
+      "description": "N\u00famero de parte o referencia"
+    },
+    "cantidad": {
+      "type": "number",
+      "default": 1
+    },
+    "estado": {
+      "type": "string",
+      "enum": [
+        "Recibida",
+        "Instalada",
+        "No utilizada",
+        "Devuelta"
+      ],
+      "default": "Recibida"
+    },
+    "foto_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "proveedor_id": {
+      "type": "string",
+      "description": "Proveedor cuando se compra para este veh\u00edculo"
+    },
+    "comprobante_url": {
+      "type": "string",
+      "description": "Comprobante de compra, si existe"
+    },
+    "registrado_por": {
+      "type": "string",
+      "description": "Persona que registr\u00f3 el material"
+    },
+    "fecha_registro": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "notas": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "expediente_id",
+    "origen",
+    "descripcion",
+    "cantidad"
+  ]
+}

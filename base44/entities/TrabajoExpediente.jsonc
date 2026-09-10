@@ -33,18 +33,61 @@
     },
     "cantidad": {
       "type": "number",
-      "default": 1,
-      "description": "Cantidad"
+      "default": 1
     },
     "precio_unitario": {
       "type": "number",
-      "default": 0,
-      "description": "Precio unitario"
+      "default": 0
     },
     "subtotal": {
       "type": "number",
-      "default": 0,
-      "description": "Subtotal calculado"
+      "default": 0
+    },
+    "catalogo_precio_id": {
+      "type": "string",
+      "description": "\u00cdtem del cat\u00e1logo que origin\u00f3 la sugerencia"
+    },
+    "precio_sugerido": {
+      "type": "number",
+      "description": "Precio propuesto por la lista vigente"
+    },
+    "origen_precio": {
+      "type": "string",
+      "enum": [
+        "Cat\u00e1logo",
+        "Manual"
+      ],
+      "description": "C\u00f3mo se obtuvo el precio sugerido"
+    },
+    "precio_ajustado_por": {
+      "type": "string",
+      "description": "Supervisor que modific\u00f3 el precio sugerido"
+    },
+    "motivo_ajuste_precio": {
+      "type": "string",
+      "description": "Raz\u00f3n del ajuste de precio"
+    },
+    "fecha_ajuste_precio": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "fecha_inicio": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "fecha_fin": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "evidencia_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "prueba_final": {
+      "type": "string",
+      "description": "Resultado de prueba de funcionamiento"
     },
     "estado": {
       "type": "string",
@@ -53,13 +96,11 @@
         "En Proceso",
         "Completado"
       ],
-      "default": "Pendiente",
-      "description": "Estado del trabajo"
+      "default": "Pendiente"
     },
     "aprobado_cliente": {
       "type": "boolean",
-      "default": false,
-      "description": "Si el cliente aprob\u00f3 este trabajo"
+      "default": false
     },
     "notas": {
       "type": "string",

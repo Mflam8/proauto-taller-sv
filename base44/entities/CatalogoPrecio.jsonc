@@ -1,0 +1,45 @@
+{
+  "name": "CatalogoPrecio",
+  "type": "object",
+  "properties": {
+    "codigo_catalogo": {
+      "type": "string",
+      "description": "N\u00famero de \u00edtem de la lista base"
+    },
+    "rubro": {
+      "type": "string",
+      "description": "Categor\u00eda del cat\u00e1logo de precios"
+    },
+    "descripcion": {
+      "type": "string",
+      "description": "Descripci\u00f3n normalizada del servicio, art\u00edculo o material"
+    },
+    "precio_base": {
+      "type": "number",
+      "description": "Precio base sugerido desde el cat\u00e1logo autorizado"
+    },
+    "precio_verificado": {
+      "type": "number",
+      "description": "Precio vigente confirmado por gerencia, si difiere"
+    },
+    "fuente": {
+      "type": "string",
+      "description": "Meses o referencia de respaldo en la lista"
+    },
+    "origen": {
+      "type": "string",
+      "description": "Archivo o fuente de importaci\u00f3n"
+    },
+    "activo": {
+      "type": "boolean",
+      "default": true,
+      "description": "Disponible para sugerir precios"
+    }
+  },
+  "required": [
+    "codigo_catalogo",
+    "rubro",
+    "descripcion",
+    "precio_base"
+  ]
+}
