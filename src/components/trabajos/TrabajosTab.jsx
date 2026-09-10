@@ -150,6 +150,31 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
 
       {showForm && (
         <div className="bg-gray-50 rounded-xl p-4 mb-4 space-y-3 border">
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-gray-600 block">Buscar precio sugerido en catálogo</label>
+            <Input
+              placeholder="Ej: aceite, freno, pintura..."
+              value={busquedaCatalogo}
+              onChange={e => setBusquedaCatalogo(e.target.value)}
+            />
+            {coincidenciasCatalogo.length > 0 && (
+              <div className="rounded-lg border bg-white divide-y max-h-48 overflow-y-auto">
+                {coincidenciasCatalogo.map(item => {
+                  const precio = item.precio_verificado ?? item.precio_base ?? 0;
+                  return (
+                    <button type="button" key={item.id} onClick={() => seleccionarCatalogo(item)}
+                      className="w-full text-left px-3 py-2 hover:bg-red-50">
+                      <span className="block text-xs font-medium text-gray-800">{item.descripcion}</span>
+                      <span className="text-[11px] text-gray-500">{item.rubro} · Sugerido: ${precio.toFixed(2)}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            {form.catalogo_precio_id && (
+              <p className="text-[11px] text-green-700">Precio sugerido desde el catálogo: ${(form.precio_sugerido || 0).toFixed(2)}</p>
+            )}
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-medium text-gray-600 mb-1 block">Descripción *</label>
