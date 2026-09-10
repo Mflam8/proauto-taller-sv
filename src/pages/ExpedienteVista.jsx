@@ -103,6 +103,7 @@ export default function ExpedienteVista() {
   }
 
   const inspeccion = inspecciones[0];
+  const inspeccionCompletada = inspeccion?.estado === "Completada";
   const diagnostico = diagnosticos[0];
 
   const InfoRow = ({ label, value }) => value ? (
@@ -205,7 +206,7 @@ export default function ExpedienteVista() {
       {/* TAB: Inspección */}
       {tab === "inspeccion" && (
         <div className="bg-white border rounded-xl p-5">
-          {inspeccion ? (
+          {inspeccionCompletada ? (
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold text-gray-800">Inspección registrada</h3>
@@ -245,6 +246,7 @@ export default function ExpedienteVista() {
               vehiculo={vehiculo}
               cliente={cliente}
               empleados={empleados}
+              inspeccionExistente={inspeccion}
               onSave={() => { refetchInsp(); qc.invalidateQueries(["expediente", id]); setTab("diagnostico"); }}
             />
           )}
