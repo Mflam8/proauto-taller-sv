@@ -11,6 +11,11 @@ import SignaturePad from "@/components/autorizacion/SignaturePad";
 
 const ESTADOS_CONDICION = ["Bueno", "Regular", "Malo"];
 const TIPOS_DANO = ["Rayón", "Golpe", "Quebrado", "Faltante", "Óxido", "Vidrio dañado", "Daño eléctrico", "Otro"];
+const EVALUACIONES_RECEPCION = [
+  ["Carrocería", "Lámina"], ["Carrocería", "Puertas"], ["Carrocería", "Vidrios"], ["Carrocería", "Cubierta de luces"],
+  ["Carrocería", "Funcionamiento de luces"], ["Carrocería", "Vías"], ["Carrocería", "Antena"],
+  ["Interior", "Casetera / radio"], ["Interior", "Parlantes"], ["Interior", "Asientos"], ["Interior", "Retrovisores"], ["Interior", "Equipo especial"]
+];
 
 const condicionColor = { "Bueno": "bg-green-100 text-green-800", "Regular": "bg-yellow-100 text-yellow-800", "Malo": "bg-red-100 text-red-800" };
 
@@ -65,6 +70,7 @@ export default function InspeccionForm({ expediente, vehiculo, cliente, empleado
     daños: [],
     observaciones: "",
     fotos: [],
+    evaluaciones: [],
     firma_ingreso: { nombre_firma: cliente?.nombre_completo || "", firma_data_url: "", metodo: "Digital" },
   });
   const [saving, setSaving] = useState(false);
@@ -80,6 +86,13 @@ export default function InspeccionForm({ expediente, vehiculo, cliente, empleado
   };
 
   const quitarDano = (i) => set("daños", form.daños.filter((_, idx) => idx !== i));
+
+  const estadoEvaluacion = (elemento) => form.evaluaciones?.find(e => e.elemento === elemento)?.estado || "";
+  const setEvaluacion = (categoria, elemento, estado) => {
+    const actuales = form.evaluaciones || [];
+    const sinElemento = actuales.filter(e => e.elemento !== elemento);
+    set("evaluaciones", estado ? [...sinElemento, { categoria, elemento, estado }] : sinElemento);
+  };
 
   const handleFotos = async (event) => {
     const files = Array.from(event.target.files || []);
@@ -191,6 +204,20 @@ export default function InspeccionForm({ expediente, vehiculo, cliente, empleado
           <Label>Otros accesorios recibidos</Label>
           <Input value={form.accesorios_recibidos} onChange={e => set("accesorios_recibidos", e.target.value)}
             placeholder="Ej: Gato hidráulico, cables de arranque..." />
+        </div>
+      </div>
+
+      {/* Estado detallado de la hoja de recepción */}
+      <div className="bg-white border rounded-xl p-4">
+        <h3 className="font-semibold text-gray-800 mb-1">Revisión detallada</h3>
+        <p className="text-xs text-gray-500 mb-3">Registra el estado de cada elemento recibido. Los daños específicos se anotan en el siguiente paso.</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {EVALUACIONES_RECEPCION.map(([categoria, elemento]) => (
+            <div key={elemento} className="flex items-center justify-between gap-2 border rounded-lg px-3 py-2">
+              <div><p className="text-sm font-medium text-gray-800">{elemento}</p><p className="text-xs text-gray-400">{categoria}</p></div>
+              <Select value={estadoEvaluacion(elemento)} onValueChange={estado => setEvaluacion(categoria, elemento, estado)}><SelectTrigger className="w-28 h-9"><SelectValue placeholder="Estado" /></SelectTrigger><SelectContent>{ESTADOS_CONDICION.map(estado => <SelectItem key={estado} value={estado}>{estado}</SelectItem>)}</SelectContent></Select>
+            </div>
+          ))}
         </div>
       </div>
 
