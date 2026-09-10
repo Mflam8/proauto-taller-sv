@@ -293,6 +293,9 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
               <p className="text-xs text-gray-500">{t.cantidad} × ${(t.precio_unitario || 0).toFixed(2)} = <span className="font-semibold text-gray-800">${(t.subtotal || 0).toFixed(2)}</span></p>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
+              <Button size="sm" variant="outline" className="h-7 gap-1 px-2 text-xs" onClick={() => abrirRevision(t)}>
+                <ShieldCheck className="w-3 h-3" /> Revisar
+              </Button>
               <Select value={t.estado} onValueChange={v => handleEstado(t, v)}>
                 <SelectTrigger className="h-7 text-xs w-32">
                   <SelectValue />
