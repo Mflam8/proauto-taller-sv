@@ -10,6 +10,7 @@ import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Toolti
 import ReporteExport from "@/components/reportes/ReporteExport";
 import ReportePintura from "@/components/reportes/ReportePintura";
 import ExpedientesSinFacturar from "@/components/reportes/ExpedientesSinFacturar";
+import { puedeDescargarPDFs, puedeVerReportesAnuales } from "@/lib/permissions";
 
 const PERIODO_LABELS = {
   semana: "Última Semana",
@@ -63,6 +64,11 @@ export default function Reportes() {
     queryKey: ['expedientes-reportes'],
     queryFn: () => base44.entities.Expediente.list('-fecha_ingreso'),
     initialData: [],
+  });
+
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
   });
 
   // === RANGO DEL PERIODO SELECCIONADO ===
@@ -291,7 +297,7 @@ export default function Reportes() {
               <SelectItem value="semana">Semana</SelectItem>
               <SelectItem value="mes">Mes</SelectItem>
               <SelectItem value="trimestre">Trimestre</SelectItem>
-              <SelectItem value="anio">Año</SelectItem>
+              {puedeVerReportesAnuales(currentUser) && <SelectItem value="anio">Año</SelectItem>}
             </SelectContent>
           </Select>
           {periodo === 'anio' && (
@@ -305,6 +311,7 @@ export default function Reportes() {
               </SelectContent>
             </Select>
           )}
+          {puedeDescargarPDFs(currentUser) && (
           <ReporteExport
             facturas={facturasPeriodo}
             pagos={pagosPeriodo}
@@ -323,6 +330,7 @@ export default function Reportes() {
             pctRepetidos={pctRepetidos}
             periodoLabel={periodo === 'anio' ? `Año ${anioSel}` : PERIODO_LABELS[periodo]}
           />
+          )}
         </motion.div>
 
         {/* Métricas Principales */}
