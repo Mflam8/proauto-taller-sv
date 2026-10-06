@@ -1,0 +1,83 @@
+{
+  "name": "ControlFactura",
+  "type": "object",
+  "properties": {
+    "numero_control": {
+      "type": "string",
+      "description": "N\u00famero \u00fanico de identidad del evento (ej: CT-2026-000001)"
+    },
+    "evento": {
+      "type": "string",
+      "enum": [
+        "Creaci\u00f3n",
+        "Impresi\u00f3n"
+      ],
+      "description": "Tipo de evento registrado"
+    },
+    "factura_id": {
+      "type": "string",
+      "description": "ID de la factura"
+    },
+    "numero_factura": {
+      "type": "string",
+      "description": "N\u00famero de factura"
+    },
+    "cliente_nombre": {
+      "type": "string",
+      "description": "Nombre del cliente de la factura"
+    },
+    "vehiculo_desc": {
+      "type": "string",
+      "description": "Descripci\u00f3n del veh\u00edculo (marca y modelo)"
+    },
+    "expediente_id": {
+      "type": "string",
+      "description": "ID del expediente asociado"
+    },
+    "monto_total": {
+      "type": "number",
+      "default": 0,
+      "description": "Total de la factura al momento del evento"
+    },
+    "usuario_email": {
+      "type": "string",
+      "description": "Correo del usuario que ejecut\u00f3 el evento"
+    },
+    "usuario_nombre": {
+      "type": "string",
+      "description": "Nombre del usuario que ejecut\u00f3 el evento"
+    },
+    "fecha_evento": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha y hora exacta del evento"
+    }
+  },
+  "required": [
+    "numero_control",
+    "evento",
+    "factura_id"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

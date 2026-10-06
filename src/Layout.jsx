@@ -20,8 +20,10 @@ import {
   ChevronRight,
   FolderOpen,
   LayoutGrid,
-  Receipt
+  Receipt,
+  ShieldCheck
 } from "lucide-react";
+import { esDueno } from "@/lib/permissions";
 import {
   Sidebar,
   SidebarContent,
@@ -109,6 +111,12 @@ const navigationItems = [
     url: "/InformeRemesas",
     icon: Receipt,
   },
+  {
+    title: "Control Interno",
+    url: "/ControlFacturas",
+    icon: ShieldCheck,
+    soloDueno: true,
+  },
 ];
 
 export default function Layout({ children, currentPageName }) {
@@ -176,7 +184,7 @@ export default function Layout({ children, currentPageName }) {
               </SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {navigationItems.map((item) => {
+                  {navigationItems.filter((item) => !item.soloDueno || esDueno(user)).map((item) => {
                     const isActive = location.pathname === item.url;
                     return (
                       <SidebarMenuItem key={item.title}>

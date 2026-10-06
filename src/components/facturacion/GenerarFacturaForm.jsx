@@ -114,6 +114,19 @@ export default function GenerarFacturaForm({ expediente, cliente, vehiculo, onSu
         factura_generada: true,
       });
 
+      // Registro interno de creación (solo visible para el dueño)
+      base44.functions.invoke('registrarEventoFactura', {
+        evento: 'Creación',
+        factura: {
+          id: factura.id,
+          numero_factura: factura.numero_factura || numeroFactura,
+          cliente_nombre: clienteFacturacion?.nombre_completo || '',
+          vehiculo_desc: vehiculo ? `${vehiculo.marca} ${vehiculo.modelo}` : '',
+          expediente_id: expediente.id,
+          monto_total: totalFactura,
+        },
+      }).catch(() => {});
+
       return factura;
     },
     onSuccess: () => {

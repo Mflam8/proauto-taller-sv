@@ -86,6 +86,18 @@ export default function FacturaDetalle({ factura }) {
       return;
     }
     handlePrintRecibo();
+    // Registro interno de impresión (solo visible para el dueño)
+    base44.functions.invoke('registrarEventoFactura', {
+      evento: 'Impresión',
+      factura: {
+        id: factura.id,
+        numero_factura: factura.numero_factura || '',
+        cliente_nombre: cliente?.nombre_completo || '',
+        vehiculo_desc: vehiculo ? `${vehiculo.marca} ${vehiculo.modelo}` : '',
+        expediente_id: factura.expediente_id || '',
+        monto_total: factura.total || 0,
+      },
+    }).catch(() => {});
   };
 
   const handleEnviarCorreo = async () => {

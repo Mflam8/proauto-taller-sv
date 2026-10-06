@@ -19,6 +19,7 @@ import LinkTree from './pages/LinkTree';
 import OrdenesTrabajos from './pages/OrdenesTrabajos';
 import InformeRemesas from './pages/InformeRemesas';
 import OperacionDiaria from './pages/OperacionDiaria';
+import ControlFacturas from './pages/ControlFacturas';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -79,6 +80,7 @@ const AuthenticatedApp = () => {
       <Route path="/links" element={<LinkTree />} />
       <Route path="/OrdenesTrabajos" element={<LayoutWrapper currentPageName="OrdenesTrabajos"><OrdenesTrabajos /></LayoutWrapper>} />
       <Route path="/InformeRemesas" element={<LayoutWrapper currentPageName="InformeRemesas"><InformeRemesas /></LayoutWrapper>} />
+      <Route path="/ControlFacturas" element={<LayoutWrapper currentPageName="ControlFacturas"><ControlFacturas /></LayoutWrapper>} />
       <Route path="/OperacionDiaria" element={<LayoutWrapper currentPageName="OperacionDiaria"><OperacionDiaria /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
