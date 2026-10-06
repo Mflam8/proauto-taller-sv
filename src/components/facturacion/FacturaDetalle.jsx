@@ -74,6 +74,20 @@ export default function FacturaDetalle({ factura }) {
 
   const handlePrintRecibo = ReciboPrint({ factura: facturaConItemsOrdenados, cliente, vehiculo });
 
+  // Solo se puede imprimir el recibo si hay al menos un cobro registrado
+  const cobrado = (factura.monto_pagado || 0) > 0 || pagos.length > 0;
+  const handleImprimirRecibo = () => {
+    if (!cobrado) {
+      toast({
+        variant: "destructive",
+        title: "Recibo bloqueado",
+        description: "Registre al menos un pago de esta factura antes de imprimir el recibo.",
+      });
+      return;
+    }
+    handlePrintRecibo();
+  };
+
   const handleEnviarCorreo = async () => {
     const correo = cliente?.email;
     if (!correo) {
@@ -155,7 +169,9 @@ export default function FacturaDetalle({ factura }) {
             </div>
             <div className="flex items-center gap-3">
               <Button
-                onClick={handlePrintRecibo}
+                onClick={handleImprimirRecibo}
+                disabled={!cobrado}
+                title={cobrado ? undefined : "Registre un pago para poder imprimir el recibo"}
                 className="bg-white text-[#E31E24] hover:bg-gray-100 gap-2"
                 size="sm"
               >
