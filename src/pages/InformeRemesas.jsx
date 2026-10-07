@@ -124,13 +124,22 @@ export default function InformeRemesas() {
     const delMes = facturas.filter(f => enMes(f.fecha_emision || f.created_date, mes, anio));
     let facturado = 0;
     let repuestos = 0;
+    let ganancia = 0;
     delMes.forEach(f => {
       facturado += Number(f.total) || 0;
+      let laborFactura = 0;
       (trabajosByExpediente[f.expediente_id] || []).forEach(t => {
-        if (t.tipo === "Repuesto" || t.tipo === "Insumo") repuestos += Number(t.subtotal) || 0;
+        const sub = Number(t.subtotal) || 0;
+        if (t.tipo === "Repuesto" || t.tipo === "Insumo") {
+          repuestos += sub;
+        } else {
+          laborFactura += sub;
+        }
       });
+      // Facturas nuevas ya guardan la ganancia al emitirse; para las antiguas se calcula aquí
+      ganancia += f.ganancia_mano_obra != null ? Number(f.ganancia_mano_obra) || 0 : laborFactura;
     });
-    return { facturado, repuestos, cantidad: delMes.length };
+    return { facturado, repuestos, ganancia, cantidad: delMes.length };
   }, [facturas, trabajosByExpediente, mes, anio]);
 
   // Build report rows and group by fecha_remesa
@@ -281,6 +290,7 @@ export default function InformeRemesas() {
         <ResumenCards
           facturado={resumenFacturas.facturado}
           repuestos={resumenFacturas.repuestos}
+          ganancia={resumenFacturas.ganancia}
           cantidadFacturas={resumenFacturas.cantidad}
           cobrado={monthlyTotals.monto}
           efectivoTransfer={monthlyTotals.efectivo + monthlyTotals.transferencia}

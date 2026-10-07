@@ -74,6 +74,11 @@
       "type": "number",
       "description": "Total de la factura"
     },
+    "ganancia_mano_obra": {
+      "type": "number",
+      "default": 0,
+      "description": "Ganancia neta del taller al emitir la factura: suma de los \u00edtems de mano de obra, excluyendo repuestos e insumos (gastos que se pagan a terceros)"
+    },
     "estado_pago": {
       "type": "string",
       "enum": [

@@ -67,6 +67,13 @@ export default function GenerarFacturaForm({ expediente, cliente, vehiculo, onSu
   // Initialize items from trabajos once loaded
   const displayItems = items ?? initialItems;
 
+  // Ganancia del taller: solo mano de obra (sin repuestos ni insumos, que son gastos a terceros)
+  const gananciaManoObra = Math.round(
+    trabajosOrdenados
+      .filter(t => t.tipo !== "Repuesto" && t.tipo !== "Insumo")
+      .reduce((sum, t) => sum + (t.subtotal || 0), 0) * 100
+  ) / 100;
+
   const importeBruto = displayItems.reduce((sum, item) => sum + (item.subtotal || item.cantidad * item.precio_unitario), 0);
   const importeNeto = importeBruto;
   const iva = aplicaIva ? Math.round(importeNeto * IVA_RATE * 100) / 100 : 0;
@@ -100,6 +107,7 @@ export default function GenerarFacturaForm({ expediente, cliente, vehiculo, onSu
         importe_neto: importeNeto,
         iva: iva,
         total: totalFactura,
+        ganancia_mano_obra: gananciaManoObra,
         estado_pago: "Pendiente",
         monto_pagado: 0,
         saldo_pendiente: totalFactura,
@@ -277,6 +285,10 @@ export default function GenerarFacturaForm({ expediente, cliente, vehiculo, onSu
         <div className="border-t border-gray-700 pt-2 mt-2 flex justify-between text-lg">
           <span className="font-bold">Total Factura</span>
           <span className="font-bold text-green-400">${totalFactura.toFixed(2)}</span>
+        </div>
+        <div className="border-t border-gray-700 pt-2 mt-2 flex justify-between text-sm">
+          <span className="text-gray-300">Ganancia del taller (mano de obra)</span>
+          <span className="font-bold text-emerald-400">${gananciaManoObra.toFixed(2)}</span>
         </div>
       </div>
 
