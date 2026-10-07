@@ -68,6 +68,11 @@ export default function InformeRemesas() {
     queryFn: () => base44.entities.MaterialTrabajo.list(),
     initialData: [],
   });
+  const { data: trabajos = [] } = useQuery({
+    queryKey: ['trabajos-informe'],
+    queryFn: () => base44.entities.TrabajoExpediente.list(),
+    initialData: [],
+  });
   const { data: clientes = [] } = useQuery({
     queryKey: ['clientes-informe'],
     queryFn: () => base44.entities.Cliente.list(),
@@ -98,6 +103,15 @@ export default function InformeRemesas() {
     });
     return map;
   }, [materiales]);
+  const trabajosByExpediente = useMemo(() => {
+    const map = {};
+    trabajos.forEach(t => {
+      if (!t.expediente_id) return;
+      if (!map[t.expediente_id]) map[t.expediente_id] = [];
+      map[t.expediente_id].push(t);
+    });
+    return map;
+  }, [trabajos]);
 
   // Filter pagos by selected month/year
   const pagosDelMes = useMemo(() => {
@@ -134,6 +148,16 @@ export default function InformeRemesas() {
         if (!costo) return;
         const prov = (m.proveedor_nombre || "VARIOS").trim();
         proveedores[prov] = (proveedores[prov] || 0) + costo;
+        totalRepuestos += costo;
+      });
+
+      // Repuestos e insumos que los técnicos registraron en las líneas de trabajo
+      const trabajosExpediente = trabajosByExpediente[expediente?.id] || [];
+      trabajosExpediente.forEach(t => {
+        if (t.tipo !== "Repuesto" && t.tipo !== "Insumo") return;
+        const costo = Number(t.subtotal) || 0;
+        if (!costo) return;
+        proveedores["REPUESTOS/INSUMOS"] = (proveedores["REPUESTOS/INSUMOS"] || 0) + costo;
         totalRepuestos += costo;
       });
 
@@ -211,7 +235,7 @@ export default function InformeRemesas() {
       .sort((a, b) => b.margen - a.margen);
 
     return { groups, suppliers, monthlyTotals, margenes };
-  }, [pagosDelMes, facturaMap, expedienteMap, clienteMap, cajaChicaByExpediente, materialesByExpediente]);
+  }, [pagosDelMes, facturaMap, expedienteMap, clienteMap, cajaChicaByExpediente, materialesByExpediente, trabajosByExpediente]);
 
   return (
     <div className="p-4 md:p-6 space-y-6 max-w-full">
