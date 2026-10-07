@@ -13,13 +13,14 @@ const MESES = [
 ];
 
 const emptyTotals = () => ({
-  monto: 0, totalRepuestos: 0, ganancia: 0, tarjeta: 0, efectivo: 0, cheque: 0, transferencia: 0,
+  monto: 0, totalRepuestos: 0, totalInsumos: 0, ganancia: 0, tarjeta: 0, efectivo: 0, cheque: 0, transferencia: 0,
   proveedores: {}
 });
 
 const addToTotals = (totals, row) => {
   totals.monto += row.monto;
   totals.totalRepuestos += row.totalRepuestos;
+  totals.totalInsumos += row.totalInsumos;
   totals.ganancia += row.ganancia;
   totals.tarjeta += row.tarjeta;
   totals.efectivo += row.efectivo;
@@ -80,6 +81,10 @@ export default function InformeRemesas() {
     queryKey: ['clientes-informe'],
     queryFn: () => base44.entities.Cliente.list('-created_date', 10000),
   });
+  const { data: itemsInventario = [] } = useQuery({
+    queryKey: ['itemsInventario-informe'],
+    queryFn: () => base44.entities.ItemInventario.list('-created_date', 5000),
+  });
 
   const isLoading = loadingPagos || loadingFacturas || loadingTrabajos;
 
@@ -87,6 +92,7 @@ export default function InformeRemesas() {
   const facturaMap = useMemo(() => Object.fromEntries(facturas.map(f => [f.id, f])), [facturas]);
   const expedienteMap = useMemo(() => Object.fromEntries(expedientes.map(e => [e.id, e])), [expedientes]);
   const clienteMap = useMemo(() => Object.fromEntries(clientes.map(c => [c.id, c])), [clientes]);
+  const itemInventarioMap = useMemo(() => Object.fromEntries(itemsInventario.map(i => [i.id, i])), [itemsInventario]);
   const cajaChicaByExpediente = useMemo(() => {
     const map = {};
     cajaChica.forEach(cc => {
@@ -125,14 +131,17 @@ export default function InformeRemesas() {
     const delMes = facturas.filter(f => enMes(f.fecha_emision || f.created_date, mes, anio));
     let facturado = 0;
     let repuestos = 0;
+    let insumos = 0;
     let ganancia = 0;
     delMes.forEach(f => {
       facturado += Number(f.total) || 0;
       let laborFactura = 0;
       (trabajosByExpediente[f.expediente_id] || []).forEach(t => {
         const sub = Number(t.subtotal) || 0;
-        if (t.tipo === "Repuesto" || t.tipo === "Insumo") {
+        if (t.tipo === "Repuesto") {
           repuestos += sub;
+        } else if (t.tipo === "Insumo") {
+          insumos += sub;
         } else {
           laborFactura += sub;
         }
@@ -140,7 +149,7 @@ export default function InformeRemesas() {
       // Facturas nuevas ya guardan la ganancia al emitirse; para las antiguas se calcula aquí
       ganancia += f.ganancia_mano_obra != null ? Number(f.ganancia_mano_obra) || 0 : laborFactura;
     });
-    return { facturado, repuestos, ganancia, cantidad: delMes.length };
+    return { facturado, repuestos, insumos, ganancia, cantidad: delMes.length };
   }, [facturas, trabajosByExpediente, mes, anio]);
 
   // Build report rows and group by fecha_remesa
@@ -164,15 +173,17 @@ export default function InformeRemesas() {
         }
       }
 
-      // Group parts costs by supplier
+      // Group parts costs by supplier (repuestos e insumos van por separado)
       const proveedores = {};
       let totalRepuestos = 0;
+      let totalInsumos = 0;
       gastosExpediente.forEach(g => {
         if (g.tipo !== "Gasto") return;
         const prov = (g.proveedor || "VARIOS").trim();
         const monto = g.monto || 0;
         proveedores[prov] = (proveedores[prov] || 0) + monto;
-        totalRepuestos += monto;
+        if (g.categoria === "Insumo") totalInsumos += monto;
+        else totalRepuestos += monto;
       });
 
       // Costos de materiales y repuestos registrados por los trabajadores
@@ -183,17 +194,23 @@ export default function InformeRemesas() {
         if (!costo) return;
         const prov = (m.proveedor_nombre || "VARIOS").trim();
         proveedores[prov] = (proveedores[prov] || 0) + costo;
-        totalRepuestos += costo;
+        const catItem = itemInventarioMap[m.item_inventario_id]?.categoria;
+        if (catItem === "Insumos") totalInsumos += costo;
+        else totalRepuestos += costo;
       });
 
       // Repuestos e insumos que los técnicos registraron en las líneas de trabajo
       const trabajosExpediente = trabajosByExpediente[expediente?.id] || [];
       trabajosExpediente.forEach(t => {
-        if (t.tipo !== "Repuesto" && t.tipo !== "Insumo") return;
         const costo = Number(t.subtotal) || 0;
         if (!costo) return;
-        proveedores["REPUESTOS/INSUMOS"] = (proveedores["REPUESTOS/INSUMOS"] || 0) + costo;
-        totalRepuestos += costo;
+        if (t.tipo === "Insumo") {
+          proveedores["INSUMOS"] = (proveedores["INSUMOS"] || 0) + costo;
+          totalInsumos += costo;
+        } else if (t.tipo === "Repuesto") {
+          proveedores["REPUESTOS"] = (proveedores["REPUESTOS"] || 0) + costo;
+          totalRepuestos += costo;
+        }
       });
 
       const fechaPago = pago.fecha_pago || expediente?.fecha_ingreso || pago.created_date;
@@ -207,6 +224,7 @@ export default function InformeRemesas() {
         monto,
         proveedores,
         totalRepuestos,
+        totalInsumos,
         ganancia: gananciaFactura,
         tarjeta: col === "tarjeta" ? monto : 0,
         efectivo: col === "efectivo" ? monto : 0,
@@ -264,14 +282,14 @@ export default function InformeRemesas() {
     rows.forEach(r => {
       if (!margenMap[r.cliente]) margenMap[r.cliente] = { cliente: r.cliente, ingresos: 0, costos: 0 };
       margenMap[r.cliente].ingresos += r.monto;
-      margenMap[r.cliente].costos += r.totalRepuestos;
+      margenMap[r.cliente].costos += r.totalRepuestos + r.totalInsumos;
     });
     const margenes = Object.values(margenMap)
       .map(m => ({ ...m, margen: m.ingresos - m.costos }))
       .sort((a, b) => b.margen - a.margen);
 
     return { groups, suppliers, monthlyTotals, margenes };
-  }, [pagosDelMes, facturaMap, expedienteMap, clienteMap, cajaChicaByExpediente, materialesByExpediente, trabajosByExpediente]);
+  }, [pagosDelMes, facturaMap, expedienteMap, clienteMap, cajaChicaByExpediente, materialesByExpediente, itemInventarioMap, trabajosByExpediente]);
 
   return (
     <div className="p-4 md:p-6 space-y-6 max-w-full">
@@ -305,6 +323,7 @@ export default function InformeRemesas() {
         <ResumenCards
           facturado={resumenFacturas.facturado}
           repuestos={resumenFacturas.repuestos}
+          insumos={resumenFacturas.insumos}
           ganancia={resumenFacturas.ganancia}
           cantidadFacturas={resumenFacturas.cantidad}
           cobrado={monthlyTotals.monto}

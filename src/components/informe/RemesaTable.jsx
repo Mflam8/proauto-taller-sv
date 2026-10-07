@@ -24,6 +24,7 @@ function RowTotal({ label, totals, suppliers }) {
         <td key={s} className="px-2 py-2 text-right text-red-300">{formatMoney(totals.proveedores[s] || 0)}</td>
       ))}
       <td className="px-2 py-2 text-right text-amber-300">{formatMoney(totals.totalRepuestos)}</td>
+      <td className="px-2 py-2 text-right text-rose-300">{formatMoney(totals.totalInsumos)}</td>
       <td className="px-2 py-2 text-right text-emerald-300">{formatMoney(totals.ganancia)}</td>
       <td className="px-2 py-2 text-right text-blue-300">{formatMoney(totals.tarjeta)}</td>
       <td className="px-2 py-2 text-right text-green-300">{formatMoney(totals.efectivo)}</td>
@@ -55,6 +56,7 @@ export function RemesaTable({ groups, suppliers, monthlyTotals }) {
               </th>
             ))}
             <th className="px-2 py-2 text-right border-r border-gray-700 whitespace-nowrap bg-amber-900/40">TOTAL REPUESTOS</th>
+            <th className="px-2 py-2 text-right border-r border-gray-700 whitespace-nowrap bg-rose-900/40">TOTAL INSUMOS</th>
             <th className="px-2 py-2 text-right border-r border-gray-700 whitespace-nowrap bg-emerald-900/40">GANANCIA TALLER</th>
             <th className="px-2 py-2 text-right border-r border-gray-700 whitespace-nowrap">TARJETA</th>
             <th className="px-2 py-2 text-right border-r border-gray-700 whitespace-nowrap">EFECTIVO</th>
@@ -83,6 +85,7 @@ export function RemesaTable({ groups, suppliers, monthlyTotals }) {
                     </td>
                   ))}
                   <td className="px-2 py-1.5 text-right font-semibold text-amber-700 bg-amber-50 whitespace-nowrap">{formatMoney(row.totalRepuestos)}</td>
+                  <td className="px-2 py-1.5 text-right font-semibold text-rose-700 bg-rose-50 whitespace-nowrap">{formatMoney(row.totalInsumos)}</td>
                   <td className="px-2 py-1.5 text-right font-semibold text-emerald-700 bg-emerald-50 whitespace-nowrap">{formatMoney(row.ganancia)}</td>
                   <td className="px-2 py-1.5 text-right text-blue-600 whitespace-nowrap">{formatMoney(row.tarjeta)}</td>
                   <td className="px-2 py-1.5 text-right text-green-600 whitespace-nowrap">{formatMoney(row.efectivo)}</td>

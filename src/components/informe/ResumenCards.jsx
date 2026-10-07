@@ -4,10 +4,11 @@ import { DollarSign, FileText, Package, Receipt, TrendingUp, Wallet } from "luci
 
 const fmt = (n) => `$${(n || 0).toFixed(2)}`;
 
-export default function ResumenCards({ facturado, repuestos, ganancia, cantidadFacturas, cobrado, efectivoTransfer, cantidadPagos }) {
+export default function ResumenCards({ facturado, repuestos, insumos, ganancia, cantidadFacturas, cobrado, efectivoTransfer, cantidadPagos }) {
   const cards = [
     { icon: DollarSign, value: fmt(facturado), label: `Total Facturado (${cantidadFacturas} facturas)`, cls: "from-green-500 to-green-600" },
     { icon: Package, value: fmt(repuestos), label: "Total Repuestos facturados", cls: "from-amber-500 to-orange-600" },
+    { icon: Package, value: fmt(insumos), label: "Total Insumos facturados", cls: "from-rose-500 to-rose-700" },
     { icon: TrendingUp, value: fmt(ganancia), label: "Ganancia del taller (mano de obra)", cls: "from-emerald-500 to-green-700" },
     { icon: Wallet, value: fmt(cobrado), label: "Total Cobrado (pagos)", cls: "from-emerald-600 to-teal-700" },
     { icon: Receipt, value: fmt(efectivoTransfer), label: "Efectivo + Transfer.", cls: "from-blue-500 to-blue-600" },
@@ -15,7 +16,7 @@ export default function ResumenCards({ facturado, repuestos, ganancia, cantidadF
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
       {cards.map((c) => (
         <Card key={c.label} className={`border-0 shadow-md bg-gradient-to-br ${c.cls} text-white`}>
           <CardContent className="p-4">
