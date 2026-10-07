@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RemesaTable } from "@/components/informe/RemesaTable";
-import { FileText, Package } from "lucide-react";
+import { FileText } from "lucide-react";
 import ResumenCards from "@/components/informe/ResumenCards";
 
 const MESES = [
@@ -153,7 +153,7 @@ export default function InformeRemesas() {
   }, [facturas, trabajosByExpediente, mes, anio]);
 
   // Build report rows and group by fecha_remesa
-  const { groups, suppliers, monthlyTotals, margenes } = useMemo(() => {
+  const { groups, suppliers, monthlyTotals } = useMemo(() => {
     const rows = pagosDelMes.map(pago => {
       const factura = facturaMap[pago.factura_id];
       const expediente = expedienteMap[factura?.expediente_id];
@@ -277,18 +277,7 @@ export default function InformeRemesas() {
     const monthlyTotals = emptyTotals();
     rows.forEach(row => addToTotals(monthlyTotals, row));
 
-    // Margen de ganancia por cliente: ingresos cobrados vs costos de repuestos
-    const margenMap = {};
-    rows.forEach(r => {
-      if (!margenMap[r.cliente]) margenMap[r.cliente] = { cliente: r.cliente, ingresos: 0, costos: 0 };
-      margenMap[r.cliente].ingresos += r.monto;
-      margenMap[r.cliente].costos += r.totalRepuestos + r.totalInsumos;
-    });
-    const margenes = Object.values(margenMap)
-      .map(m => ({ ...m, margen: m.ingresos - m.costos }))
-      .sort((a, b) => b.margen - a.margen);
-
-    return { groups, suppliers, monthlyTotals, margenes };
+    return { groups, suppliers, monthlyTotals };
   }, [pagosDelMes, facturaMap, expedienteMap, clienteMap, cajaChicaByExpediente, materialesByExpediente, itemInventarioMap, trabajosByExpediente]);
 
   return (
@@ -330,44 +319,6 @@ export default function InformeRemesas() {
           efectivoTransfer={monthlyTotals.efectivo + monthlyTotals.transferencia}
           cantidadPagos={pagosDelMes.length}
         />
-      )}
-
-      {/* Margen por cliente */}
-      {margenes.length > 0 && (
-        <Card className="border-0 shadow-lg">
-          <CardHeader className="border-b pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Package className="w-5 h-5 text-[#E31E24]" />
-              Margen de Ganancia por Cliente
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-xs font-semibold text-gray-500 uppercase border-b">
-                    <th className="py-2 pr-3">Cliente</th>
-                    <th className="py-2 pr-3 text-right">Ingresos (cobrado)</th>
-                    <th className="py-2 pr-3 text-right">Costos de repuestos</th>
-                    <th className="py-2 text-right">Margen</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {margenes.map(m => (
-                    <tr key={m.cliente} className="hover:bg-gray-50">
-                      <td className="py-2.5 pr-3 font-medium text-gray-900">{m.cliente}</td>
-                      <td className="py-2.5 pr-3 text-right text-gray-900">${m.ingresos.toFixed(2)}</td>
-                      <td className="py-2.5 pr-3 text-right text-amber-700">${m.costos.toFixed(2)}</td>
-                      <td className={`py-2.5 text-right font-bold ${m.margen >= 0 ? "text-green-600" : "text-red-600"}`}>
-                        ${m.margen.toFixed(2)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
       )}
 
       {/* Report Table */}
