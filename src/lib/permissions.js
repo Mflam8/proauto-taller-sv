@@ -8,8 +8,11 @@ const estaRestringido = (user) =>
 export const puedeDescargarPDFs = (user) => !estaRestringido(user);
 export const puedeVerReportesAnuales = (user) => !estaRestringido(user);
 
-// El dueño del taller: única cuenta con acceso al control interno de facturas.
-const EMAIL_DUENO = "proautotallersv@gmail.com";
+// Cuentas con acceso total (control interno de facturas incluido).
+const CORREOS_ACCESO_TOTAL = [
+  "proautotallersv@gmail.com",
+  "mayaflamenco89@gmail.com",
+];
 
 export const esDueno = (user) =>
-  !!user?.email && user.email.toLowerCase() === EMAIL_DUENO;
+  !!user?.email && CORREOS_ACCESO_TOTAL.includes(user.email.toLowerCase());
