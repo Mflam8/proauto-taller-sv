@@ -4,7 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RemesaTable } from "@/components/informe/RemesaTable";
-import { DollarSign, FileText, Package, Receipt } from "lucide-react";
+import { FileText, Package } from "lucide-react";
+import ResumenCards from "@/components/informe/ResumenCards";
 
 const MESES = [
   "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -28,6 +29,13 @@ const addToTotals = (totals, row) => {
   });
 };
 
+// Fechas "YYYY-MM-DD" se leen como hora local para no caer en el mes anterior
+const enMes = (valor, mes, anio) => {
+  if (!valor) return false;
+  const fecha = new Date(valor.length === 10 ? `${valor}T00:00:00` : valor);
+  return fecha.getMonth() === mes && fecha.getFullYear() === anio;
+};
+
 const metodoToColumn = (metodo) => {
   if (!metodo) return null;
   const m = metodo.toLowerCase();
@@ -44,42 +52,35 @@ export default function InformeRemesas() {
   const [anio, setAnio] = useState(now.getFullYear());
 
   const { data: pagos = [], isLoading: loadingPagos } = useQuery({
-    queryKey: ['pagos'],
-    queryFn: () => base44.entities.Pago.list('-fecha_pago', 500),
-    initialData: [],
+    queryKey: ['pagos-informe'],
+    queryFn: () => base44.entities.Pago.list('-fecha_pago', 5000),
   });
-  const { data: facturas = [] } = useQuery({
-    queryKey: ['facturas'],
-    queryFn: () => base44.entities.Factura.list(),
-    initialData: [],
+  const { data: facturas = [], isLoading: loadingFacturas } = useQuery({
+    queryKey: ['facturas-informe'],
+    queryFn: () => base44.entities.Factura.list('-created_date', 5000),
   });
   const { data: expedientes = [] } = useQuery({
     queryKey: ['expedientes-informe'],
-    queryFn: () => base44.entities.Expediente.list(),
-    initialData: [],
+    queryFn: () => base44.entities.Expediente.list('-created_date', 5000),
   });
   const { data: cajaChica = [] } = useQuery({
     queryKey: ['cajaChica-informe'],
-    queryFn: () => base44.entities.CajaChica.list(),
-    initialData: [],
+    queryFn: () => base44.entities.CajaChica.list('-created_date', 5000),
   });
   const { data: materiales = [] } = useQuery({
     queryKey: ['materiales-informe'],
-    queryFn: () => base44.entities.MaterialTrabajo.list(),
-    initialData: [],
+    queryFn: () => base44.entities.MaterialTrabajo.list('-created_date', 5000),
   });
-  const { data: trabajos = [] } = useQuery({
+  const { data: trabajos = [], isLoading: loadingTrabajos } = useQuery({
     queryKey: ['trabajos-informe'],
-    queryFn: () => base44.entities.TrabajoExpediente.list(),
-    initialData: [],
+    queryFn: () => base44.entities.TrabajoExpediente.list('-created_date', 10000),
   });
   const { data: clientes = [] } = useQuery({
     queryKey: ['clientes-informe'],
-    queryFn: () => base44.entities.Cliente.list(),
-    initialData: [],
+    queryFn: () => base44.entities.Cliente.list('-created_date', 10000),
   });
 
-  const isLoading = loadingPagos;
+  const isLoading = loadingPagos || loadingFacturas || loadingTrabajos;
 
   // Build lookup maps
   const facturaMap = useMemo(() => Object.fromEntries(facturas.map(f => [f.id, f])), [facturas]);
@@ -115,11 +116,22 @@ export default function InformeRemesas() {
 
   // Filter pagos by selected month/year
   const pagosDelMes = useMemo(() => {
-    return pagos.filter(p => {
-      const fecha = new Date(p.fecha_pago || p.created_date);
-      return fecha.getMonth() === mes && fecha.getFullYear() === anio;
-    });
+    return pagos.filter(p => enMes(p.fecha_pago || p.created_date, mes, anio));
   }, [pagos, mes, anio]);
+
+  // Facturas emitidas en el mes: total facturado y repuestos incluidos en ellas
+  const resumenFacturas = useMemo(() => {
+    const delMes = facturas.filter(f => enMes(f.fecha_emision || f.created_date, mes, anio));
+    let facturado = 0;
+    let repuestos = 0;
+    delMes.forEach(f => {
+      facturado += Number(f.total) || 0;
+      (trabajosByExpediente[f.expediente_id] || []).forEach(t => {
+        if (t.tipo === "Repuesto" || t.tipo === "Insumo") repuestos += Number(t.subtotal) || 0;
+      });
+    });
+    return { facturado, repuestos, cantidad: delMes.length };
+  }, [facturas, trabajosByExpediente, mes, anio]);
 
   // Build report rows and group by fecha_remesa
   const { groups, suppliers, monthlyTotals, margenes } = useMemo(() => {
@@ -261,36 +273,20 @@ export default function InformeRemesas() {
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="border-0 shadow-md bg-gradient-to-br from-green-500 to-green-600 text-white">
-          <CardContent className="p-4">
-            <DollarSign className="w-6 h-6 opacity-80 mb-1" />
-            <p className="text-xl font-bold">${monthlyTotals.monto.toFixed(2)}</p>
-            <p className="text-xs opacity-90">Total Facturado</p>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-md bg-gradient-to-br from-amber-500 to-orange-600 text-white">
-          <CardContent className="p-4">
-            <Package className="w-6 h-6 opacity-80 mb-1" />
-            <p className="text-xl font-bold">${monthlyTotals.totalRepuestos.toFixed(2)}</p>
-            <p className="text-xs opacity-90">Gasto Repuestos</p>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-md bg-gradient-to-br from-blue-500 to-blue-600 text-white">
-          <CardContent className="p-4">
-            <Receipt className="w-6 h-6 opacity-80 mb-1" />
-            <p className="text-xl font-bold">${(monthlyTotals.efectivo + monthlyTotals.transferencia).toFixed(2)}</p>
-            <p className="text-xs opacity-90">Efectivo + Transfer.</p>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-md bg-gradient-to-br from-[#E31E24] to-[#B71C1C] text-white">
-          <CardContent className="p-4">
-            <FileText className="w-6 h-6 opacity-80 mb-1" />
-            <p className="text-xl font-bold">{pagosDelMes.length}</p>
-            <p className="text-xs opacity-90">Pagos en el mes</p>
-          </CardContent>
-        </Card>
-      </div>
+      {isLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <div className="w-8 h-8 border-4 border-gray-200 border-t-[#E31E24] rounded-full animate-spin"></div>
+        </div>
+      ) : (
+        <ResumenCards
+          facturado={resumenFacturas.facturado}
+          repuestos={resumenFacturas.repuestos}
+          cantidadFacturas={resumenFacturas.cantidad}
+          cobrado={monthlyTotals.monto}
+          efectivoTransfer={monthlyTotals.efectivo + monthlyTotals.transferencia}
+          cantidadPagos={pagosDelMes.length}
+        />
+      )}
 
       {/* Margen por cliente */}
       {margenes.length > 0 && (
