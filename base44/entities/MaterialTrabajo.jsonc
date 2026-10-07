@@ -39,6 +39,20 @@
       "type": "number",
       "default": 1
     },
+    "costo_unitario": {
+      "type": "number",
+      "default": 0,
+      "description": "Costo por unidad pagado por el taller"
+    },
+    "costo_total": {
+      "type": "number",
+      "default": 0,
+      "description": "Costo total del material (cantidad \u00d7 costo unitario)"
+    },
+    "proveedor_nombre": {
+      "type": "string",
+      "description": "Nombre del proveedor donde se compr\u00f3 el material"
+    },
     "estado": {
       "type": "string",
       "enum": [

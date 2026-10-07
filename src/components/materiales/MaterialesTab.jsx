@@ -11,7 +11,8 @@ const ORIGENES = ["Inventario del taller", "Compra para este vehículo", "Propor
 const ESTADOS = ["Recibida", "Instalada", "No utilizada", "Devuelta"];
 const emptyMaterial = {
   origen: "Inventario del taller", descripcion: "", numero_parte: "",
-  cantidad: 1, estado: "Recibida", notas: ""
+  cantidad: 1, costo_unitario: "", proveedor_nombre: "",
+  estado: "Recibida", notas: ""
 };
 
 export default function MaterialesTab({ expediente, trabajos }) {
@@ -30,10 +31,15 @@ export default function MaterialesTab({ expediente, trabajos }) {
     if (!form.descripcion.trim()) return;
     setSaving(true);
     try {
+      const cantidad = Number(form.cantidad) || 1;
+      const costoUnitario = Number(form.costo_unitario) || 0;
       await base44.entities.MaterialTrabajo.create({
         ...form,
         expediente_id: expediente.id,
-        cantidad: Number(form.cantidad) || 1,
+        cantidad,
+        costo_unitario: costoUnitario,
+        costo_total: costoUnitario * cantidad,
+        proveedor_nombre: (form.proveedor_nombre || "").trim(),
         fecha_registro: new Date().toISOString(),
       });
       qc.invalidateQueries(["materiales-trabajo", expediente.id]);
@@ -101,6 +107,14 @@ export default function MaterialesTab({ expediente, trabajos }) {
                 <label className="text-xs font-medium text-gray-600 mb-1 block">N.º parte</label>
                 <Input value={form.numero_parte} onChange={e => setForm({ ...form, numero_parte: e.target.value })} />
               </div>
+              <div>
+                <label className="text-xs font-medium text-gray-600 mb-1 block">Costo unitario ($)</label>
+                <Input type="number" min="0" step="0.01" value={form.costo_unitario} placeholder="0.00" onChange={e => setForm({ ...form, costo_unitario: e.target.value })} />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-600 mb-1 block">Proveedor</label>
+                <Input value={form.proveedor_nombre} placeholder="Ej: Autopartes El Rayo" onChange={e => setForm({ ...form, proveedor_nombre: e.target.value })} />
+              </div>
             </div>
           </div>
           {form.origen === "Proporcionado por el cliente" && (
@@ -133,7 +147,7 @@ export default function MaterialesTab({ expediente, trabajos }) {
               <Package className="w-4 h-4 text-[#E31E24] mt-0.5 flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-sm text-gray-900">{material.descripcion}</p>
-                <p className="text-xs text-gray-500">{material.origen} · Cantidad: {material.cantidad}{material.numero_parte ? ` · Parte: ${material.numero_parte}` : ""}</p>
+                <p className="text-xs text-gray-500">{material.origen} · Cantidad: {material.cantidad}{material.numero_parte ? ` · Parte: ${material.numero_parte}` : ""}{material.costo_total > 0 ? ` · Costo: $${material.costo_total.toFixed(2)}${material.proveedor_nombre ? ` (${material.proveedor_nombre})` : ""}` : ""}</p>
                 {material.notas && <p className="text-xs text-gray-500 mt-1">{material.notas}</p>}
               </div>
               <div className="flex items-center gap-1">

@@ -63,6 +63,11 @@ export default function InformeRemesas() {
     queryFn: () => base44.entities.CajaChica.list(),
     initialData: [],
   });
+  const { data: materiales = [] } = useQuery({
+    queryKey: ['materiales-informe'],
+    queryFn: () => base44.entities.MaterialTrabajo.list(),
+    initialData: [],
+  });
   const { data: clientes = [] } = useQuery({
     queryKey: ['clientes-informe'],
     queryFn: () => base44.entities.Cliente.list(),
@@ -84,6 +89,15 @@ export default function InformeRemesas() {
     });
     return map;
   }, [cajaChica]);
+  const materialesByExpediente = useMemo(() => {
+    const map = {};
+    materiales.forEach(m => {
+      if (!m.expediente_id) return;
+      if (!map[m.expediente_id]) map[m.expediente_id] = [];
+      map[m.expediente_id].push(m);
+    });
+    return map;
+  }, [materiales]);
 
   // Filter pagos by selected month/year
   const pagosDelMes = useMemo(() => {
@@ -94,7 +108,7 @@ export default function InformeRemesas() {
   }, [pagos, mes, anio]);
 
   // Build report rows and group by fecha_remesa
-  const { groups, suppliers, monthlyTotals } = useMemo(() => {
+  const { groups, suppliers, monthlyTotals, margenes } = useMemo(() => {
     const rows = pagosDelMes.map(pago => {
       const factura = facturaMap[pago.factura_id];
       const expediente = expedienteMap[factura?.expediente_id];
@@ -110,6 +124,17 @@ export default function InformeRemesas() {
         const monto = g.monto || 0;
         proveedores[prov] = (proveedores[prov] || 0) + monto;
         totalRepuestos += monto;
+      });
+
+      // Costos de materiales y repuestos registrados por los trabajadores
+      const materialesExpediente = materialesByExpediente[expediente?.id] || [];
+      materialesExpediente.forEach(m => {
+        if (m.origen === "Proporcionado por el cliente") return;
+        const costo = Number(m.costo_total) || 0;
+        if (!costo) return;
+        const prov = (m.proveedor_nombre || "VARIOS").trim();
+        proveedores[prov] = (proveedores[prov] || 0) + costo;
+        totalRepuestos += costo;
       });
 
       const fechaPago = pago.fecha_pago || expediente?.fecha_ingreso || pago.created_date;
@@ -174,8 +199,19 @@ export default function InformeRemesas() {
     const monthlyTotals = emptyTotals();
     rows.forEach(row => addToTotals(monthlyTotals, row));
 
-    return { groups, suppliers, monthlyTotals };
-  }, [pagosDelMes, facturaMap, expedienteMap, clienteMap, cajaChicaByExpediente]);
+    // Margen de ganancia por cliente: ingresos cobrados vs costos de repuestos
+    const margenMap = {};
+    rows.forEach(r => {
+      if (!margenMap[r.cliente]) margenMap[r.cliente] = { cliente: r.cliente, ingresos: 0, costos: 0 };
+      margenMap[r.cliente].ingresos += r.monto;
+      margenMap[r.cliente].costos += r.totalRepuestos;
+    });
+    const margenes = Object.values(margenMap)
+      .map(m => ({ ...m, margen: m.ingresos - m.costos }))
+      .sort((a, b) => b.margen - a.margen);
+
+    return { groups, suppliers, monthlyTotals, margenes };
+  }, [pagosDelMes, facturaMap, expedienteMap, clienteMap, cajaChicaByExpediente, materialesByExpediente]);
 
   return (
     <div className="p-4 md:p-6 space-y-6 max-w-full">
@@ -231,6 +267,44 @@ export default function InformeRemesas() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Margen por cliente */}
+      {margenes.length > 0 && (
+        <Card className="border-0 shadow-lg">
+          <CardHeader className="border-b pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Package className="w-5 h-5 text-[#E31E24]" />
+              Margen de Ganancia por Cliente
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs font-semibold text-gray-500 uppercase border-b">
+                    <th className="py-2 pr-3">Cliente</th>
+                    <th className="py-2 pr-3 text-right">Ingresos (cobrado)</th>
+                    <th className="py-2 pr-3 text-right">Costos de repuestos</th>
+                    <th className="py-2 text-right">Margen</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {margenes.map(m => (
+                    <tr key={m.cliente} className="hover:bg-gray-50">
+                      <td className="py-2.5 pr-3 font-medium text-gray-900">{m.cliente}</td>
+                      <td className="py-2.5 pr-3 text-right text-gray-900">${m.ingresos.toFixed(2)}</td>
+                      <td className="py-2.5 pr-3 text-right text-amber-700">${m.costos.toFixed(2)}</td>
+                      <td className={`py-2.5 text-right font-bold ${m.margen >= 0 ? "text-green-600" : "text-red-600"}`}>
+                        ${m.margen.toFixed(2)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Report Table */}
       <Card className="border-0 shadow-lg">
