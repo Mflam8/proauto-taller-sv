@@ -13,13 +13,14 @@ const MESES = [
 ];
 
 const emptyTotals = () => ({
-  monto: 0, totalRepuestos: 0, tarjeta: 0, efectivo: 0, cheque: 0, transferencia: 0,
+  monto: 0, totalRepuestos: 0, ganancia: 0, tarjeta: 0, efectivo: 0, cheque: 0, transferencia: 0,
   proveedores: {}
 });
 
 const addToTotals = (totals, row) => {
   totals.monto += row.monto;
   totals.totalRepuestos += row.totalRepuestos;
+  totals.ganancia += row.ganancia;
   totals.tarjeta += row.tarjeta;
   totals.efectivo += row.efectivo;
   totals.cheque += row.cheque;
@@ -150,6 +151,19 @@ export default function InformeRemesas() {
       const cliente = clienteMap[factura?.cliente_id || expediente?.cliente_id];
       const gastosExpediente = cajaChicaByExpediente[expediente?.id] || [];
 
+      // Ganancia del taller en esta factura: mano de obra guardada al emitirla
+      // (facturas antiguas: se calcula de las líneas de trabajo, sin repuestos ni insumos)
+      let gananciaFactura = 0;
+      if (factura) {
+        if (factura.ganancia_mano_obra != null) {
+          gananciaFactura = Number(factura.ganancia_mano_obra) || 0;
+        } else {
+          (trabajosByExpediente[factura.expediente_id] || []).forEach(t => {
+            if (t.tipo !== "Repuesto" && t.tipo !== "Insumo") gananciaFactura += Number(t.subtotal) || 0;
+          });
+        }
+      }
+
       // Group parts costs by supplier
       const proveedores = {};
       let totalRepuestos = 0;
@@ -193,6 +207,7 @@ export default function InformeRemesas() {
         monto,
         proveedores,
         totalRepuestos,
+        ganancia: gananciaFactura,
         tarjeta: col === "tarjeta" ? monto : 0,
         efectivo: col === "efectivo" ? monto : 0,
         cheque: col === "cheque" ? monto : 0,
