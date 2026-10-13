@@ -8,12 +8,12 @@
     },
     "telefono": {
       "type": "string",
-      "description": "Teléfono de contacto"
+      "description": "Tel\u00e9fono de contacto"
     },
     "email": {
       "type": "string",
       "format": "email",
-      "description": "Correo electrónico"
+      "description": "Correo electr\u00f3nico"
     },
     "cargo": {
       "type": "string",
@@ -22,9 +22,9 @@
     "tipo": {
       "type": "string",
       "enum": [
-        "Recepción",
-        "Técnico",
-        "Administración",
+        "Recepci\u00f3n",
+        "T\u00e9cnico",
+        "Administraci\u00f3n",
         "Gerencia",
         "Carwash",
         "Pintura",
@@ -32,9 +32,20 @@
       ],
       "description": "Tipo de rol en el taller"
     },
+    "rol_sistema": {
+      "type": "string",
+      "enum": [
+        "T\u00e9cnico",
+        "Auxiliar de Pintura",
+        "Jefe de Taller",
+        "Sin acceso"
+      ],
+      "default": "Sin acceso",
+      "description": "Nivel de acceso a la app al iniciar sesi\u00f3n (nunca administrador: ese nivel se otorga por separado)"
+    },
     "especialidad": {
       "type": "string",
-      "description": "Especialidad técnica (si aplica)"
+      "description": "Especialidad t\u00e9cnica (si aplica)"
     },
     "fecha_ingreso": {
       "type": "string",
@@ -44,32 +55,20 @@
     "fecha_nacimiento": {
       "type": "string",
       "format": "date",
-      "description": "Fecha de nacimiento (cumpleaños)"
+      "description": "Fecha de nacimiento (cumplea\u00f1os)"
     },
     "dui": {
       "type": "string",
-      "description": "Número de DUI"
+      "description": "N\u00famero de DUI"
     },
     "activo": {
       "type": "boolean",
       "default": true,
-      "description": "Si el empleado está activo"
+      "description": "Si el empleado est\u00e1 activo"
     },
     "notas": {
       "type": "string",
       "description": "Observaciones"
-    },
-    "perfil_acceso": {
-      "type": "string",
-      "enum": [
-        "sin_acceso",
-        "tecnico",
-        "pintura",
-        "jefe_taller",
-        "recepcion_cobros"
-      ],
-      "default": "sin_acceso",
-      "description": "Perfil operativo seleccionado por gerencia; independiente del cargo y tipo de empleado."
     }
   },
   "required": [
@@ -77,61 +76,39 @@
     "tipo"
   ],
   "rls": {
-    "create": {
-      "$or": [
-        {
-          "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
-          }
-        },
-        {
-          "user_condition": {
-            "email": "proautotallersv@gmail.com"
-          }
-        }
-      ]
-    },
     "read": {
       "$or": [
         {
           "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
+            "role": "admin"
           }
         },
         {
           "user_condition": {
-            "email": "proautotallersv@gmail.com"
+            "role": "jefe_taller"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "tecnico"
           }
         }
       ]
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "update": {
-      "$or": [
-        {
-          "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
-          }
-        },
-        {
-          "user_condition": {
-            "email": "proautotallersv@gmail.com"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "delete": {
-      "$or": [
-        {
-          "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
-          }
-        },
-        {
-          "user_condition": {
-            "email": "proautotallersv@gmail.com"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     }
   }
 }
