@@ -4,7 +4,7 @@
   "properties": {
     "numero_expediente": {
       "type": "string",
-      "description": "Número único del expediente (ej: EXP-2026-001)"
+      "description": "N\u00famero \u00fanico del expediente (ej: EXP-2026-001)"
     },
     "cliente_id": {
       "type": "string",
@@ -12,7 +12,7 @@
     },
     "vehiculo_id": {
       "type": "string",
-      "description": "ID del vehículo"
+      "description": "ID del veh\u00edculo"
     },
     "recibido_por_id": {
       "type": "string",
@@ -47,7 +47,7 @@
     },
     "sintomas_cliente": {
       "type": "string",
-      "description": "Síntomas reportados por el cliente"
+      "description": "S\u00edntomas reportados por el cliente"
     },
     "indicaciones_cliente": {
       "type": "string",
@@ -57,10 +57,10 @@
       "type": "string",
       "enum": [
         "Recibido",
-        "En Diagnóstico",
-        "Esperando Aprobación",
+        "En Diagn\u00f3stico",
+        "Esperando Aprobaci\u00f3n",
         "Aprobado",
-        "En Reparación",
+        "En Reparaci\u00f3n",
         "Esperando Repuesto",
         "En Pintura",
         "En Lavado",
@@ -75,12 +75,12 @@
     "estado_cliente": {
       "type": "string",
       "enum": [
-        "En revisión",
-        "En reparación",
+        "En revisi\u00f3n",
+        "En reparaci\u00f3n",
         "Listo",
         "Entregado"
       ],
-      "default": "En revisión",
+      "default": "En revisi\u00f3n",
       "description": "Estado visible para el cliente"
     },
     "llaves_cantidad": {
@@ -101,7 +101,7 @@
       "items": {
         "type": "string"
       },
-      "description": "URLs de fotos/videos del vehículo al ingresar"
+      "description": "URLs de fotos/videos del veh\u00edculo al ingresar"
     },
     "total_cobrado": {
       "type": "number",
@@ -140,28 +140,28 @@
     },
     "recepcion_cliente": {
       "type": "object",
-      "description": "Conformidad de recepción del vehículo firmada por el cliente al retirarlo",
+      "description": "Conformidad de recepci\u00f3n del veh\u00edculo firmada por el cliente al retirarlo",
       "properties": {
         "vehiculo_recibido": {
           "type": "boolean",
-          "description": "El cliente confirma haber recibido el vehículo"
+          "description": "El cliente confirma haber recibido el veh\u00edculo"
         },
         "vehiculo_probado": {
           "type": "boolean",
-          "description": "El cliente probó/manejó el vehículo y está satisfecho hasta ese momento"
+          "description": "El cliente prob\u00f3/manej\u00f3 el veh\u00edculo y est\u00e1 satisfecho hasta ese momento"
         },
         "conforme_estado": {
           "type": "boolean",
-          "description": "El cliente está conforme con el estado en que recibe el vehículo"
+          "description": "El cliente est\u00e1 conforme con el estado en que recibe el veh\u00edculo"
         },
         "fecha_recepcion": {
           "type": "string",
           "format": "date-time",
-          "description": "Fecha y hora en que el cliente retiró el vehículo"
+          "description": "Fecha y hora en que el cliente retir\u00f3 el veh\u00edculo"
         },
         "nombre_firma": {
           "type": "string",
-          "description": "Nombre de quien firma la recepción (cliente o representante)"
+          "description": "Nombre de quien firma la recepci\u00f3n (cliente o representante)"
         },
         "firma_data_url": {
           "type": "string",
@@ -171,9 +171,9 @@
           "type": "string",
           "enum": [
             "Digital",
-            "Física"
+            "F\u00edsica"
           ],
-          "description": "Método de captura de la firma"
+          "description": "M\u00e9todo de captura de la firma"
         }
       }
     }
@@ -184,30 +184,35 @@
     "motivo_visita"
   ],
   "rls": {
-    "create": {
-      "$or": [
-        {
-          "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
-          }
-        },
-        {
-          "user_condition": {
-            "email": "proautotallersv@gmail.com"
-          }
-        }
-      ]
-    },
     "read": {
       "$or": [
         {
           "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
+            "role": "admin"
           }
         },
         {
           "user_condition": {
-            "email": "proautotallersv@gmail.com"
+            "role": "jefe_taller"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "tecnico"
+          }
+        }
+      ]
+    },
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "jefe_taller"
           }
         }
       ]
@@ -216,29 +221,20 @@
       "$or": [
         {
           "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
+            "role": "admin"
           }
         },
         {
           "user_condition": {
-            "email": "proautotallersv@gmail.com"
+            "role": "jefe_taller"
           }
         }
       ]
     },
     "delete": {
-      "$or": [
-        {
-          "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
-          }
-        },
-        {
-          "user_condition": {
-            "email": "proautotallersv@gmail.com"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     }
   }
 }
