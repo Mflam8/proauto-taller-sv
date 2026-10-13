@@ -8,7 +8,7 @@
     },
     "vehiculo_id": {
       "type": "string",
-      "description": "ID del vehículo"
+      "description": "ID del veh\u00edculo"
     },
     "cliente_id": {
       "type": "string",
@@ -16,7 +16,7 @@
     },
     "realizada_por": {
       "type": "string",
-      "description": "Nombre del técnico que realiza"
+      "description": "Nombre del t\u00e9cnico que realiza"
     },
     "fecha": {
       "type": "string",
@@ -27,28 +27,28 @@
     },
     "aseguradora": {
       "type": "string",
-      "description": "Aseguradora asociada a esta recepción, si aplica"
+      "description": "Aseguradora asociada a esta recepci\u00f3n, si aplica"
     },
     "orden_trabajo_referencia": {
       "type": "string",
-      "description": "Número de orden anotado al recibir"
+      "description": "N\u00famero de orden anotado al recibir"
     },
     "vehiculo_agencia_importado": {
       "type": "boolean",
       "default": false,
-      "description": "Indica si el vehículo es de agencia o importado"
+      "description": "Indica si el veh\u00edculo es de agencia o importado"
     },
     "tipo_croquis": {
       "type": "string",
       "enum": [
-        "Sedán",
+        "Sed\u00e1n",
         "Pick-up",
         "Camioneta / SUV",
-        "Camión",
-        "Microbús",
+        "Cami\u00f3n",
+        "Microb\u00fas",
         "Otro"
       ],
-      "description": "Croquis usado para documentar daños"
+      "description": "Croquis usado para documentar da\u00f1os"
     },
     "aire_acondicionado": {
       "type": "string",
@@ -61,14 +61,14 @@
     "direccion_hidraulica": {
       "type": "string",
       "enum": [
-        "Sí",
+        "S\u00ed",
         "No"
       ]
     },
     "alarma": {
       "type": "string",
       "enum": [
-        "Sí",
+        "S\u00ed",
         "No"
       ]
     },
@@ -128,7 +128,7 @@
     "gato_mecanico": {
       "type": "boolean",
       "default": false,
-      "description": "Gato mecánico recibido"
+      "description": "Gato mec\u00e1nico recibido"
     },
     "cables_corriente": {
       "type": "boolean",
@@ -145,7 +145,7 @@
     },
     "evaluaciones": {
       "type": "array",
-      "description": "Revisión detallada de elementos de carrocería, interior y sistemas",
+      "description": "Revisi\u00f3n detallada de elementos de carrocer\u00eda, interior y sistemas",
       "items": {
         "type": "object",
         "properties": {
@@ -164,7 +164,7 @@
         }
       }
     },
-    "daños": {
+    "da\u00f1os": {
       "type": "array",
       "items": {
         "type": "object",
@@ -172,13 +172,13 @@
           "tipo": {
             "type": "string",
             "enum": [
-              "Rayón",
+              "Ray\u00f3n",
               "Golpe",
               "Quebrado",
               "Faltante",
-              "Óxido",
-              "Vidrio dañado",
-              "Daño eléctrico",
+              "\u00d3xido",
+              "Vidrio da\u00f1ado",
+              "Da\u00f1o el\u00e9ctrico",
               "Otro"
             ]
           },
@@ -203,7 +203,7 @@
     },
     "firma_ingreso": {
       "type": "object",
-      "description": "Confirmación del cliente al entregar el vehículo",
+      "description": "Confirmaci\u00f3n del cliente al entregar el veh\u00edculo",
       "properties": {
         "nombre_firma": {
           "type": "string"
@@ -222,7 +222,7 @@
           "type": "string",
           "enum": [
             "Digital",
-            "Física"
+            "F\u00edsica"
           ]
         }
       }
@@ -244,30 +244,40 @@
     "vehiculo_id"
   ],
   "rls": {
-    "create": {
-      "$or": [
-        {
-          "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
-          }
-        },
-        {
-          "user_condition": {
-            "email": "proautotallersv@gmail.com"
-          }
-        }
-      ]
-    },
     "read": {
       "$or": [
         {
           "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
+            "role": "admin"
           }
         },
         {
           "user_condition": {
-            "email": "proautotallersv@gmail.com"
+            "role": "jefe_taller"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "tecnico"
+          }
+        }
+      ]
+    },
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "jefe_taller"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "tecnico"
           }
         }
       ]
@@ -276,12 +286,17 @@
       "$or": [
         {
           "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
+            "role": "admin"
           }
         },
         {
           "user_condition": {
-            "email": "proautotallersv@gmail.com"
+            "role": "jefe_taller"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "tecnico"
           }
         }
       ]
@@ -290,12 +305,12 @@
       "$or": [
         {
           "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
+            "role": "admin"
           }
         },
         {
           "user_condition": {
-            "email": "proautotallersv@gmail.com"
+            "role": "jefe_taller"
           }
         }
       ]
