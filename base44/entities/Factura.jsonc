@@ -4,7 +4,7 @@
   "properties": {
     "numero_factura": {
       "type": "string",
-      "description": "Número de factura"
+      "description": "N\u00famero de factura"
     },
     "expediente_id": {
       "type": "string",
@@ -20,13 +20,13 @@
     },
     "vehiculo_id": {
       "type": "string",
-      "description": "ID del vehículo"
+      "description": "ID del veh\u00edculo"
     },
     "forma_pago": {
       "type": "string",
       "enum": [
         "Contado",
-        "Crédito",
+        "Cr\u00e9dito",
         "Mixto"
       ],
       "default": "Contado",
@@ -77,7 +77,7 @@
     "ganancia_mano_obra": {
       "type": "number",
       "default": 0,
-      "description": "Ganancia neta del taller al emitir la factura: suma de los ítems de mano de obra, excluyendo repuestos e insumos (gastos que se pagan a terceros)"
+      "description": "Ganancia neta del taller al emitir la factura: suma de los \u00edtems de mano de obra, excluyendo repuestos e insumos (gastos que se pagan a terceros)"
     },
     "estado_pago": {
       "type": "string",
@@ -93,7 +93,7 @@
     },
     "motivo_cierre": {
       "type": "string",
-      "description": "Motivo por el que se cerró la factura sin cobro completo"
+      "description": "Motivo por el que se cerr\u00f3 la factura sin cobro completo"
     },
     "monto_pagado": {
       "type": "number",
@@ -112,7 +112,7 @@
     "fecha_emision": {
       "type": "string",
       "format": "date",
-      "description": "Fecha de emisión de la factura"
+      "description": "Fecha de emisi\u00f3n de la factura"
     },
     "legacy_invoice_id": {
       "type": "string",
@@ -120,7 +120,7 @@
     },
     "legacy_invoice_number": {
       "type": "string",
-      "description": "Número de factura en sistema anterior"
+      "description": "N\u00famero de factura en sistema anterior"
     },
     "legacy_customer_id": {
       "type": "string",
@@ -145,30 +145,30 @@
     "total"
   ],
   "rls": {
-    "create": {
-      "$or": [
-        {
-          "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
-          }
-        },
-        {
-          "user_condition": {
-            "email": "proautotallersv@gmail.com"
-          }
-        }
-      ]
-    },
     "read": {
       "$or": [
         {
           "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
+            "role": "admin"
           }
         },
         {
           "user_condition": {
-            "email": "proautotallersv@gmail.com"
+            "role": "jefe_taller"
+          }
+        }
+      ]
+    },
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "jefe_taller"
           }
         }
       ]
@@ -177,29 +177,20 @@
       "$or": [
         {
           "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
+            "role": "admin"
           }
         },
         {
           "user_condition": {
-            "email": "proautotallersv@gmail.com"
+            "role": "jefe_taller"
           }
         }
       ]
     },
     "delete": {
-      "$or": [
-        {
-          "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
-          }
-        },
-        {
-          "user_condition": {
-            "email": "proautotallersv@gmail.com"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     }
   }
 }
