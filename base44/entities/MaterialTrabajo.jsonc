@@ -8,32 +8,32 @@
     },
     "trabajo_id": {
       "type": "string",
-      "description": "Trabajo técnico relacionado, si aplica"
+      "description": "Trabajo t\u00e9cnico relacionado, si aplica"
     },
     "origen": {
       "type": "string",
       "enum": [
         "Inventario del taller",
-        "Compra para este vehículo",
+        "Compra para este veh\u00edculo",
         "Proporcionado por el cliente"
       ],
       "description": "Origen del material"
     },
     "item_inventario_id": {
       "type": "string",
-      "description": "Ítem de inventario cuando sale del taller"
+      "description": "\u00cdtem de inventario cuando sale del taller"
     },
     "catalogo_precio_id": {
       "type": "string",
-      "description": "Referencia al catálogo cuando aplica"
+      "description": "Referencia al cat\u00e1logo cuando aplica"
     },
     "descripcion": {
       "type": "string",
-      "description": "Descripción del material o repuesto"
+      "description": "Descripci\u00f3n del material o repuesto"
     },
     "numero_parte": {
       "type": "string",
-      "description": "Número de parte o referencia"
+      "description": "N\u00famero de parte o referencia"
     },
     "cantidad": {
       "type": "number",
@@ -47,11 +47,11 @@
     "costo_total": {
       "type": "number",
       "default": 0,
-      "description": "Costo total del material (cantidad × costo unitario)"
+      "description": "Costo total del material (cantidad \u00d7 costo unitario)"
     },
     "proveedor_nombre": {
       "type": "string",
-      "description": "Nombre del proveedor donde se compró el material"
+      "description": "Nombre del proveedor donde se compr\u00f3 el material"
     },
     "estado": {
       "type": "string",
@@ -71,7 +71,7 @@
     },
     "proveedor_id": {
       "type": "string",
-      "description": "Proveedor cuando se compra para este vehículo"
+      "description": "Proveedor cuando se compra para este veh\u00edculo"
     },
     "comprobante_url": {
       "type": "string",
@@ -79,7 +79,7 @@
     },
     "registrado_por": {
       "type": "string",
-      "description": "Persona que registró el material"
+      "description": "Persona que registr\u00f3 el material"
     },
     "fecha_registro": {
       "type": "string",
@@ -96,30 +96,40 @@
     "cantidad"
   ],
   "rls": {
-    "create": {
-      "$or": [
-        {
-          "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
-          }
-        },
-        {
-          "user_condition": {
-            "email": "proautotallersv@gmail.com"
-          }
-        }
-      ]
-    },
     "read": {
       "$or": [
         {
           "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
+            "role": "admin"
           }
         },
         {
           "user_condition": {
-            "email": "proautotallersv@gmail.com"
+            "role": "jefe_taller"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "tecnico"
+          }
+        }
+      ]
+    },
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "jefe_taller"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "tecnico"
           }
         }
       ]
@@ -128,12 +138,17 @@
       "$or": [
         {
           "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
+            "role": "admin"
           }
         },
         {
           "user_condition": {
-            "email": "proautotallersv@gmail.com"
+            "role": "jefe_taller"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "tecnico"
           }
         }
       ]
@@ -142,12 +157,12 @@
       "$or": [
         {
           "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
+            "role": "admin"
           }
         },
         {
           "user_condition": {
-            "email": "proautotallersv@gmail.com"
+            "role": "jefe_taller"
           }
         }
       ]
