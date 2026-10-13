@@ -10,10 +10,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import ReciboPrint from "@/components/facturacion/ReciboPrint";
 import { useToast } from "@/components/ui/use-toast";
+import { puedeImprimirFactura } from "@/lib/permissions";
 
 export default function FacturaDetalle({ factura }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { data: usuario } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
+  const puedeImprimir = puedeImprimirFactura(usuario);
   const [enviandoCorreo, setEnviandoCorreo] = useState(false);
   const [showCerrarDialog, setShowCerrarDialog] = useState(false);
   const [motivoCierre, setMotivoCierre] = useState("");
@@ -180,31 +183,35 @@ export default function FacturaDetalle({ factura }) {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <Button
-                onClick={handleImprimirRecibo}
-                disabled={!cobrado}
-                title={cobrado ? undefined : "Registre un pago para poder imprimir el recibo"}
-                className="bg-white text-[#E31E24] hover:bg-gray-100 gap-2"
-                size="sm"
-              >
-                <Printer className="w-4 h-4" />
-                Imprimir Recibo
-              </Button>
-              <Button
-                onClick={handleEnviarCorreo}
-                disabled={enviandoCorreo}
-                className="bg-white text-blue-600 hover:bg-blue-50 gap-2"
-                size="sm"
-              >
-                {enviandoCorreo ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Mail className="w-4 h-4" />
-                )}
-                {enviandoCorreo ? "Enviando..." : "Enviar Correo"}
-              </Button>
+              {puedeImprimir && (
+                <Button
+                  onClick={handleImprimirRecibo}
+                  disabled={!cobrado}
+                  title={cobrado ? undefined : "Registre un pago para poder imprimir el recibo"}
+                  className="bg-white text-[#E31E24] hover:bg-gray-100 gap-2"
+                  size="sm"
+                >
+                  <Printer className="w-4 h-4" />
+                  Imprimir Recibo
+                </Button>
+              )}
+              {puedeImprimir && (
+                <Button
+                  onClick={handleEnviarCorreo}
+                  disabled={enviandoCorreo}
+                  className="bg-white text-blue-600 hover:bg-blue-50 gap-2"
+                  size="sm"
+                >
+                  {enviandoCorreo ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Mail className="w-4 h-4" />
+                  )}
+                  {enviandoCorreo ? "Enviando..." : "Enviar Correo"}
+                </Button>
+              )}
               <div className="flex items-center gap-3">
-                {factura.estado_pago !== 'Pagada' && factura.estado_pago !== 'Cerrada' && (
+                {puedeImprimir && factura.estado_pago !== 'Pagada' && factura.estado_pago !== 'Cerrada' && (
                   <Button
                     onClick={() => setShowCerrarDialog(true)}
                     className="bg-white text-slate-600 hover:bg-slate-100 gap-2 border border-slate-300"

@@ -54,7 +54,11 @@ export default function Empleados() {
     mutationFn: (data) => editing
       ? base44.entities.Empleado.update(editing.id, data)
       : base44.entities.Empleado.create(data),
-    onSuccess: () => { qc.invalidateQueries(["empleados"]); setShowForm(false); setEditing(null); setForm(empty); },
+    onSuccess: (guardado) => {
+      const email = (guardado?.email || form.email || "").toLowerCase();
+      if (email) base44.functions.invoke("sincronizarRol", { email }).catch(() => {});
+      qc.invalidateQueries(["empleados"]); setShowForm(false); setEditing(null); setForm(empty);
+    },
     onError: error => alert(error.response?.data?.error || error.message),
   });
 
@@ -154,7 +158,7 @@ export default function Empleados() {
                 </p>
               )}
             </div>
-            {!emp.activo && <p className="mt-2 text-xs text-red-500 font-medium">Inactivo</p>}
+            {!emp.activo && <Badge className="mt-2 bg-red-100 text-red-700 border-0">Desactivado</Badge>}
           </motion.div>
         ))}
         {filtered.length === 0 && (
@@ -233,7 +237,7 @@ export default function Empleados() {
                   className={form.activo ? "text-red-600 border-red-200" : "text-green-600 border-green-200"}
                   onClick={() => { toggleActivoMutation.mutate({ id: editing.id, activo: !editing.activo }); setShowForm(false); }}
                 >
-                  {form.activo ? "Marcar Inactivo" : "Reactivar"}
+                  {form.activo ? "Desactivar" : "Reactivar"}
                 </Button>
               )}
               <Button className="flex-1 bg-[#E31E24] hover:bg-[#B71C1C]" disabled={saveMutation.isPending || !form.nombre_completo.trim() || (form.perfil_acceso !== "sin_acceso" && !form.email?.trim())} onClick={() => saveMutation.mutate(form)}>

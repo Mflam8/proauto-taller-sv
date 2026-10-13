@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Plus, Trash2, CheckCircle, Clock, Wrench, ShieldCheck } from "lucide-react";
+import { puedeDefinirCostos } from "@/lib/permissions";
 
 const TIPOS = ["Mano de Obra", "Mano de Obra Pintura", "Repuesto", "Insumo", "Diagnóstico", "Otro"];
 
@@ -42,6 +43,9 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
     queryKey: ["catalogo-precios-activos"],
     queryFn: () => base44.entities.CatalogoPrecio.filter({ activo: true }),
   });
+
+  const { data: usuario } = useQuery({ queryKey: ["me"], queryFn: () => base44.auth.me() });
+  const esSupervisor = puedeDefinirCostos(usuario);
 
   const tecnicos = empleados.filter(e => ["Técnico", "Pintura"].includes(e.tipo) && e.activo !== false);
 
@@ -149,6 +153,11 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
         precio_unitario: parseFloat(form.precio_unitario) || 0,
         subtotal: calcSubtotal(form),
       };
+      const tecnicoSel = empleados.find(e => e.nombre_completo === form.tecnico_nombre);
+      if (tecnicoSel) {
+        data.tecnico_id = tecnicoSel.id;
+        data.tecnico_email = (tecnicoSel.email || "").toLowerCase();
+      }
       await base44.entities.TrabajoExpediente.create(data);
       // Actualizar totales en expediente
       const allTrabajos = [...trabajos, data];
@@ -203,9 +212,11 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
           <h3 className="font-semibold text-gray-800">Trabajos y Servicios</h3>
           <p className="text-xs text-gray-500">{trabajos.length} ítem(s) · Total: <span className="font-semibold text-gray-800">${total.toFixed(2)}</span></p>
         </div>
-        <Button size="sm" onClick={() => setShowForm(!showForm)} className="bg-[#E31E24] hover:bg-[#B71C1C] gap-1 text-xs">
-          <Plus className="w-3 h-3" /> Agregar
-        </Button>
+        {esSupervisor && (
+          <Button size="sm" onClick={() => setShowForm(!showForm)} className="bg-[#E31E24] hover:bg-[#B71C1C] gap-1 text-xs">
+            <Plus className="w-3 h-3" /> Agregar
+          </Button>
+        )}
       </div>
 
       {showForm && (
@@ -298,9 +309,11 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
               {t.precio_ajustado_por && <p className="text-[11px] text-green-700 mt-1">Revisado por: {t.precio_ajustado_por}{t.motivo_ajuste_precio ? ` · ${t.motivo_ajuste_precio}` : ""}</p>}
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
-              <Button size="sm" variant="outline" className="h-7 gap-1 px-2 text-xs" onClick={() => abrirRevision(t)}>
-                <ShieldCheck className="w-3 h-3" /> Revisar
-              </Button>
+              {esSupervisor && (
+                <Button size="sm" variant="outline" className="h-7 gap-1 px-2 text-xs" onClick={() => abrirRevision(t)}>
+                  <ShieldCheck className="w-3 h-3" /> Revisar
+                </Button>
+              )}
               <Select value={t.estado} onValueChange={v => handleEstado(t, v)}>
                 <SelectTrigger className="h-7 text-xs w-32">
                   <SelectValue />
@@ -311,9 +324,11 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
                   <SelectItem value="Completado">Completado</SelectItem>
                 </SelectContent>
               </Select>
-              <Button size="icon" variant="ghost" className="h-7 w-7 text-red-400 hover:text-red-600" onClick={() => handleDelete(t)}>
-                <Trash2 className="w-3 h-3" />
-              </Button>
+              {esSupervisor && (
+                <Button size="icon" variant="ghost" className="h-7 w-7 text-red-400 hover:text-red-600" onClick={() => handleDelete(t)}>
+                  <Trash2 className="w-3 h-3" />
+                </Button>
+              )}
             </div>
           </div>
         ))}

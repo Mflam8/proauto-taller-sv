@@ -1,14 +1,15 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 
-// Asigna el rol de la app según la ficha del empleado (campo rol_sistema).
+// Asigna el rol de la app según la ficha del empleado (campo perfil_acceso).
 // Se ejecuta automáticamente al registrarse o iniciar sesión (workflow Sincronizar Rol Empleado)
-// y también desde la ficha de empleados al guardar un cambio de rol.
+// y también desde la ficha de empleados al guardar un cambio de perfil.
 // Nunca asigna el rol "admin": las cuentas administradoras se protegen aparte.
-const ROL_SISTEMA_A_ROL = {
-  'Técnico': 'tecnico',
-  'Auxiliar de Pintura': 'tecnico',
-  'Jefe de Taller': 'jefe_taller',
-  'Sin acceso': 'user',
+const PERFIL_A_ROL = {
+  'tecnico': 'tecnico',
+  'pintura': 'tecnico',
+  'jefe_taller': 'jefe_taller',
+  'recepcion_cobros': 'user',
+  'sin_acceso': 'user',
 };
 
 export default async function(req: Request): Promise<Response> {
@@ -35,7 +36,7 @@ export default async function(req: Request): Promise<Response> {
 
     let rol = 'user';
     if (empleado && empleado.activo !== false) {
-      rol = ROL_SISTEMA_A_ROL[empleado.rol_sistema] || 'user';
+      rol = PERFIL_A_ROL[empleado.perfil_acceso] || 'user';
     }
 
     const users = await base44.asServiceRole.entities.User.filter({ email });

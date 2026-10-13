@@ -32,16 +32,17 @@
       ],
       "description": "Tipo de rol en el taller"
     },
-    "rol_sistema": {
+    "perfil_acceso": {
       "type": "string",
       "enum": [
-        "T\u00e9cnico",
-        "Auxiliar de Pintura",
-        "Jefe de Taller",
-        "Sin acceso"
+        "sin_acceso",
+        "tecnico",
+        "pintura",
+        "jefe_taller",
+        "recepcion_cobros"
       ],
-      "default": "Sin acceso",
-      "description": "Nivel de acceso a la app al iniciar sesi\u00f3n (nunca administrador: ese nivel se otorga por separado)"
+      "default": "sin_acceso",
+      "description": "Perfil de acceso a la app al iniciar sesi\u00f3n (nunca administrador: ese nivel se otorga por separado)"
     },
     "especialidad": {
       "type": "string",

@@ -16,6 +16,10 @@ export default async function(req: Request): Promise<Response> {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'No autenticado' }, { status: 401 });
 
+    if (!['admin', 'jefe_taller', 'tecnico'].includes(user.role)) {
+      return Response.json({ error: 'Tu acceso a la app no permite marcar asistencia. Pide a gerencia que revise tu rol de empleado.' }, { status: 403 });
+    }
+
     const body = await req.json().catch(() => ({}));
     const tipo = body.tipo;
     if (tipo !== 'Entrada' && tipo !== 'Salida') {

@@ -21,9 +21,10 @@ import {
   FolderOpen,
   LayoutGrid,
   Receipt,
-  ShieldCheck
+  ShieldCheck,
+  Clock
 } from "lucide-react";
-import { esDueno, puedeVerPagina, paginaInicio, nombrePerfil } from "@/lib/permissions";
+import { esDueno, puedeVerPagina, paginaInicio, nombrePerfil, rolEfectivo } from "@/lib/permissions";
 import { Navigate } from "react-router-dom";
 import {
   Sidebar,
@@ -42,36 +43,43 @@ import {
 import { Button } from "@/components/ui/button";
 
 const navigationItems = [
+  { title: "Mi Taller", url: "/MiTaller", icon: Clock },
   { title: "Mis trabajos", url: "/MisTrabajos", icon: ClipboardList },
   {
     title: "Tablero Diario",
     url: "/OperacionDiaria",
     icon: LayoutGrid,
+    roles: ["admin"],
   },
   {
     title: "Dashboard",
     url: createPageUrl("Dashboard"),
     icon: LayoutDashboard,
+    roles: ["admin"],
   },
   {
     title: "Clientes",
     url: createPageUrl("Clientes"),
     icon: Users,
+    roles: ["admin", "jefe_taller"],
   },
   {
     title: "Vehículos",
     url: createPageUrl("Vehiculos"),
     icon: Car,
+    roles: ["admin", "jefe_taller"],
   },
   {
     title: "Cotizaciones",
     url: createPageUrl("Cotizaciones"),
     icon: FileText,
+    roles: ["admin", "jefe_taller"],
   },
   {
     title: "Órdenes de Trabajo",
     url: createPageUrl("OrdenesTrabajos"),
     icon: ClipboardList,
+    roles: ["admin", "jefe_taller"],
   },
   {
     title: "Inspecciones",
@@ -82,21 +90,25 @@ const navigationItems = [
     title: "Inventario",
     url: createPageUrl("Inventario"),
     icon: Package,
+    roles: ["admin", "jefe_taller"],
   },
   {
     title: "Proveedores",
     url: createPageUrl("Proveedores"),
     icon: Truck,
+    roles: ["admin", "jefe_taller"],
   },
   {
     title: "Facturación",
     url: createPageUrl("Facturacion"),
     icon: DollarSign,
+    roles: ["admin", "jefe_taller"],
   },
   {
     title: "Empleados",
     url: createPageUrl("Empleados"),
     icon: Users,
+    roles: ["admin"],
   },
   {
     title: "Expedientes",
@@ -107,11 +119,13 @@ const navigationItems = [
     title: "Reportes",
     url: createPageUrl("Reportes"),
     icon: BarChart3,
+    roles: ["admin"],
   },
   {
     title: "Informe Remesas",
     url: "/InformeRemesas",
     icon: Receipt,
+    roles: ["admin"],
   },
   {
     title: "Control Interno",
@@ -124,6 +138,7 @@ const navigationItems = [
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
   const [user, setUser] = useState(null);
+  const miRol = rolEfectivo(user);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -191,7 +206,12 @@ export default function Layout({ children, currentPageName }) {
               </SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {navigationItems.filter((item) => puedeVerPagina(user, item.url.slice(1)) && (!item.soloDueno || esDueno(user))).map((item) => {
+                  {navigationItems.filter((item) => {
+                    if (!puedeVerPagina(user, item.url.slice(1))) return false;
+                    if (item.soloDueno && !esDueno(user)) return false;
+                    if (item.roles && miRol !== "admin" && !item.roles.includes(miRol)) return false;
+                    return true;
+                  }).map((item) => {
                     const isActive = location.pathname === item.url;
                     return (
                       <SidebarMenuItem key={item.title}>

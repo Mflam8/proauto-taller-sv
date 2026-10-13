@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { DollarSign, Search, Plus, Eye, Receipt, CreditCard, AlertCircle, CheckCircle, Clock, Lock } from "lucide-react";
+import { puedeCobrar } from "@/lib/permissions";
 import { motion, AnimatePresence } from "framer-motion";
 import FacturaDetalle from "../components/facturacion/FacturaDetalle.jsx";
 import PagoForm from "../components/facturacion/PagoForm.jsx";
@@ -37,6 +38,9 @@ export default function Facturacion() {
     queryFn: () => base44.entities.Pago.list('-created_date'),
     initialData: [],
   });
+
+  const { data: usuario } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
+  const puedeRegistrarPagos = puedeCobrar(usuario);
 
   const getClienteNombre = (clienteId) => {
     const cliente = clientes.find(c => c.id === clienteId);
@@ -286,7 +290,7 @@ export default function Facturacion() {
                               Ver
                             </Button>
                             
-                            {factura.estado_pago !== 'Pagada' && (
+                            {puedeRegistrarPagos && factura.estado_pago !== 'Pagada' && (
                               <Button
                                 onClick={() => handleRegistrarPago(factura)}
                                 className="flex-1 md:w-32 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white"
