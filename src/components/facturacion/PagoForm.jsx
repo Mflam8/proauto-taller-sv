@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Save, X, DollarSign } from "lucide-react";
+import { esAdmin } from "@/lib/permissions";
 
 export default function PagoForm({ factura, onClose }) {
   const [user, setUser] = useState(null);
@@ -57,11 +58,10 @@ export default function PagoForm({ factura, onClose }) {
         const totalCobrado = facturasExp.reduce((sum, f) => sum + (f.total || 0), 0);
         const totalPagado = facturasExp.reduce((sum, f) => sum + (f.monto_pagado || 0), 0);
         const saldoExp = Math.max(0, totalCobrado - totalPagado);
-        await base44.entities.Expediente.update(factura.expediente_id, {
-          total_cobrado: totalCobrado,
-          total_pagado: totalPagado,
-          saldo_pendiente: saldoExp
-        });
+        // "total_cobrado" solo lo modifica la gerencia; recepción actualiza lo que corresponde al cobro.
+        const syncData = { total_pagado: totalPagado, saldo_pendiente: saldoExp };
+        if (esAdmin(user)) syncData.total_cobrado = totalCobrado;
+        await base44.entities.Expediente.update(factura.expediente_id, syncData);
       }
 
       return pago;
