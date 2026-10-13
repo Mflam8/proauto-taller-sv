@@ -4,7 +4,7 @@
   "properties": {
     "codigo": {
       "type": "string",
-      "description": "Código único del item"
+      "description": "C\u00f3digo \u00fanico del item"
     },
     "nombre": {
       "type": "string",
@@ -12,7 +12,7 @@
     },
     "descripcion": {
       "type": "string",
-      "description": "Descripción detallada"
+      "description": "Descripci\u00f3n detallada"
     },
     "categoria": {
       "type": "string",
@@ -21,13 +21,13 @@
         "Aceites y Lubricantes",
         "Filtros",
         "Frenos",
-        "Suspensión",
-        "Sistema Eléctrico",
+        "Suspensi\u00f3n",
+        "Sistema El\u00e9ctrico",
         "Herramientas",
         "Insumos",
         "Otro"
       ],
-      "description": "Categoría del item"
+      "description": "Categor\u00eda del item"
     },
     "stock_actual": {
       "type": "number",
@@ -37,7 +37,7 @@
     "stock_minimo": {
       "type": "number",
       "default": 5,
-      "description": "Stock mínimo para alerta"
+      "description": "Stock m\u00ednimo para alerta"
     },
     "precio_compra": {
       "type": "number",
@@ -53,12 +53,12 @@
     },
     "ubicacion_fisica": {
       "type": "string",
-      "description": "Ubicación en el taller"
+      "description": "Ubicaci\u00f3n en el taller"
     },
     "activo": {
       "type": "boolean",
       "default": true,
-      "description": "Si el item está activo"
+      "description": "Si el item est\u00e1 activo"
     }
   },
   "required": [
@@ -67,30 +67,35 @@
     "stock_actual"
   ],
   "rls": {
-    "create": {
-      "$or": [
-        {
-          "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
-          }
-        },
-        {
-          "user_condition": {
-            "email": "proautotallersv@gmail.com"
-          }
-        }
-      ]
-    },
     "read": {
       "$or": [
         {
           "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
+            "role": "admin"
           }
         },
         {
           "user_condition": {
-            "email": "proautotallersv@gmail.com"
+            "role": "jefe_taller"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "tecnico"
+          }
+        }
+      ]
+    },
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "jefe_taller"
           }
         }
       ]
@@ -99,29 +104,20 @@
       "$or": [
         {
           "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
+            "role": "admin"
           }
         },
         {
           "user_condition": {
-            "email": "proautotallersv@gmail.com"
+            "role": "jefe_taller"
           }
         }
       ]
     },
     "delete": {
-      "$or": [
-        {
-          "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
-          }
-        },
-        {
-          "user_condition": {
-            "email": "proautotallersv@gmail.com"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     }
   }
 }
