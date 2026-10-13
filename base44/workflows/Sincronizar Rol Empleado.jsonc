@@ -1,0 +1,41 @@
+{
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "sincronizar_rol_empleado",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "sincronizar": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "sincronizarRol",
+            "args": {
+              "email": "${ .trigger.email }",
+              "user_id": "${ .trigger.user_id }"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Sincronizar rol",
+            "description": "Aplica el rol seg\u00fan la ficha del empleado"
+          }
+        }
+      }
+    ]
+  },
+  "description": "Al registrarse o iniciar sesi\u00f3n, asigna el rol de acceso (t\u00e9cnico, jefe de taller) seg\u00fan la ficha del empleado",
+  "name": "Sincronizar Rol Empleado",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "app_user_auth",
+      "events": [
+        "signup",
+        "login"
+      ]
+    }
+  }
+}

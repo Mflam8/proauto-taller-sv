@@ -1,0 +1,115 @@
+{
+  "name": "Asistencia",
+  "type": "object",
+  "properties": {
+    "empleado_email": {
+      "type": "string",
+      "description": "Correo del empleado que marca su asistencia"
+    },
+    "empleado_nombre": {
+      "type": "string",
+      "description": "Nombre del empleado"
+    },
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "Entrada",
+        "Salida"
+      ],
+      "description": "Tipo de registro de asistencia"
+    },
+    "fecha_hora": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha y hora del registro"
+    },
+    "fecha_sv": {
+      "type": "string",
+      "format": "date",
+      "description": "Fecha del registro en zona horaria de El Salvador (yyyy-mm-dd)"
+    },
+    "latitud": {
+      "type": "number",
+      "description": "Latitud desde donde se marc\u00f3"
+    },
+    "longitud": {
+      "type": "number",
+      "description": "Longitud desde donde se marc\u00f3"
+    },
+    "distancia_metros": {
+      "type": "number",
+      "description": "Distancia del punto de marcaje al taller en metros"
+    },
+    "verificado": {
+      "type": "boolean",
+      "default": true,
+      "description": "El marcaje se verific\u00f3 dentro de la geocerca del taller"
+    },
+    "notas": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "empleado_email",
+    "tipo",
+    "fecha_hora",
+    "fecha_sv"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "jefe_taller"
+          }
+        },
+        {
+          "$and": [
+            {
+              "user_condition": {
+                "role": "tecnico"
+              }
+            },
+            {
+              "data.empleado_email": "{{user.email}}"
+            }
+          ]
+        }
+      ]
+    },
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "jefe_taller"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "tecnico"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

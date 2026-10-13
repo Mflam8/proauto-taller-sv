@@ -1,0 +1,63 @@
+{
+  "name": "ConfigTaller",
+  "type": "object",
+  "properties": {
+    "nombre": {
+      "type": "string",
+      "description": "Nombre de la sede configurada (ej: Taller Santa Ana)"
+    },
+    "latitud": {
+      "type": "number",
+      "description": "Latitud de la ubicaci\u00f3n del taller para verificar asistencia"
+    },
+    "longitud": {
+      "type": "number",
+      "description": "Longitud de la ubicaci\u00f3n del taller para verificar asistencia"
+    },
+    "radio_metros": {
+      "type": "number",
+      "default": 150,
+      "description": "Radio de tolerancia en metros para marcar asistencia dentro del taller"
+    },
+    "actualizado_por": {
+      "type": "string",
+      "description": "Usuario que guard\u00f3 la ubicaci\u00f3n"
+    },
+    "fecha_actualizacion": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha de \u00faltima actualizaci\u00f3n"
+    }
+  },
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "jefe_taller"
+          }
+        }
+      ]
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

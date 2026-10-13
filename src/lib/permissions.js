@@ -1,25 +1,40 @@
-export const PERFILES_ACCESO = [
- { value: "sin_acceso", label: "Sin acceso", description: "Conserva la ficha sin permitir el ingreso al sistema." },
- { value: "tecnico", label: "Técnico mecánico", description: "Trabajos asignados, revisiones, fotos, avances e historial sin importes." },
- { value: "pintura", label: "Pintura", description: "El mismo acceso operativo para pintores y auxiliares de pintura." },
- { value: "jefe_taller", label: "Jefe de taller", description: "Clientes, vehículos, asignaciones, costos, precios y facturas. Sin cobros ni impresión." },
- { value: "recepcion_cobros", label: "Recepción y cobros", description: "Clientes, vehículos, asignaciones, cobros e impresión. Sin cambiar precios ni gestionar permisos." },
+// Control de accesos por rol del usuario de la app.
+// Roles disponibles: "admin" (solo Yanira y los dueños), "jefe_taller", "tecnico", "user" (sin acceso especial).
+// El rol de cada empleado se define en su ficha (campo "rol_sistema") y se aplica al iniciar sesión.
+
+const CORREOS_RESTRINGIDOS = ["yaniraproautotaller@gmail.com"];
+
+const estaRestringido = (user) =>
+  !!user?.email && CORREOS_RESTRINGIDOS.includes(user.email.toLowerCase());
+
+export const puedeDescargarPDFs = (user) => !estaRestringido(user);
+export const puedeVerReportesAnuales = (user) => !estaRestringido(user);
+
+// Cuentas con acceso total (control interno de facturas incluido).
+const CORREOS_ACCESO_TOTAL = [
+  "proautotallersv@gmail.com",
+  "mayaflamenco89@gmail.com",
 ];
-export const perfil = u => u?.perfil_acceso || "sin_acceso";
-export const esDueno = u => perfil(u) === "gerencia";
-export const esTecnico = u => ["tecnico","pintura"].includes(perfil(u));
-export const puedeCobrar = u => ["gerencia","recepcion_cobros"].includes(perfil(u));
-export const puedeImprimirFactura = puedeCobrar;
-export const puedeDefinirCostos = u => ["gerencia","jefe_taller"].includes(perfil(u));
-export const puedeAsignar = u => ["gerencia","jefe_taller","recepcion_cobros"].includes(perfil(u));
-export const puedeDescargarPDFs = esDueno;
-export const puedeVerReportesAnuales = esDueno;
-export const nombrePerfil = u => perfil(u) === "gerencia" ? "Gerencia" : PERFILES_ACCESO.find(p=>p.value===perfil(u))?.label || "Sin acceso";
-export const paginaInicio = u => esTecnico(u) ? "/MisTrabajos" : esDueno(u) ? "/OperacionDiaria" : "/Expedientes";
-export function puedeVerPagina(u, page) {
- if (["SitioWeb","Acerca","Contacto","LinkTree","OAuthConsent"].includes(page)) return true;
- if (esDueno(u)) return true;
- if (esTecnico(u)) return page === "MisTrabajos";
- if (puedeAsignar(u)) return ["Clientes","Vehiculos","Expedientes","ExpedienteVista","OrdenesTrabajos","Facturacion", ...(puedeDefinirCostos(u)?["Cotizaciones"]:[])].includes(page);
- return false;
-}
+
+export const esDueno = (user) =>
+  !!user?.email && CORREOS_ACCESO_TOTAL.includes(user.email.toLowerCase());
+
+export const esAdmin = (user) => user?.role === "admin";
+export const esJefeTaller = (user) => user?.role === "jefe_taller";
+export const esTecnico = (user) => user?.role === "tecnico";
+
+// Cobrar pagos e imprimir/enviar recibos: solo administración.
+export const puedeCobrar = (user) => esAdmin(user);
+export const puedeImprimirFactura = (user) => esAdmin(user);
+
+// Definir costos, facturar y revisar precios de trabajos: jefe de taller o administración.
+export const puedeDefinirCostos = (user) => esAdmin(user) || esJefeTaller(user);
+
+// Mapeo del campo rol_sistema de la ficha de empleado al rol de la app.
+// Nunca asigna "admin": ese nivel se otorga solo desde la administración de la app.
+export const ROL_SISTEMA_A_ROL = {
+  "Técnico": "tecnico",
+  "Auxiliar de Pintura": "tecnico",
+  "Jefe de Taller": "jefe_taller",
+  "Sin acceso": "user",
+};
