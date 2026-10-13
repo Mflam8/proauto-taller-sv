@@ -76,7 +76,7 @@ export const puedeVerPagina = (user, pageName) => {
   return paginas.includes(pageName);
 };
 
-export const paginaInicio = (user) => (esAdmin(user) ? "Home" : "MiTaller");
+export const paginaInicio = (user) => (esAdmin(user) ? "Dashboard" : "MiTaller");
 
 export const nombrePerfil = (user) => {
   const porPerfil = {
