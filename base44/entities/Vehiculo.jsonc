@@ -8,48 +8,48 @@
     },
     "placa": {
       "type": "string",
-      "description": "Número de placa (vacío o 'SIN PLACA' si el vehículo aún no placa)"
+      "description": "N\u00famero de placa (vac\u00edo o 'SIN PLACA' si el veh\u00edculo a\u00fan no placa)"
     },
     "poliza": {
       "type": "string",
-      "description": "Número de póliza (obligatorio cuando el vehículo no tiene placa)"
+      "description": "N\u00famero de p\u00f3liza (obligatorio cuando el veh\u00edculo no tiene placa)"
     },
     "marca": {
       "type": "string",
-      "description": "Marca del vehículo"
+      "description": "Marca del veh\u00edculo"
     },
     "modelo": {
       "type": "string",
-      "description": "Modelo del vehículo"
+      "description": "Modelo del veh\u00edculo"
     },
     "anio": {
       "type": "number",
-      "description": "Año del vehículo"
+      "description": "A\u00f1o del veh\u00edculo"
     },
     "color": {
       "type": "string",
-      "description": "Color del vehículo"
+      "description": "Color del veh\u00edculo"
     },
     "vin": {
       "type": "string",
-      "description": "Número VIN"
+      "description": "N\u00famero VIN"
     },
     "tipo_vehiculo": {
       "type": "string",
       "enum": [
-        "Sedán",
+        "Sed\u00e1n",
         "Pick-up",
         "SUV",
-        "Camión",
+        "Cami\u00f3n",
         "Motocicleta",
         "Van",
         "Otro"
       ],
-      "description": "Tipo de vehículo"
+      "description": "Tipo de veh\u00edculo"
     },
     "motor": {
       "type": "string",
-      "description": "Tipo/código de motor"
+      "description": "Tipo/c\u00f3digo de motor"
     },
     "cilindrada": {
       "type": "string",
@@ -60,8 +60,8 @@
       "enum": [
         "Gasolina",
         "Diesel",
-        "Híbrido",
-        "Eléctrico"
+        "H\u00edbrido",
+        "El\u00e9ctrico"
       ],
       "description": "Tipo de combustible"
     },
@@ -78,14 +78,14 @@
         "Fuera del taller"
       ],
       "default": "Fuera del taller",
-      "description": "Estado actual del vehículo"
+      "description": "Estado actual del veh\u00edculo"
     },
     "fotos": {
       "type": "array",
       "items": {
         "type": "string"
       },
-      "description": "URLs de fotos del vehículo"
+      "description": "URLs de fotos del veh\u00edculo"
     },
     "notas": {
       "type": "string",
@@ -98,30 +98,35 @@
     "modelo"
   ],
   "rls": {
-    "create": {
-      "$or": [
-        {
-          "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
-          }
-        },
-        {
-          "user_condition": {
-            "email": "proautotallersv@gmail.com"
-          }
-        }
-      ]
-    },
     "read": {
       "$or": [
         {
           "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
+            "role": "admin"
           }
         },
         {
           "user_condition": {
-            "email": "proautotallersv@gmail.com"
+            "role": "jefe_taller"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "tecnico"
+          }
+        }
+      ]
+    },
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "jefe_taller"
           }
         }
       ]
@@ -130,29 +135,20 @@
       "$or": [
         {
           "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
+            "role": "admin"
           }
         },
         {
           "user_condition": {
-            "email": "proautotallersv@gmail.com"
+            "role": "jefe_taller"
           }
         }
       ]
     },
     "delete": {
-      "$or": [
-        {
-          "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
-          }
-        },
-        {
-          "user_condition": {
-            "email": "proautotallersv@gmail.com"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     }
   }
 }
