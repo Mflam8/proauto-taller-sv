@@ -12,7 +12,7 @@
     },
     "telefono": {
       "type": "string",
-      "description": "Teléfono"
+      "description": "Tel\u00e9fono"
     },
     "email": {
       "type": "string",
@@ -21,7 +21,7 @@
     },
     "direccion": {
       "type": "string",
-      "description": "Dirección"
+      "description": "Direcci\u00f3n"
     },
     "productos_suministrados": {
       "type": "array",
@@ -32,7 +32,7 @@
     },
     "terminos_pago": {
       "type": "string",
-      "description": "Términos de pago"
+      "description": "T\u00e9rminos de pago"
     },
     "notas": {
       "type": "string",
@@ -41,7 +41,7 @@
     "activo": {
       "type": "boolean",
       "default": true,
-      "description": "Si el proveedor está activo"
+      "description": "Si el proveedor est\u00e1 activo"
     }
   },
   "required": [
@@ -49,61 +49,34 @@
     "telefono"
   ],
   "rls": {
-    "create": {
-      "$or": [
-        {
-          "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
-          }
-        },
-        {
-          "user_condition": {
-            "email": "proautotallersv@gmail.com"
-          }
-        }
-      ]
-    },
     "read": {
       "$or": [
         {
           "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
+            "role": "admin"
           }
         },
         {
           "user_condition": {
-            "email": "proautotallersv@gmail.com"
+            "role": "jefe_taller"
           }
         }
       ]
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "update": {
-      "$or": [
-        {
-          "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
-          }
-        },
-        {
-          "user_condition": {
-            "email": "proautotallersv@gmail.com"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "delete": {
-      "$or": [
-        {
-          "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
-          }
-        },
-        {
-          "user_condition": {
-            "email": "proautotallersv@gmail.com"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     }
   }
 }
