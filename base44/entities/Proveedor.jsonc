@@ -12,7 +12,7 @@
     },
     "telefono": {
       "type": "string",
-      "description": "Tel\u00e9fono"
+      "description": "Teléfono"
     },
     "email": {
       "type": "string",
@@ -21,7 +21,7 @@
     },
     "direccion": {
       "type": "string",
-      "description": "Direcci\u00f3n"
+      "description": "Dirección"
     },
     "productos_suministrados": {
       "type": "array",
@@ -32,7 +32,7 @@
     },
     "terminos_pago": {
       "type": "string",
-      "description": "T\u00e9rminos de pago"
+      "description": "Términos de pago"
     },
     "notas": {
       "type": "string",
@@ -41,7 +41,7 @@
     "activo": {
       "type": "boolean",
       "default": true,
-      "description": "Si el proveedor est\u00e1 activo"
+      "description": "Si el proveedor está activo"
     }
   },
   "required": [
@@ -50,20 +50,60 @@
   ],
   "rls": {
     "create": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        }
+      ]
     },
-    "read": null,
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        }
+      ]
+    },
     "update": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        }
+      ]
     },
     "delete": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        }
+      ]
     }
   }
 }

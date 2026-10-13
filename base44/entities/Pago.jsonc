@@ -15,11 +15,11 @@
       "enum": [
         "Efectivo",
         "Transferencia",
-        "Tarjeta D\u00e9bito",
-        "Tarjeta Cr\u00e9dito",
+        "Tarjeta Débito",
+        "Tarjeta Crédito",
         "Cheque"
       ],
-      "description": "M\u00e9todo de pago"
+      "description": "Método de pago"
     },
     "referencia": {
       "type": "string",
@@ -33,11 +33,11 @@
     "fecha_remesa": {
       "type": "string",
       "format": "date",
-      "description": "Fecha de remesa/cheque (cuando se deposit\u00f3 al banco)"
+      "description": "Fecha de remesa/cheque (cuando se depositó al banco)"
     },
     "recibido_por": {
       "type": "string",
-      "description": "Usuario que recibi\u00f3 el pago"
+      "description": "Usuario que recibió el pago"
     },
     "notas": {
       "type": "string",
@@ -67,24 +67,60 @@
   ],
   "rls": {
     "create": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        }
+      ]
     },
     "read": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        }
+      ]
     },
     "update": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        }
+      ]
     },
     "delete": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        }
+      ]
     }
   }
 }

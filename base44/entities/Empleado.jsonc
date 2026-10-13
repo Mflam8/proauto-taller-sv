@@ -8,12 +8,12 @@
     },
     "telefono": {
       "type": "string",
-      "description": "Tel\u00e9fono de contacto"
+      "description": "Teléfono de contacto"
     },
     "email": {
       "type": "string",
       "format": "email",
-      "description": "Correo electr\u00f3nico"
+      "description": "Correo electrónico"
     },
     "cargo": {
       "type": "string",
@@ -22,9 +22,9 @@
     "tipo": {
       "type": "string",
       "enum": [
-        "Recepci\u00f3n",
-        "T\u00e9cnico",
-        "Administraci\u00f3n",
+        "Recepción",
+        "Técnico",
+        "Administración",
         "Gerencia",
         "Carwash",
         "Pintura",
@@ -34,7 +34,7 @@
     },
     "especialidad": {
       "type": "string",
-      "description": "Especialidad t\u00e9cnica (si aplica)"
+      "description": "Especialidad técnica (si aplica)"
     },
     "fecha_ingreso": {
       "type": "string",
@@ -44,20 +44,32 @@
     "fecha_nacimiento": {
       "type": "string",
       "format": "date",
-      "description": "Fecha de nacimiento (cumplea\u00f1os)"
+      "description": "Fecha de nacimiento (cumpleaños)"
     },
     "dui": {
       "type": "string",
-      "description": "N\u00famero de DUI"
+      "description": "Número de DUI"
     },
     "activo": {
       "type": "boolean",
       "default": true,
-      "description": "Si el empleado est\u00e1 activo"
+      "description": "Si el empleado está activo"
     },
     "notas": {
       "type": "string",
       "description": "Observaciones"
+    },
+    "perfil_acceso": {
+      "type": "string",
+      "enum": [
+        "sin_acceso",
+        "tecnico",
+        "pintura",
+        "jefe_taller",
+        "recepcion_cobros"
+      ],
+      "default": "sin_acceso",
+      "description": "Perfil operativo seleccionado por gerencia; independiente del cargo y tipo de empleado."
     }
   },
   "required": [
@@ -66,20 +78,60 @@
   ],
   "rls": {
     "create": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        }
+      ]
     },
-    "read": null,
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        }
+      ]
+    },
     "update": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        }
+      ]
     },
     "delete": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        }
+      ]
     }
   }
 }

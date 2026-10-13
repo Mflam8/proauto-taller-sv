@@ -4,7 +4,7 @@
   "properties": {
     "numero_cotizacion": {
       "type": "string",
-      "description": "N\u00famero \u00fanico de cotizaci\u00f3n"
+      "description": "Número único de cotización"
     },
     "cliente_id": {
       "type": "string",
@@ -12,7 +12,7 @@
     },
     "vehiculo_id": {
       "type": "string",
-      "description": "ID del veh\u00edculo"
+      "description": "ID del vehículo"
     },
     "servicios": {
       "type": "array",
@@ -37,7 +37,7 @@
     },
     "subtotal": {
       "type": "number",
-      "description": "Subtotal de la cotizaci\u00f3n"
+      "description": "Subtotal de la cotización"
     },
     "descuento": {
       "type": "number",
@@ -46,7 +46,7 @@
     },
     "total": {
       "type": "number",
-      "description": "Total de la cotizaci\u00f3n"
+      "description": "Total de la cotización"
     },
     "estado": {
       "type": "string",
@@ -57,20 +57,20 @@
         "Vencida"
       ],
       "default": "Pendiente",
-      "description": "Estado de la cotizaci\u00f3n"
+      "description": "Estado de la cotización"
     },
     "fecha_aprobacion": {
       "type": "string",
       "format": "date-time",
-      "description": "Fecha de aprobaci\u00f3n"
+      "description": "Fecha de aprobación"
     },
     "metodo_aprobacion": {
       "type": "string",
       "enum": [
         "Digital",
-        "F\u00edsica"
+        "Física"
       ],
-      "description": "M\u00e9todo de aprobaci\u00f3n"
+      "description": "Método de aprobación"
     },
     "notas": {
       "type": "string",
@@ -79,7 +79,7 @@
     "vigencia_dias": {
       "type": "number",
       "default": 15,
-      "description": "D\u00edas de vigencia"
+      "description": "Días de vigencia"
     },
     "legacy_quote_id": {
       "type": "string",
@@ -106,24 +106,60 @@
   ],
   "rls": {
     "create": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        }
+      ]
     },
     "read": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        }
+      ]
     },
     "update": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        }
+      ]
     },
     "delete": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        }
+      ]
     }
   }
 }

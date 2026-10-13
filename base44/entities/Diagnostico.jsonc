@@ -8,15 +8,15 @@
     },
     "vehiculo_id": {
       "type": "string",
-      "description": "ID del veh\u00edculo"
+      "description": "ID del vehículo"
     },
     "tecnico_id": {
       "type": "string",
-      "description": "ID del empleado t\u00e9cnico"
+      "description": "ID del empleado técnico"
     },
     "tecnico_nombre": {
       "type": "string",
-      "description": "Nombre del t\u00e9cnico"
+      "description": "Nombre del técnico"
     },
     "fecha": {
       "type": "string",
@@ -24,11 +24,11 @@
     },
     "diagnostico_inicial": {
       "type": "string",
-      "description": "Diagn\u00f3stico inicial"
+      "description": "Diagnóstico inicial"
     },
     "diagnostico_final": {
       "type": "string",
-      "description": "Diagn\u00f3stico final confirmado"
+      "description": "Diagnóstico final confirmado"
     },
     "fallas_detectadas": {
       "type": "array",
@@ -47,7 +47,7 @@
               "Leve",
               "Moderada",
               "Grave",
-              "Cr\u00edtica"
+              "Crítica"
             ]
           }
         }
@@ -77,24 +77,60 @@
   ],
   "rls": {
     "create": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        }
+      ]
     },
     "read": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        }
+      ]
     },
     "update": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        }
+      ]
     },
     "delete": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        }
+      ]
     }
   }
 }

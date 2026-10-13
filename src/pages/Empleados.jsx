@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Search, UserCircle, Phone, Mail, Wrench, Cake } from "lucide-react";
 import { motion } from "framer-motion";
+import { PERFILES_ACCESO } from "@/lib/permissions";
 
 const TIPOS = ["Recepción", "Técnico", "Administración", "Gerencia", "Carwash", "Pintura", "Otro"];
 
@@ -23,7 +24,7 @@ const tipoColor = {
   "Otro": "bg-gray-100 text-gray-800",
 };
 
-const empty = { nombre_completo: "", telefono: "", email: "", cargo: "", tipo: "Técnico", especialidad: "", fecha_ingreso: "", fecha_nacimiento: "", dui: "", activo: true, notas: "" };
+const empty = { perfil_acceso: "sin_acceso", nombre_completo: "", telefono: "", email: "", cargo: "", tipo: "Técnico", especialidad: "", fecha_ingreso: "", fecha_nacimiento: "", dui: "", activo: true, notas: "" };
 
 const esHoyCumple = (fecha) => {
   if (!fecha) return false;
@@ -54,11 +55,13 @@ export default function Empleados() {
       ? base44.entities.Empleado.update(editing.id, data)
       : base44.entities.Empleado.create(data),
     onSuccess: () => { qc.invalidateQueries(["empleados"]); setShowForm(false); setEditing(null); setForm(empty); },
+    onError: error => alert(error.response?.data?.error || error.message),
   });
 
   const toggleActivoMutation = useMutation({
     mutationFn: ({ id, activo }) => base44.entities.Empleado.update(id, { activo }),
     onSuccess: () => qc.invalidateQueries(["empleados"]),
+    onError: error => alert(error.response?.data?.error || error.message),
   });
 
   const openNew = () => { setEditing(null); setForm(empty); setShowForm(true); };
@@ -141,6 +144,7 @@ export default function Empleados() {
             <div className="space-y-1 text-sm text-gray-600">
               {emp.telefono && <p className="flex items-center gap-2"><Phone className="w-3 h-3" />{emp.telefono}</p>}
               {emp.email && <p className="flex items-center gap-2"><Mail className="w-3 h-3" />{emp.email}</p>}
+              <p>Acceso: {PERFILES_ACCESO.find(p => p.value === emp.perfil_acceso)?.label || "Sin acceso"}</p>
               {emp.especialidad && <p className="flex items-center gap-2"><Wrench className="w-3 h-3" />{emp.especialidad}</p>}
               {emp.fecha_nacimiento && (
                 <p className="flex items-center gap-2">
@@ -186,11 +190,20 @@ export default function Empleados() {
                 <Input value={form.cargo} onChange={e => setForm({ ...form, cargo: e.target.value })} placeholder="Ej: Mecánico, Recepcionista" />
               </div>
               <div>
-                <Label>Tipo *</Label>
+                <Label>Área de trabajo *</Label>
                 <Select value={form.tipo} onValueChange={v => setForm({ ...form, tipo: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>{TIPOS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
                 </Select>
+              </div>
+              <div className="col-span-2 border rounded-lg p-3 space-y-2">
+                <Label htmlFor="perfil-acceso">Perfil de acceso *</Label>
+                <Select value={form.perfil_acceso || "sin_acceso"} onValueChange={v => setForm({ ...form, perfil_acceso: v })}>
+                  <SelectTrigger id="perfil-acceso"><SelectValue /></SelectTrigger>
+                  <SelectContent>{PERFILES_ACCESO.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}</SelectContent>
+                </Select>
+                <p className="text-xs text-gray-600">{PERFILES_ACCESO.find(p => p.value === form.perfil_acceso)?.description}</p>
+                <p className="text-xs text-gray-500">El empleado debe iniciar sesión con este correo. Un empleado desactivado no puede acceder, aunque conserve un perfil.</p>
               </div>
               <div>
                 <Label>Especialidad</Label>
@@ -223,7 +236,7 @@ export default function Empleados() {
                   {form.activo ? "Marcar Inactivo" : "Reactivar"}
                 </Button>
               )}
-              <Button className="flex-1 bg-[#E31E24] hover:bg-[#B71C1C]" onClick={() => saveMutation.mutate(form)}>
+              <Button className="flex-1 bg-[#E31E24] hover:bg-[#B71C1C]" disabled={saveMutation.isPending || !form.nombre_completo.trim() || (form.perfil_acceso !== "sin_acceso" && !form.email?.trim())} onClick={() => saveMutation.mutate(form)}>
                 {editing ? "Guardar Cambios" : "Crear Empleado"}
               </Button>
             </div>

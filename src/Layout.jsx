@@ -23,7 +23,8 @@ import {
   Receipt,
   ShieldCheck
 } from "lucide-react";
-import { esDueno } from "@/lib/permissions";
+import { esDueno, puedeVerPagina, paginaInicio, nombrePerfil } from "@/lib/permissions";
+import { Navigate } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -41,6 +42,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 const navigationItems = [
+  { title: "Mis trabajos", url: "/MisTrabajos", icon: ClipboardList },
   {
     title: "Tablero Diario",
     url: "/OperacionDiaria",
@@ -133,6 +135,8 @@ export default function Layout({ children, currentPageName }) {
       }
     };
     loadUser();
+    const timer = setInterval(loadUser, 30000);
+    return () => clearInterval(timer);
   }, []);
 
   const handleLogout = async () => {
@@ -144,6 +148,9 @@ export default function Layout({ children, currentPageName }) {
     return <>{children}</>;
   }
 
+  if (!user) return <div className="p-6">Verificando tu acceso…</div>;
+  if (user.perfil_acceso === "sin_acceso") return <div className="p-6 space-y-4"><h1 className="text-xl font-bold">Acceso no habilitado</h1><p>{user.error_acceso || "Solicita a gerencia que revise tu perfil de empleado."}</p><Button onClick={handleLogout}>Cerrar sesión</Button></div>;
+  if (currentPageName === "Home" || !puedeVerPagina(user, currentPageName)) return <Navigate to={paginaInicio(user)} replace />;
   return (
     <SidebarProvider>
       <style>{`
@@ -184,7 +191,7 @@ export default function Layout({ children, currentPageName }) {
               </SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {navigationItems.filter((item) => !item.soloDueno || esDueno(user)).map((item) => {
+                  {navigationItems.filter((item) => puedeVerPagina(user, item.url.slice(1)) && (!item.soloDueno || esDueno(user))).map((item) => {
                     const isActive = location.pathname === item.url;
                     return (
                       <SidebarMenuItem key={item.title}>
@@ -227,7 +234,7 @@ export default function Layout({ children, currentPageName }) {
                     <p className="font-semibold text-gray-900 text-sm truncate">
                       {user.full_name || 'Usuario'}
                     </p>
-                    <p className="text-xs text-gray-500 truncate">{user.role || 'Empleado'}</p>
+                    <p className="text-xs text-gray-500 truncate">{nombrePerfil(user)}</p>
                   </div>
                 </div>
               )}

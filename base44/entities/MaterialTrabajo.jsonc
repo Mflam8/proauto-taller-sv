@@ -8,32 +8,32 @@
     },
     "trabajo_id": {
       "type": "string",
-      "description": "Trabajo t\u00e9cnico relacionado, si aplica"
+      "description": "Trabajo técnico relacionado, si aplica"
     },
     "origen": {
       "type": "string",
       "enum": [
         "Inventario del taller",
-        "Compra para este veh\u00edculo",
+        "Compra para este vehículo",
         "Proporcionado por el cliente"
       ],
       "description": "Origen del material"
     },
     "item_inventario_id": {
       "type": "string",
-      "description": "\u00cdtem de inventario cuando sale del taller"
+      "description": "Ítem de inventario cuando sale del taller"
     },
     "catalogo_precio_id": {
       "type": "string",
-      "description": "Referencia al cat\u00e1logo cuando aplica"
+      "description": "Referencia al catálogo cuando aplica"
     },
     "descripcion": {
       "type": "string",
-      "description": "Descripci\u00f3n del material o repuesto"
+      "description": "Descripción del material o repuesto"
     },
     "numero_parte": {
       "type": "string",
-      "description": "N\u00famero de parte o referencia"
+      "description": "Número de parte o referencia"
     },
     "cantidad": {
       "type": "number",
@@ -47,11 +47,11 @@
     "costo_total": {
       "type": "number",
       "default": 0,
-      "description": "Costo total del material (cantidad \u00d7 costo unitario)"
+      "description": "Costo total del material (cantidad × costo unitario)"
     },
     "proveedor_nombre": {
       "type": "string",
-      "description": "Nombre del proveedor donde se compr\u00f3 el material"
+      "description": "Nombre del proveedor donde se compró el material"
     },
     "estado": {
       "type": "string",
@@ -71,7 +71,7 @@
     },
     "proveedor_id": {
       "type": "string",
-      "description": "Proveedor cuando se compra para este veh\u00edculo"
+      "description": "Proveedor cuando se compra para este vehículo"
     },
     "comprobante_url": {
       "type": "string",
@@ -79,7 +79,7 @@
     },
     "registrado_por": {
       "type": "string",
-      "description": "Persona que registr\u00f3 el material"
+      "description": "Persona que registró el material"
     },
     "fecha_registro": {
       "type": "string",
@@ -97,24 +97,60 @@
   ],
   "rls": {
     "create": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        }
+      ]
     },
     "read": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        }
+      ]
     },
     "update": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        }
+      ]
     },
     "delete": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        }
+      ]
     }
   }
 }

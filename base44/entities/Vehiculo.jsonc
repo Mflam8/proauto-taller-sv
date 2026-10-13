@@ -8,48 +8,48 @@
     },
     "placa": {
       "type": "string",
-      "description": "N\u00famero de placa (vac\u00edo o 'SIN PLACA' si el veh\u00edculo a\u00fan no placa)"
+      "description": "Número de placa (vacío o 'SIN PLACA' si el vehículo aún no placa)"
     },
     "poliza": {
       "type": "string",
-      "description": "N\u00famero de p\u00f3liza (obligatorio cuando el veh\u00edculo no tiene placa)"
+      "description": "Número de póliza (obligatorio cuando el vehículo no tiene placa)"
     },
     "marca": {
       "type": "string",
-      "description": "Marca del veh\u00edculo"
+      "description": "Marca del vehículo"
     },
     "modelo": {
       "type": "string",
-      "description": "Modelo del veh\u00edculo"
+      "description": "Modelo del vehículo"
     },
     "anio": {
       "type": "number",
-      "description": "A\u00f1o del veh\u00edculo"
+      "description": "Año del vehículo"
     },
     "color": {
       "type": "string",
-      "description": "Color del veh\u00edculo"
+      "description": "Color del vehículo"
     },
     "vin": {
       "type": "string",
-      "description": "N\u00famero VIN"
+      "description": "Número VIN"
     },
     "tipo_vehiculo": {
       "type": "string",
       "enum": [
-        "Sed\u00e1n",
+        "Sedán",
         "Pick-up",
         "SUV",
-        "Cami\u00f3n",
+        "Camión",
         "Motocicleta",
         "Van",
         "Otro"
       ],
-      "description": "Tipo de veh\u00edculo"
+      "description": "Tipo de vehículo"
     },
     "motor": {
       "type": "string",
-      "description": "Tipo/c\u00f3digo de motor"
+      "description": "Tipo/código de motor"
     },
     "cilindrada": {
       "type": "string",
@@ -60,8 +60,8 @@
       "enum": [
         "Gasolina",
         "Diesel",
-        "H\u00edbrido",
-        "El\u00e9ctrico"
+        "Híbrido",
+        "Eléctrico"
       ],
       "description": "Tipo de combustible"
     },
@@ -78,14 +78,14 @@
         "Fuera del taller"
       ],
       "default": "Fuera del taller",
-      "description": "Estado actual del veh\u00edculo"
+      "description": "Estado actual del vehículo"
     },
     "fotos": {
       "type": "array",
       "items": {
         "type": "string"
       },
-      "description": "URLs de fotos del veh\u00edculo"
+      "description": "URLs de fotos del vehículo"
     },
     "notas": {
       "type": "string",
@@ -99,24 +99,60 @@
   ],
   "rls": {
     "create": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        }
+      ]
     },
     "read": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        }
+      ]
     },
     "update": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        }
+      ]
     },
     "delete": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        }
+      ]
     }
   }
 }

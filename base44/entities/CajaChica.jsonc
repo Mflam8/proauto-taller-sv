@@ -8,7 +8,7 @@
     },
     "concepto": {
       "type": "string",
-      "description": "Descripci\u00f3n del gasto o ingreso"
+      "description": "Descripción del gasto o ingreso"
     },
     "tipo": {
       "type": "string",
@@ -28,11 +28,11 @@
         "Transporte",
         "Otro"
       ],
-      "description": "Categor\u00eda del movimiento"
+      "description": "Categoría del movimiento"
     },
     "monto": {
       "type": "number",
-      "description": "Monto en d\u00f3lares"
+      "description": "Monto en dólares"
     },
     "proveedor": {
       "type": "string",
@@ -64,24 +64,60 @@
   ],
   "rls": {
     "create": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        }
+      ]
     },
     "read": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        }
+      ]
     },
     "update": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        }
+      ]
     },
     "delete": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        }
+      ]
     }
   }
 }
