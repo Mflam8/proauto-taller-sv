@@ -8,23 +8,23 @@
     },
     "descripcion": {
       "type": "string",
-      "description": "Descripción detallada"
+      "description": "Descripci\u00f3n detallada"
     },
     "categoria": {
       "type": "string",
       "enum": [
-        "Mecánica General",
-        "Diagnóstico Computarizado",
+        "Mec\u00e1nica General",
+        "Diagn\u00f3stico Computarizado",
         "Sistema de Frenos",
         "Mantenimiento GDI",
-        "Avalúo",
-        "Sistema Eléctrico",
-        "Suspensión",
-        "Transmisión",
+        "Aval\u00fao",
+        "Sistema El\u00e9ctrico",
+        "Suspensi\u00f3n",
+        "Transmisi\u00f3n",
         "Motor",
         "Otro"
       ],
-      "description": "Categoría del servicio"
+      "description": "Categor\u00eda del servicio"
     },
     "precio_base": {
       "type": "number",
@@ -37,19 +37,19 @@
     "activo": {
       "type": "boolean",
       "default": true,
-      "description": "Si el servicio está activo"
+      "description": "Si el servicio est\u00e1 activo"
     },
     "legacy_item_id": {
       "type": "string",
-      "description": "ID del artículo en sistema anterior (DBF)"
+      "description": "ID del art\u00edculo en sistema anterior (DBF)"
     },
     "legacy_code_family": {
       "type": "string",
-      "description": "Código de familia en sistema anterior"
+      "description": "C\u00f3digo de familia en sistema anterior"
     },
     "legacy_barcode": {
       "type": "string",
-      "description": "Código de barras en sistema anterior"
+      "description": "C\u00f3digo de barras en sistema anterior"
     },
     "legacy_precio_lista1": {
       "type": "number",
@@ -66,61 +66,39 @@
     "precio_base"
   ],
   "rls": {
-    "create": {
-      "$or": [
-        {
-          "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
-          }
-        },
-        {
-          "user_condition": {
-            "email": "proautotallersv@gmail.com"
-          }
-        }
-      ]
-    },
     "read": {
       "$or": [
         {
           "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
+            "role": "admin"
           }
         },
         {
           "user_condition": {
-            "email": "proautotallersv@gmail.com"
+            "role": "jefe_taller"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "tecnico"
           }
         }
       ]
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "update": {
-      "$or": [
-        {
-          "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
-          }
-        },
-        {
-          "user_condition": {
-            "email": "proautotallersv@gmail.com"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "delete": {
-      "$or": [
-        {
-          "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
-          }
-        },
-        {
-          "user_condition": {
-            "email": "proautotallersv@gmail.com"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     }
   }
 }
