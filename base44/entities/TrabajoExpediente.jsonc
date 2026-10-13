@@ -8,15 +8,19 @@
     },
     "descripcion": {
       "type": "string",
-      "description": "Descripción del trabajo realizado"
+      "description": "Descripci\u00f3n del trabajo realizado"
     },
     "tecnico_id": {
       "type": "string",
-      "description": "ID del técnico asignado"
+      "description": "ID del t\u00e9cnico asignado"
     },
     "tecnico_nombre": {
       "type": "string",
-      "description": "Nombre del técnico"
+      "description": "Nombre del t\u00e9cnico"
+    },
+    "tecnico_email": {
+      "type": "string",
+      "description": "Correo del t\u00e9cnico asignado (permite que actualice su propio trabajo)"
     },
     "tipo": {
       "type": "string",
@@ -25,11 +29,11 @@
         "Mano de Obra Pintura",
         "Repuesto",
         "Insumo",
-        "Diagnóstico",
+        "Diagn\u00f3stico",
         "Otro"
       ],
       "default": "Mano de Obra",
-      "description": "Tipo de trabajo/ítem"
+      "description": "Tipo de trabajo/\u00edtem"
     },
     "cantidad": {
       "type": "number",
@@ -45,7 +49,7 @@
     },
     "catalogo_precio_id": {
       "type": "string",
-      "description": "Ítem del catálogo que originó la sugerencia"
+      "description": "\u00cdtem del cat\u00e1logo que origin\u00f3 la sugerencia"
     },
     "precio_sugerido": {
       "type": "number",
@@ -54,18 +58,18 @@
     "origen_precio": {
       "type": "string",
       "enum": [
-        "Catálogo",
+        "Cat\u00e1logo",
         "Manual"
       ],
-      "description": "Cómo se obtuvo el precio sugerido"
+      "description": "C\u00f3mo se obtuvo el precio sugerido"
     },
     "precio_ajustado_por": {
       "type": "string",
-      "description": "Supervisor que modificó el precio sugerido"
+      "description": "Supervisor que modific\u00f3 el precio sugerido"
     },
     "motivo_ajuste_precio": {
       "type": "string",
-      "description": "Razón del ajuste de precio"
+      "description": "Raz\u00f3n del ajuste de precio"
     },
     "fecha_ajuste_precio": {
       "type": "string",
@@ -113,30 +117,35 @@
     "tipo"
   ],
   "rls": {
-    "create": {
-      "$or": [
-        {
-          "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
-          }
-        },
-        {
-          "user_condition": {
-            "email": "proautotallersv@gmail.com"
-          }
-        }
-      ]
-    },
     "read": {
       "$or": [
         {
           "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
+            "role": "admin"
           }
         },
         {
           "user_condition": {
-            "email": "proautotallersv@gmail.com"
+            "role": "jefe_taller"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "tecnico"
+          }
+        }
+      ]
+    },
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "jefe_taller"
           }
         }
       ]
@@ -145,13 +154,25 @@
       "$or": [
         {
           "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
+            "role": "admin"
           }
         },
         {
           "user_condition": {
-            "email": "proautotallersv@gmail.com"
+            "role": "jefe_taller"
           }
+        },
+        {
+          "$and": [
+            {
+              "user_condition": {
+                "role": "tecnico"
+              }
+            },
+            {
+              "data.tecnico_email": "{{user.email}}"
+            }
+          ]
         }
       ]
     },
@@ -159,12 +180,12 @@
       "$or": [
         {
           "user_condition": {
-            "email": "mayaflamenco89@gmail.com"
+            "role": "admin"
           }
         },
         {
           "user_condition": {
-            "email": "proautotallersv@gmail.com"
+            "role": "jefe_taller"
           }
         }
       ]
