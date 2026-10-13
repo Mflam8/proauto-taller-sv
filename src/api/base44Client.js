@@ -29,8 +29,15 @@ const entities = new Proxy({}, {
     };
   },
 });
+// Copiamos el SDK sin tocar "asServiceRole" (solo existe en el servidor y rompe el navegador).
+const sdkPublico = {};
+for (const key of Object.getOwnPropertyNames(sdk)) {
+  if (key === "asServiceRole") continue;
+  try { sdkPublico[key] = sdk[key]; } catch { /* omitir propiedades del servidor */ }
+}
+
 export const base44 = {
-  ...sdk,
+  ...sdkPublico,
   entities,
   auth: {
     ...sdk.auth,
