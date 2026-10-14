@@ -2,7 +2,7 @@
 // El perfil se define en la ficha del empleado (campo "perfil_acceso") y se aplica al iniciar sesión.
 // El nivel "admin" (administrador) nunca se asigna desde la ficha: se gestiona aparte.
 
-const CORREOS_RESTRINGIDOS = ["yaniraproautotaller@gmail.com"];
+const CORREOS_RESTRINGIDOS = [];
 
 const estaRestringido = (user) =>
   !!user?.email && CORREOS_RESTRINGIDOS.includes(user.email.toLowerCase());
@@ -66,6 +66,7 @@ const PAGINAS_POR_ROL = {
   recepcion_cobros: [
     "MiTaller", "Clientes", "Vehiculos", "Cotizaciones",
     "OrdenesTrabajos", "Inspecciones", "Facturacion", "Expedientes", "ExpedienteVista",
+    "Reportes", "InformeRemesas",
   ],
   user: ["MiTaller"],
 };

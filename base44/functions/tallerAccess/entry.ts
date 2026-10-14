@@ -22,7 +22,7 @@ export const SCHEMA_FIELDS = {"Asistencia":["empleado_email","empleado_nombre","
 PUBLIC_FIELDS.Inspeccion = [...META, ...SCHEMA_FIELDS.Inspeccion.filter(k => k !== "firma_ingreso")];
 const READ = {
   jefe_taller: ["Cliente", "Vehiculo", "Expediente", "TrabajoExpediente", "Inspeccion", "Diagnostico", "OrdenTrabajo", "Factura", "Cotizacion", "Empleado", "CatalogoPrecio", "Servicio", "MaterialTrabajo", "ItemInventario", "Proveedor", "AjustePrecioTrabajo", "Asistencia"],
-  recepcion_cobros: ["Cliente", "Vehiculo", "Expediente", "TrabajoExpediente", "Inspeccion", "Diagnostico", "OrdenTrabajo", "Factura", "Pago", "Empleado", "MaterialTrabajo"],
+  recepcion_cobros: ["Cliente", "Vehiculo", "Expediente", "TrabajoExpediente", "Inspeccion", "Diagnostico", "OrdenTrabajo", "Factura", "Pago", "Empleado", "MaterialTrabajo", "ItemInventario", "CajaChica"],
   tecnico: Object.keys(PUBLIC_FIELDS),
   pintura: Object.keys(PUBLIC_FIELDS),
 };

@@ -119,13 +119,13 @@ const navigationItems = [
     title: "Reportes",
     url: createPageUrl("Reportes"),
     icon: BarChart3,
-    roles: ["admin"],
+    roles: ["admin", "recepcion_cobros"],
   },
   {
     title: "Informe Remesas",
     url: "/InformeRemesas",
     icon: Receipt,
-    roles: ["admin"],
+    roles: ["admin", "recepcion_cobros"],
   },
   {
     title: "Control Interno",
