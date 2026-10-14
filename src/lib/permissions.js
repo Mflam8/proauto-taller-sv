@@ -1,6 +1,7 @@
-// Control de accesos por rol del usuario de la app.
-// El perfil se define en la ficha del empleado (campo "perfil_acceso") y se aplica al iniciar sesión.
-// El nivel "admin" (administrador) nunca se asigna desde la ficha: se gestiona aparte.
+// Control de accesos por perfil del empleado.
+// SUPER ADMIN (gerencia): los correos propietarios, control total del sistema.
+// ADMIN: gestión del taller; capacidades ajustables una a una (solo SUPER ADMIN las cambia).
+// TÉCNICO DE MECÁNICA y TÉCNICO DE PINTURA: acceso operativo a sus trabajos.
 
 const CORREOS_RESTRINGIDOS = [];
 
@@ -10,7 +11,7 @@ const estaRestringido = (user) =>
 export const puedeDescargarPDFs = (user) => !estaRestringido(user);
 export const puedeVerReportesAnuales = (user) => !estaRestringido(user);
 
-// Cuentas con acceso total (control interno de facturas incluido).
+// SUPER ADMIN: cuentas con acceso total (control interno de facturas incluido).
 const CORREOS_ACCESO_TOTAL = [
   "proautotallersv@gmail.com",
   "mayaflamenco89@gmail.com",
@@ -19,60 +20,87 @@ const CORREOS_ACCESO_TOTAL = [
 export const esDueno = (user) =>
   !!user?.email && CORREOS_ACCESO_TOTAL.includes(user.email.toLowerCase());
 
-// Perfiles de acceso que se pueden asignar a un empleado (nunca administrador).
+// Perfiles que se asignan en la ficha del empleado (nunca SUPER ADMIN: se reconoce por correo).
 export const PERFILES_ACCESO = [
   { value: "sin_acceso", label: "Sin acceso a la app", description: "Ficha registrada, pero no puede usar la app." },
-  { value: "tecnico", label: "Técnico", description: "Ve sus trabajos asignados, realiza inspecciones y marca su asistencia en el taller." },
-  { value: "pintura", label: "Técnico de Pintura", description: "Igual que técnico, enfocado en trabajos de pintura." },
-  { value: "jefe_taller", label: "Jefe de Taller", description: "Asigna trabajos, define costos y factura. No puede imprimir recibos ni cobrar." },
-  { value: "recepcion_cobros", label: "Recepción y Cobros", description: "Registra clientes, vehículos y cobros. Sin reportes descargables." },
+  { value: "admin", label: "Admin", description: "Gestión del taller: empleados, asistencia, clientes, vehículos, asignaciones, facturación, cobros y reportes. Cada capacidad se ajusta por persona." },
+  { value: "tecnico", label: "Técnico de Mecánica", description: "Vehículos y trabajos asignados, revisiones, fotos, avances y horas. Sin precios, facturas ni reportes." },
+  { value: "pintura", label: "Técnico de Pintura", description: "Los mismos permisos operativos, orientados a trabajos de pintura." },
 ];
 
+// Valores anteriores que ahora equivalen a Admin (se aceptan por compatibilidad).
+const PERFIL_NORMALIZADO = { jefe_taller: "admin", recepcion_cobros: "admin", gerencia: "admin" };
+const perfilNormalizado = (p) => PERFIL_NORMALIZADO[p] || p;
+
 const PERFIL_A_ROL = {
-  gerencia: "admin",
-  jefe_taller: "jefe_taller",
+  admin: "admin",
   tecnico: "tecnico",
   pintura: "tecnico",
-  recepcion_cobros: "recepcion_cobros",
   sin_acceso: "user",
 };
 
 // Rol efectivo: el perfil de la ficha manda; sin perfil se usa el rol de la app.
 export const rolEfectivo = (user) => {
-  if (user?.perfil_acceso && PERFIL_A_ROL[user.perfil_acceso]) return PERFIL_A_ROL[user.perfil_acceso];
-  if (user?.role === "admin" || esDueno(user)) return "admin";
+  const p = perfilNormalizado(user?.perfil_acceso);
+  if (p && PERFIL_A_ROL[p]) return PERFIL_A_ROL[p];
+  if (user?.role === "admin" || user?.role === "jefe_taller" || esDueno(user)) return "admin";
   return user?.role || "user";
 };
 
 export const esAdmin = (user) => rolEfectivo(user) === "admin";
-export const esJefeTaller = (user) => rolEfectivo(user) === "jefe_taller";
+export const esJefeTaller = (user) => rolEfectivo(user) === "admin"; // compatibilidad con el modelo anterior
 export const esTecnico = (user) => rolEfectivo(user) === "tecnico";
 
-// Cobrar pagos e imprimir recibos: administración y recepción de cobros.
-export const puedeCobrar = (user) => esAdmin(user) || user?.perfil_acceso === "recepcion_cobros";
-export const puedeImprimirFactura = (user) => esAdmin(user) || user?.perfil_acceso === "recepcion_cobros";
+// Capacidades individuales (interruptores por persona, agrupados por área).
+export const CAPACIDADES = [
+  { grupo: "Empleados", key: "gestionar_empleados", label: "Crear y actualizar empleados" },
+  { grupo: "Asistencia", key: "gestionar_asistencia", label: "Registrar o corregir asistencia del personal" },
+  { grupo: "Trabajos", key: "gestionar_clientes", label: "Crear y actualizar clientes y vehículos" },
+  { grupo: "Trabajos", key: "asignar_trabajos", label: "Asignar vehículos y trabajos" },
+  { grupo: "Trabajos", key: "aprobar_trabajos", label: "Revisar avances y aprobar trabajos terminados" },
+  { grupo: "Trabajos", key: "definir_precios", label: "Definir costos y modificar precios" },
+  { grupo: "Facturación y cobros", key: "crear_facturas", label: "Crear facturas" },
+  { grupo: "Facturación y cobros", key: "editar_facturas", label: "Editar facturas antes de cobrarse" },
+  { grupo: "Facturación y cobros", key: "registrar_cobros", label: "Registrar cobros de clientes" },
+  { grupo: "Facturación y cobros", key: "imprimir_facturas", label: "Imprimir facturas en la térmica" },
+  { grupo: "Reportes", key: "ver_reportes", label: "Consultar reportes" },
+];
 
-// Definir costos, facturar y revisar precios de trabajos: jefe de taller o administración.
-export const puedeDefinirCostos = (user) => esAdmin(user) || esJefeTaller(user);
+// Capacidades iniciales según el perfil (los interruptores individuales las ajustan después).
+export const capacidadesPerfil = (perfil) => {
+  if (perfilNormalizado(perfil) !== "admin") return {};
+  return Object.fromEntries(CAPACIDADES.map((c) => [c.key, true]));
+};
 
-// Páginas visibles por rol (administración ve todo).
+// Capacidad efectiva: el interruptor individual manda; si no se ha tocado, el perfil la habilita.
+export const puede = (user, capacidad) => {
+  if (esDueno(user)) return true;
+  if (rolEfectivo(user) !== "admin") return false;
+  const caps = user?.capacidades;
+  if (caps && typeof caps === "object" && Object.hasOwn(caps, capacidad)) return caps[capacidad] === true;
+  return true;
+};
+
+export const puedeCobrar = (user) => puede(user, "registrar_cobros");
+export const puedeImprimirFactura = (user) => puede(user, "imprimir_facturas");
+export const puedeDefinirCostos = (user) => puede(user, "definir_precios");
+
+// Páginas visibles por rol (admin ve la gestión completa; reportes según capacidad).
 const PAGINAS_POR_ROL = {
-  jefe_taller: [
+  admin: [
     "MiTaller", "MisTrabajos", "Clientes", "Vehiculos", "Cotizaciones",
     "OrdenesTrabajos", "Inspecciones", "Inventario", "Proveedores",
     "Facturacion", "Expedientes", "ExpedienteVista",
   ],
   tecnico: ["MiTaller", "MisTrabajos", "Expedientes", "ExpedienteVista", "Inspecciones"],
-  recepcion_cobros: [
-    "MiTaller", "Clientes", "Vehiculos", "Cotizaciones",
-    "OrdenesTrabajos", "Inspecciones", "Facturacion", "Expedientes", "ExpedienteVista",
-    "Reportes", "InformeRemesas",
-  ],
   user: ["MiTaller"],
 };
 
 export const puedeVerPagina = (user, pageName) => {
-  if (esAdmin(user)) return true;
+  if (esAdmin(user)) {
+    if ((pageName === "Reportes" || pageName === "InformeRemesas") && !puede(user, "ver_reportes")) return false;
+    return true;
+  }
   const paginas = PAGINAS_POR_ROL[rolEfectivo(user)] || PAGINAS_POR_ROL.user;
   return paginas.includes(pageName);
 };
@@ -80,16 +108,18 @@ export const puedeVerPagina = (user, pageName) => {
 export const paginaInicio = (user) => (esAdmin(user) ? "/Dashboard" : "/MiTaller");
 
 export const nombrePerfil = (user) => {
+  if (user?.perfil_acceso === "gerencia") return "Gerencia";
   const porPerfil = {
-    gerencia: "Gerencia",
-    jefe_taller: "Jefe de Taller",
-    tecnico: "Técnico",
+    admin: "Admin",
+    tecnico: "Técnico de Mecánica",
     pintura: "Técnico de Pintura",
-    recepcion_cobros: "Recepción y Cobros",
+    jefe_taller: "Admin",
+    recepcion_cobros: "Admin",
   };
-  if (porPerfil[user?.perfil_acceso]) return porPerfil[user.perfil_acceso];
+  const p = porPerfil[user?.perfil_acceso];
+  if (p) return p;
+  if (esDueno(user)) return "Super Admin";
   if (esAdmin(user)) return "Administración";
-  if (esJefeTaller(user)) return "Jefe de Taller";
   if (esTecnico(user)) return "Técnico";
   return "Invitado";
 };

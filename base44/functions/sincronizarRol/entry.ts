@@ -5,6 +5,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 // y también desde la ficha de empleados al guardar un cambio de perfil.
 // Nunca asigna el rol "admin": las cuentas administradoras se protegen aparte.
 const PERFIL_A_ROL = {
+  'admin': 'user',
   'tecnico': 'tecnico',
   'pintura': 'tecnico',
   'jefe_taller': 'jefe_taller',

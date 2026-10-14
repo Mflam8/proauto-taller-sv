@@ -10,7 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Search, UserCircle, Phone, Mail, Wrench, Cake } from "lucide-react";
 import { motion } from "framer-motion";
-import { PERFILES_ACCESO } from "@/lib/permissions";
+import { PERFILES_ACCESO, capacidadesPerfil, esDueno } from "@/lib/permissions";
+import CapacidadesEditor from "@/components/empleados/CapacidadesEditor";
 
 const TIPOS = ["Recepción", "Técnico", "Administración", "Gerencia", "Carwash", "Pintura", "Otro"];
 
@@ -24,7 +25,9 @@ const tipoColor = {
   "Otro": "bg-gray-100 text-gray-800",
 };
 
-const empty = { perfil_acceso: "sin_acceso", nombre_completo: "", telefono: "", email: "", cargo: "", tipo: "Técnico", especialidad: "", fecha_ingreso: "", fecha_nacimiento: "", dui: "", activo: true, notas: "" };
+const empty = { perfil_acceso: "sin_acceso", capacidades: {}, nombre_completo: "", telefono: "", email: "", cargo: "", tipo: "Técnico", especialidad: "", fecha_ingreso: "", fecha_nacimiento: "", dui: "", activo: true, notas: "" };
+
+const esPerfilAdmin = (p) => ["admin", "jefe_taller", "recepcion_cobros"].includes(p);
 
 const esHoyCumple = (fecha) => {
   if (!fecha) return false;
@@ -45,15 +48,25 @@ export default function Empleados() {
 
   const qc = useQueryClient();
 
+  const { data: yo } = useQuery({ queryKey: ["yo-empleados"], queryFn: () => base44.auth.me() });
+  const soyDueno = esDueno(yo);
+
   const { data: empleados = [] } = useQuery({
     queryKey: ["empleados"],
     queryFn: () => base44.entities.Empleado.list("-created_date"),
   });
 
   const saveMutation = useMutation({
-    mutationFn: (data) => editing
-      ? base44.entities.Empleado.update(editing.id, data)
-      : base44.entities.Empleado.create(data),
+    mutationFn: (datos) => {
+      const payload = { ...datos };
+      if (!soyDueno) {
+        delete payload.capacidades;
+        if (editing) delete payload.perfil_acceso;
+      }
+      return editing
+        ? base44.entities.Empleado.update(editing.id, payload)
+        : base44.entities.Empleado.create(payload);
+    },
     onSuccess: (guardado) => {
       const email = (guardado?.email || form.email || "").toLowerCase();
       if (email) base44.functions.invoke("sincronizarRol", { email }).catch(() => {});
@@ -202,12 +215,19 @@ export default function Empleados() {
               </div>
               <div className="col-span-2 border rounded-lg p-3 space-y-2">
                 <Label htmlFor="perfil-acceso">Perfil de acceso *</Label>
-                <Select value={form.perfil_acceso || "sin_acceso"} onValueChange={v => setForm({ ...form, perfil_acceso: v })}>
+                <Select value={form.perfil_acceso || "sin_acceso"} onValueChange={v => setForm({ ...form, perfil_acceso: v, capacidades: v === "admin" ? capacidadesPerfil(v) : {} })}>
                   <SelectTrigger id="perfil-acceso"><SelectValue /></SelectTrigger>
                   <SelectContent>{PERFILES_ACCESO.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}</SelectContent>
                 </Select>
                 <p className="text-xs text-gray-600">{PERFILES_ACCESO.find(p => p.value === form.perfil_acceso)?.description}</p>
                 <p className="text-xs text-gray-500">El empleado debe iniciar sesión con este correo. Un empleado desactivado no puede acceder, aunque conserve un perfil.</p>
+                {esPerfilAdmin(form.perfil_acceso) && (
+                  <CapacidadesEditor
+                    value={form.capacidades || {}}
+                    disabled={!soyDueno}
+                    onChange={(caps) => setForm({ ...form, capacidades: caps })}
+                  />
+                )}
               </div>
               <div>
                 <Label>Especialidad</Label>

@@ -1,8 +1,11 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.53";
 
 // Employee profiles are authoritative. Never trust a role supplied by the browser.
+// SUPER ADMIN (gerencia) se reconoce por correo. Perfiles de ficha: admin, tecnico, pintura, sin_acceso.
 export const OWNERS = ["mayaflamenco89@gmail.com", "proautotallersv@gmail.com"];
-export const PROFILES = ["sin_acceso", "tecnico", "pintura", "jefe_taller", "recepcion_cobros"];
+export const PROFILES = ["sin_acceso", "admin", "tecnico", "pintura", "jefe_taller", "recepcion_cobros"];
+export const LEGACY_ADMIN = ["jefe_taller", "recepcion_cobros"];
+export const esPerfilAdmin = (p) => p === "admin" || LEGACY_ADMIN.includes(p);
 export const normalize = (s) => String(s || "").trim().toLowerCase();
 export const pick = (record, fields) => Object.fromEntries(fields.filter(k => record[k] !== undefined).map(k => [k, record[k]]));
 export const fail = (message = "No tienes permiso para esta acción.", status = 403) => { throw Object.assign(new Error(message), { status }); };
@@ -18,11 +21,10 @@ export const PUBLIC_FIELDS = {
   MaterialTrabajo: [...META, "expediente_id", "trabajo_id", "descripcion", "numero_parte", "cantidad", "origen", "estado", "foto_urls"],
   Asistencia: [...META, "empleado_email", "empleado_nombre", "tipo", "fecha_hora", "fecha_sv", "distancia_metros", "verificado"],
 };
-export const SCHEMA_FIELDS = {"Asistencia":["empleado_email","empleado_nombre","tipo","fecha_hora","fecha_sv","latitud","longitud","distancia_metros","verificado","notas"],"ConfigTaller":["nombre","latitud","longitud","radio_metros","actualizado_por","fecha_actualizacion"],"AjustePrecioTrabajo":["trabajo_id","expediente_id","catalogo_precio_id","precio_sugerido","precio_aprobado","motivo","aprobado_por_id","aprobado_por_nombre","fecha"],"CajaChica":["expediente_id","concepto","tipo","categoria","monto","proveedor","registrado_por","fecha","comprobante_url","notas"],"CatalogoPrecio":["codigo_catalogo","rubro","descripcion","precio_base","precio_verificado","fuente","origen","activo"],"Cliente":["nombre_completo","telefono","whatsapp","email","dui","nit","direccion","tipo_cliente","nombre_empresa","notas","activo","legacy_customer_id","legacy_customer_code","legacy_nombre_legal","legacy_saldo","legacy_forma_pago","legacy_raw_table"],"ContactoWeb":["nombre","apellido","telefono","correo","mensaje","leido"],"ControlFactura":["numero_control","evento","factura_id","numero_factura","cliente_nombre","vehiculo_desc","expediente_id","monto_total","usuario_email","usuario_nombre","fecha_evento"],"Cotizacion":["numero_cotizacion","cliente_id","vehiculo_id","servicios","subtotal","descuento","total","estado","fecha_aprobacion","metodo_aprobacion","notas","vigencia_dias","legacy_quote_id","legacy_customer_id","legacy_series","legacy_raw_table"],"Diagnostico":["expediente_id","vehiculo_id","tecnico_id","tecnico_nombre","fecha","diagnostico_inicial","diagnostico_final","fallas_detectadas","recomendaciones","fotos","estado"],"Empleado":["nombre_completo","telefono","email","cargo","tipo","especialidad","fecha_ingreso","fecha_nacimiento","dui","activo","notas","perfil_acceso"],"Expediente":["numero_expediente","cliente_id","vehiculo_id","recibido_por_id","fecha_ingreso","fecha_promesa_entrega","fecha_salida","kilometraje_entrada","kilometraje_salida","motivo_visita","sintomas_cliente","indicaciones_cliente","estado_interno","estado_cliente","llaves_cantidad","llaves_observaciones","observaciones","fotos","total_cobrado","total_pagado","saldo_pendiente","trabajos_completados","diagnostico_documentado","evidencia_final","factura_generada","cierre_autorizado","recepcion_cliente"],"Factura":["numero_factura","expediente_id","orden_trabajo_id","cliente_id","vehiculo_id","forma_pago","aplica_iva","items","subtotal","importe_neto","iva","total","ganancia_mano_obra","estado_pago","motivo_cierre","monto_pagado","saldo_pendiente","fecha_vencimiento","fecha_emision","legacy_invoice_id","legacy_invoice_number","legacy_customer_id","legacy_job_id","legacy_series","legacy_raw_table"],"Inspeccion":["expediente_id","vehiculo_id","cliente_id","realizada_por","fecha","kilometraje","aseguradora","orden_trabajo_referencia","vehiculo_agencia_importado","tipo_croquis","aire_acondicionado","direccion_hidraulica","alarma","estado_llantas","estado_luces","estado_vidrios","estado_pintura","estado_tapiceria","llanta_repuesto","herramientas","caja_herramientas","gato_mecanico","cables_corriente","documentos","accesorios_recibidos","evaluaciones","daños","fotos","firma_ingreso","observaciones","estado"],"ItemInventario":["codigo","nombre","descripcion","categoria","stock_actual","stock_minimo","precio_compra","precio_venta","proveedor_principal","ubicacion_fisica","activo"],"MaterialTrabajo":["expediente_id","trabajo_id","origen","item_inventario_id","catalogo_precio_id","descripcion","numero_parte","cantidad","costo_unitario","costo_total","proveedor_nombre","estado","foto_urls","proveedor_id","comprobante_url","registrado_por","fecha_registro","notas"],"MovimientoInventario":["item_inventario_id","tipo_movimiento","cantidad","motivo","orden_trabajo_id","costo_unitario","responsable","notas"],"OrdenTrabajo":["numero_orden","cotizacion_id","cliente_id","vehiculo_id","tecnico_asignado_id","estado","progreso_porcentaje","servicios_realizados","fecha_entrada","fecha_estimada_entrega","fecha_entrega_real","kilometraje_entrada","notas_internas","legacy_job_id","legacy_job_number","legacy_customer_id","legacy_invoice_id","legacy_raw_table"],"Pago":["factura_id","monto","metodo_pago","referencia","fecha_pago","fecha_remesa","recibido_por","notas","legacy_payment_id","legacy_invoice_id","legacy_customer_id","legacy_raw_table"],"Proveedor":["nombre","contacto_principal","telefono","email","direccion","productos_suministrados","terminos_pago","notas","activo"],"Servicio":["nombre","descripcion","categoria","precio_base","tiempo_estimado_horas","activo","legacy_item_id","legacy_code_family","legacy_barcode","legacy_precio_lista1","legacy_raw_table"],"TrabajoExpediente":["expediente_id","descripcion","tecnico_id","tecnico_nombre","tipo","cantidad","precio_unitario","subtotal","catalogo_precio_id","precio_sugerido","origen_precio","precio_ajustado_por","motivo_ajuste_precio","fecha_ajuste_precio","fecha_inicio","fecha_fin","evidencia_urls","prueba_final","estado","aprobado_cliente","notas"],"Vehiculo":["cliente_id","placa","poliza","marca","modelo","anio","color","vin","tipo_vehiculo","motor","cilindrada","tipo_combustible","kilometraje_actual","estado_actual","fotos","notas"]};
+export const SCHEMA_FIELDS = {"Asistencia":["empleado_email","empleado_nombre","tipo","fecha_hora","fecha_sv","latitud","longitud","distancia_metros","verificado","notas"],"ConfigTaller":["nombre","latitud","longitud","radio_metros","actualizado_por","fecha_actualizacion"],"AjustePrecioTrabajo":["trabajo_id","expediente_id","catalogo_precio_id","precio_sugerido","precio_aprobado","motivo","aprobado_por_id","aprobado_por_nombre","fecha"],"CajaChica":["expediente_id","concepto","tipo","categoria","monto","proveedor","registrado_por","fecha","comprobante_url","notas"],"CatalogoPrecio":["codigo_catalogo","rubro","descripcion","precio_base","precio_verificado","fuente","origen","activo"],"Cliente":["nombre_completo","telefono","whatsapp","email","dui","nit","direccion","tipo_cliente","nombre_empresa","notas","activo","legacy_customer_id","legacy_customer_code","legacy_nombre_legal","legacy_saldo","legacy_forma_pago","legacy_raw_table"],"ContactoWeb":["nombre","apellido","telefono","correo","mensaje","leido"],"ControlFactura":["numero_control","evento","factura_id","numero_factura","cliente_nombre","vehiculo_desc","expediente_id","monto_total","usuario_email","usuario_nombre","fecha_evento"],"Cotizacion":["numero_cotizacion","cliente_id","vehiculo_id","servicios","subtotal","descuento","total","estado","fecha_aprobacion","metodo_aprobacion","notas","vigencia_dias","legacy_quote_id","legacy_customer_id","legacy_series","legacy_raw_table"],"Diagnostico":["expediente_id","vehiculo_id","tecnico_id","tecnico_nombre","fecha","diagnostico_inicial","diagnostico_final","fallas_detectadas","recomendaciones","fotos","estado"],"Empleado":["nombre_completo","telefono","email","cargo","tipo","especialidad","fecha_ingreso","fecha_nacimiento","dui","activo","notas","perfil_acceso","capacidades"],"Expediente":["numero_expediente","cliente_id","vehiculo_id","recibido_por_id","fecha_ingreso","fecha_promesa_entrega","fecha_salida","kilometraje_entrada","kilometraje_salida","motivo_visita","sintomas_cliente","indicaciones_cliente","estado_interno","estado_cliente","llaves_cantidad","llaves_observaciones","observaciones","fotos","total_cobrado","total_pagado","saldo_pendiente","trabajos_completados","diagnostico_documentado","evidencia_final","factura_generada","cierre_autorizado","recepcion_cliente"],"Factura":["numero_factura","expediente_id","orden_trabajo_id","cliente_id","vehiculo_id","forma_pago","aplica_iva","items","subtotal","importe_neto","iva","total","ganancia_mano_obra","estado_pago","motivo_cierre","monto_pagado","saldo_pendiente","fecha_vencimiento","fecha_emision","legacy_invoice_id","legacy_invoice_number","legacy_customer_id","legacy_job_id","legacy_series","legacy_raw_table"],"Inspeccion":["expediente_id","vehiculo_id","cliente_id","realizada_por","fecha","kilometraje","aseguradora","orden_trabajo_referencia","vehiculo_agencia_importado","tipo_croquis","aire_acondicionado","direccion_hidraulica","alarma","estado_llantas","estado_luces","estado_vidrios","estado_pintura","estado_tapiceria","llanta_repuesto","herramientas","caja_herramientas","gato_mecanico","cables_corriente","documentos","accesorios_recibidos","evaluaciones","daños","fotos","firma_ingreso","observaciones","estado"],"ItemInventario":["codigo","nombre","descripcion","categoria","stock_actual","stock_minimo","precio_compra","precio_venta","proveedor_principal","ubicacion_fisica","activo"],"MaterialTrabajo":["expediente_id","trabajo_id","origen","item_inventario_id","catalogo_precio_id","descripcion","numero_parte","cantidad","costo_unitario","costo_total","proveedor_nombre","estado","foto_urls","proveedor_id","comprobante_url","registrado_por","fecha_registro","notas"],"MovimientoInventario":["item_inventario_id","tipo_movimiento","cantidad","motivo","orden_trabajo_id","costo_unitario","responsable","notas"],"OrdenTrabajo":["numero_orden","cotizacion_id","cliente_id","vehiculo_id","tecnico_asignado_id","estado","progreso_porcentaje","servicios_realizados","fecha_entrada","fecha_estimada_entrega","fecha_entrega_real","kilometraje_entrada","notas_internas","legacy_job_id","legacy_job_number","legacy_customer_id","legacy_invoice_id","legacy_raw_table"],"Pago":["factura_id","monto","metodo_pago","referencia","fecha_pago","fecha_remesa","recibido_por","notas","legacy_payment_id","legacy_invoice_id","legacy_customer_id","legacy_raw_table"],"Proveedor":["nombre","contacto_principal","telefono","email","direccion","productos_suministrados","terminos_pago","notas","activo"],"Servicio":["nombre","descripcion","categoria","precio_base","tiempo_estimado_horas","activo","legacy_item_id","legacy_code_family","legacy_barcode","legacy_precio_lista1","legacy_raw_table"],"TrabajoExpediente":["expediente_id","descripcion","tecnico_id","tecnico_nombre","tipo","cantidad","precio_unitario","subtotal","catalogo_precio_id","precio_sugerido","origen_precio","precio_ajustado_por","motivo_ajuste_precio","fecha_ajuste_precio","fecha_inicio","fecha_fin","evidencia_urls","prueba_final","estado","aprobado_cliente","notas"],"Vehiculo":["cliente_id","placa","poliza","marca","modelo","anio","color","vin","tipo_vehiculo","motor","cilindrada","tipo_combustible","kilometraje_actual","estado_actual","fotos","notas"]};
 PUBLIC_FIELDS.Inspeccion = [...META, ...SCHEMA_FIELDS.Inspeccion.filter(k => k !== "firma_ingreso")];
 const READ = {
-  jefe_taller: ["Cliente", "Vehiculo", "Expediente", "TrabajoExpediente", "Inspeccion", "Diagnostico", "OrdenTrabajo", "Factura", "Cotizacion", "Empleado", "CatalogoPrecio", "Servicio", "MaterialTrabajo", "ItemInventario", "Proveedor", "AjustePrecioTrabajo", "Asistencia"],
-  recepcion_cobros: ["Cliente", "Vehiculo", "Expediente", "TrabajoExpediente", "Inspeccion", "Diagnostico", "OrdenTrabajo", "Factura", "Pago", "Empleado", "MaterialTrabajo", "ItemInventario", "CajaChica"],
+  admin: ["Cliente", "Vehiculo", "Expediente", "TrabajoExpediente", "Inspeccion", "Diagnostico", "OrdenTrabajo", "Factura", "Cotizacion", "Empleado", "CatalogoPrecio", "Servicio", "MaterialTrabajo", "ItemInventario", "Proveedor", "AjustePrecioTrabajo", "Asistencia", "Pago", "CajaChica", "MovimientoInventario"],
   tecnico: Object.keys(PUBLIC_FIELDS),
   pintura: Object.keys(PUBLIC_FIELDS),
 };
@@ -32,8 +34,16 @@ export function resolveActor(user, employees) {
   if (OWNERS.includes(normalize(user.email))) return { profile: "gerencia", user, employee: null };
   const matches = employees.filter(e => normalize(e.email) === normalize(user.email));
   if (matches.length !== 1 || matches[0].activo !== true || !PROFILES.includes(matches[0].perfil_acceso) || matches[0].perfil_acceso === "sin_acceso") fail("Tu acceso no está habilitado. Contacta a la gerencia.");
-  return { profile: matches[0].perfil_acceso, user, employee: matches[0] };
+  return { profile: esPerfilAdmin(matches[0].perfil_acceso) ? "admin" : matches[0].perfil_acceso, user, employee: matches[0] };
 }
+// Capacidad efectiva: el interruptor individual manda; si no se ha definido, habilitada por el perfil Admin.
+export function capOk(actor, key) {
+  if (actor.profile === "gerencia") return true;
+  const caps = actor.employee?.capacidades;
+  if (caps && typeof caps === "object" && Object.hasOwn(caps, key)) return caps[key] === true;
+  return true;
+}
+const needCap = (actor, key) => { if (!capOk(actor, key)) fail("No tienes esta capacidad habilitada. Pide a la gerencia que la active."); };
 export async function allRecords(entity) {
   const rows = [];
   for (let skip = 0; skip < 100000; skip += 500) {
@@ -77,12 +87,78 @@ export function validateQuery(query, fields) {
   }
 }
 const matchesQuery = (r, q) => Object.entries(q).every(([k,v]) => r[k] === v);
+const CAMPOS_PRECIO_TRABAJO = ["precio_unitario", "subtotal", "precio_sugerido", "origen_precio", "precio_ajustado_por", "motivo_ajuste_precio", "fecha_ajuste_precio", "catalogo_precio_id"];
 export function enforceWrite(actor, entity, operation, data, old, scope) {
   const p = actor.profile;
   if (p === "gerencia") return;
-  if (entity === "Asistencia" || entity === "ConfigTaller") fail();
+  if (entity === "ConfigTaller") fail();
   if (operation === "delete") fail();
   const keys = Object.keys(data);
+  if (p === "admin") {
+    if (entity === "Empleado") {
+      needCap(actor, "gestionar_empleados");
+      if (operation === "create" && data.perfil_acceso === "admin") fail("Solo la gerencia puede asignar el perfil Admin.");
+      if (operation !== "create" && keys.some(k => ["perfil_acceso", "capacidades"].includes(k))) fail("Solo la gerencia puede cambiar perfiles y permisos.");
+      return;
+    }
+    if (entity === "Asistencia") {
+      if (operation === "update" && capOk(actor, "gestionar_asistencia")) return;
+      fail();
+    }
+    if (entity === "Cliente" || entity === "Vehiculo") {
+      needCap(actor, "gestionar_clientes");
+      return;
+    }
+    if (entity === "Inspeccion" || entity === "Diagnostico") return;
+    if (entity === "Expediente") {
+      needCap(actor, "asignar_trabajos");
+      if (keys.some(k => ["total_pagado", "saldo_pendiente", "cierre_autorizado", "recepcion_cliente"].includes(k))) needCap(actor, "registrar_cobros");
+      if (keys.some(k => ["total_cobrado", "factura_generada"].includes(k))) needCap(actor, "crear_facturas");
+      return;
+    }
+    if (entity === "OrdenTrabajo") {
+      needCap(actor, "asignar_trabajos");
+      return;
+    }
+    if (entity === "TrabajoExpediente") {
+      if (keys.some(k => CAMPOS_PRECIO_TRABAJO.includes(k))) needCap(actor, "definir_precios");
+      else if (!capOk(actor, "asignar_trabajos") && !capOk(actor, "aprobar_trabajos")) fail();
+      return;
+    }
+    if (entity === "MaterialTrabajo") {
+      if (keys.some(k => ["costo_unitario", "costo_total"].includes(k))) needCap(actor, "definir_precios");
+      return;
+    }
+    if (entity === "Factura") {
+      const CAMPOS_PAGO = ["monto_pagado", "estado_pago", "saldo_pendiente", "motivo_cierre"];
+      if (operation === "update" && keys.length > 0 && keys.every(k => CAMPOS_PAGO.includes(k))) {
+        needCap(actor, "registrar_cobros");
+        return;
+      }
+      if (operation === "create") {
+        needCap(actor, "crear_facturas");
+        if ((data.monto_pagado || 0) !== 0 || (data.estado_pago && data.estado_pago !== "Pendiente")) fail("La factura nueva inicia pendiente de pago.", 400);
+        return;
+      }
+      needCap(actor, "editar_facturas");
+      const cobrada = old && ((old.monto_pagado || 0) > 0 || ["Pagada", "Cerrada", "Vencida"].includes(old.estado_pago));
+      if (cobrada) fail("Solo se pueden editar facturas antes de ser cobradas.");
+      return;
+    }
+    if (entity === "Pago") {
+      if (operation === "create" && capOk(actor, "registrar_cobros")) return;
+      fail();
+    }
+    if (entity === "Cotizacion") {
+      needCap(actor, "crear_facturas");
+      return;
+    }
+    if (["CatalogoPrecio", "Servicio", "AjustePrecioTrabajo"].includes(entity)) {
+      needCap(actor, "definir_precios");
+      return;
+    }
+    fail();
+  }
   if (isTechnician(p)) {
     const exp = old?.expediente_id || data.expediente_id;
     if (!scope?.expIds.has(exp)) fail();
@@ -96,37 +172,21 @@ export function enforceWrite(actor, entity, operation, data, old, scope) {
     if (entity === "Inspeccion" || entity === "Diagnostico") return;
     fail();
   }
-  if (["Cliente","Vehiculo","Inspeccion","Diagnostico"].includes(entity)) return;
-  if (entity === "Expediente") {
-    if (p === "jefe_taller" && keys.some(k => ["total_pagado","cierre_autorizado","recepcion_cliente"].includes(k))) fail();
-    if (p === "recepcion_cobros" && keys.some(k => ["total_cobrado","factura_generada"].includes(k))) fail();
-    return;
-  }
-  if (entity === "TrabajoExpediente") {
-    if (p === "jefe_taller") return;
-    if (operation === "update" && keys.every(k => ["tecnico_id","tecnico_nombre"].includes(k))) return;
-    fail("Solo el jefe de taller define los trabajos y sus precios.");
-  }
-  if (entity === "Factura") {
-    if (p === "jefe_taller") {
-      if (operation === "update" && keys.some(k => ["monto_pagado","estado_pago","motivo_cierre"].includes(k))) fail();
-      if (operation === "create" && ((data.monto_pagado || 0) !== 0 || (data.estado_pago && data.estado_pago !== "Pendiente"))) fail();
-      return;
-    }
-    if (p === "recepcion_cobros" && operation === "update" && keys.every(k => ["monto_pagado","estado_pago","saldo_pendiente","motivo_cierre"].includes(k))) return;
-    fail();
-  }
-  if (entity === "Pago" && p === "recepcion_cobros" && operation === "create") return;
-  if (["Cotizacion","CatalogoPrecio","Servicio","AjustePrecioTrabajo","MaterialTrabajo","OrdenTrabajo"].includes(entity) && p === "jefe_taller") return;
   fail();
 }
 export async function handleTaller(db, user, body) {
   const employees = await allRecords(db.Empleado);
   const actor = resolveActor(user, employees);
-  if (body.action === "perfil") return { perfil_acceso: actor.profile, empleado_id: actor.employee?.id || null, empleado_nombre: actor.employee?.nombre_completo || user.full_name };
+  if (body.action === "perfil") return { perfil_acceso: actor.profile, empleado_id: actor.employee?.id || null, empleado_nombre: actor.employee?.nombre_completo || user.full_name, capacidades: actor.employee?.capacidades || {} };
   if (body.action === "autorizar") {
-    const rules = { imprimir: ["gerencia","recepcion_cobros"], cobrar: ["gerencia","recepcion_cobros"], precios: ["gerencia","jefe_taller"], gestionar: ["gerencia"] };
-    if (!rules[body.permission]?.includes(actor.profile)) fail();
+    const rules = {
+      imprimir: (a) => capOk(a, "imprimir_facturas"),
+      cobrar: (a) => capOk(a, "registrar_cobros"),
+      precios: (a) => capOk(a, "definir_precios"),
+      gestionar: (a) => a.profile === "gerencia",
+    };
+    const permiso = rules[body.permission];
+    if (!permiso || !permiso(actor)) fail();
     return { ok: true };
   }
   const { entity, operation, id } = body;
@@ -157,6 +217,7 @@ export async function handleTaller(db, user, body) {
   enforceWrite(actor,entity,operation,data,old,scope);
   if (entity === "Empleado") {
     if (operation === "delete") fail("Desactiva al empleado para conservar su historial.",400);
+    if (actor.profile !== "gerencia" && operation === "create" && data.capacidades !== undefined) delete data.capacidades;
     const next = { ...old, ...data };
     next.email = normalize(next.email);
     if (!next.nombre_completo?.trim() || !PROFILES.includes(next.perfil_acceso)) fail("Selecciona un perfil de acceso válido.",400);
@@ -166,7 +227,7 @@ export async function handleTaller(db, user, body) {
     data.email = next.email;
   }
   if (data.tecnico_id) {
-    const assigned = employees.find(e=>e.id===data.tecnico_id && e.activo===true && ["tecnico","pintura","jefe_taller"].includes(e.perfil_acceso));
+    const assigned = employees.find(e=>e.id===data.tecnico_id && e.activo===true && ["tecnico","pintura","admin","jefe_taller"].includes(e.perfil_acceso));
     if (!assigned) fail("Selecciona un empleado activo con perfil de taller.",400);
     if (entity === "TrabajoExpediente") data.tecnico_nombre = assigned.nombre_completo;
   }
@@ -181,13 +242,13 @@ export async function handleTaller(db, user, body) {
     if (entity === "Inspeccion") { data.cliente_id = exp.cliente_id; data.realizada_por = actor.employee.nombre_completo; delete data.firma_ingreso; }
     else { data.tecnico_id = actor.employee.id; data.tecnico_nombre = actor.employee.nombre_completo; }
   }
-  if (entity === "Factura" && actor.profile === "jefe_taller") {
+  if (entity === "Factura" && actor.profile === "admin") {
     const total = Number(data.total ?? old?.total);
     if (!Number.isFinite(total) || total<0) fail("Total inválido.",400);
     data.saldo_pendiente = total - (old?.monto_pagado || 0);
     if (operation === "create") { data.monto_pagado=0; data.estado_pago="Pendiente"; }
   }
-  if (entity === "Expediente" && actor.profile === "jefe_taller" && Object.hasOwn(data,"saldo_pendiente")) {
+  if (entity === "Expediente" && actor.profile === "admin" && Object.hasOwn(data,"saldo_pendiente")) {
     data.saldo_pendiente = Number(data.total_cobrado ?? old?.total_cobrado ?? 0) - Number(old?.total_pagado || 0);
   }
   if (entity === "Pago") {
