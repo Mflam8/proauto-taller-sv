@@ -24,7 +24,10 @@ import {
   ShieldCheck,
   Clock
 } from "lucide-react";
-import { esDueno, puedeVerPagina, paginaInicio, nombrePerfil, rolEfectivo, puede } from "@/lib/permissions";
+import {
+  esDueno, puedeVerPagina, paginaInicio, nombrePerfil, rolEfectivo, puede,
+  PERFILES_ACCESO, leerPerfilSimulado, guardarPerfilSimulado, usuarioSimulado,
+} from "@/lib/permissions";
 import { Navigate } from "react-router-dom";
 import {
   Sidebar,
@@ -41,6 +44,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const navigationItems = [
   { title: "Mi Taller", url: "/MiTaller", icon: Clock },
@@ -143,7 +147,10 @@ const navigationItems = [
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
   const [user, setUser] = useState(null);
-  const miRol = rolEfectivo(user);
+  // Vista previa de perfiles: solo Super Admin, afecta lo que se ve en pantalla (los permisos reales no cambian).
+  const perfilSimulado = esDueno(user) ? leerPerfilSimulado() : null;
+  const usuarioVista = perfilSimulado ? usuarioSimulado(user, perfilSimulado) : user;
+  const miRol = rolEfectivo(usuarioVista);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -170,7 +177,7 @@ export default function Layout({ children, currentPageName }) {
 
   if (!user) return <div className="p-6">Verificando tu acceso…</div>;
   if (user.perfil_acceso === "sin_acceso") return <div className="p-6 space-y-4"><h1 className="text-xl font-bold">Acceso no habilitado</h1><p>{user.error_acceso || "Solicita a gerencia que revise tu perfil de empleado."}</p><Button onClick={handleLogout}>Cerrar sesión</Button></div>;
-  if (currentPageName === "Home" || !puedeVerPagina(user, currentPageName)) return <Navigate to={paginaInicio(user)} replace />;
+  if (currentPageName === "Home" || !puedeVerPagina(usuarioVista, currentPageName)) return <Navigate to={paginaInicio(usuarioVista)} replace />;
   return (
     <SidebarProvider>
       <style>{`
@@ -212,9 +219,9 @@ export default function Layout({ children, currentPageName }) {
               <SidebarGroupContent>
                 <SidebarMenu>
                   {navigationItems.filter((item) => {
-                    if (!puedeVerPagina(user, item.url.slice(1))) return false;
-                    if (item.soloDueno && !esDueno(user)) return false;
-                    if (item.caps && !item.caps.some((c) => puede(user, c))) return false;
+                    if (!puedeVerPagina(usuarioVista, item.url.slice(1))) return false;
+                    if (item.soloDueno && !esDueno(usuarioVista)) return false;
+                    if (item.caps && !item.caps.some((c) => puede(usuarioVista, c))) return false;
                     if (item.roles && miRol !== "admin" && !item.roles.includes(miRol)) return false;
                     return true;
                   }).map((item) => {
@@ -260,8 +267,34 @@ export default function Layout({ children, currentPageName }) {
                     <p className="font-semibold text-gray-900 text-sm truncate">
                       {user.full_name || 'Usuario'}
                     </p>
-                    <p className="text-xs text-gray-500 truncate">{nombrePerfil(user)}</p>
+                    <p className="text-xs text-gray-500 truncate">
+                      {perfilSimulado ? `Vista: ${nombrePerfil(usuarioVista)}` : nombrePerfil(user)}
+                    </p>
                   </div>
+                </div>
+              )}
+              {esDueno(user) && (
+                <div>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 px-1">
+                    Vista previa de perfiles
+                  </p>
+                  <Select
+                    value={perfilSimulado || "real"}
+                    onValueChange={(v) => {
+                      guardarPerfilSimulado(v === "real" ? null : v);
+                      window.location.reload();
+                    }}
+                  >
+                    <SelectTrigger className="h-9 text-sm w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="real">Mi cuenta (Super Admin)</SelectItem>
+                      {PERFILES_ACCESO.filter((p) => p.value !== "sin_acceso").map((p) => (
+                        <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               )}
               <Button

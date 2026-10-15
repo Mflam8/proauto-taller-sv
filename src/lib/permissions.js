@@ -107,6 +107,20 @@ export const puedeVerPagina = (user, pageName) => {
 
 export const paginaInicio = (user) => (esAdmin(user) ? "/Dashboard" : "/MiTaller");
 
+// Vista previa de perfiles (solo Super Admin): cambia lo que se ve en pantalla sin cambiar permisos reales.
+const CLAVE_SIMULACION = "proauto_simular_perfil";
+export const leerPerfilSimulado = () => {
+  try { return window.localStorage.getItem(CLAVE_SIMULACION) || null; } catch { return null; }
+};
+export const guardarPerfilSimulado = (perfil) => {
+  try {
+    if (perfil) window.localStorage.setItem(CLAVE_SIMULACION, perfil);
+    else window.localStorage.removeItem(CLAVE_SIMULACION);
+  } catch {}
+};
+export const usuarioSimulado = (user, perfil) =>
+  perfil ? { ...user, perfil_acceso: perfil, capacidades: capacidadesPerfil(perfil) } : user;
+
 export const nombrePerfil = (user) => {
   if (user?.perfil_acceso === "gerencia") return "Gerencia";
   const porPerfil = {
