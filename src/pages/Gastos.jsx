@@ -62,8 +62,8 @@ export default function Gastos() {
   const cargar = async () => {
     setCargando(true);
     try {
-      const page = await base44.entities.Gasto.list({ sort: "-fecha_compra", limit: 500 });
-      setGastos(page.items);
+      const rows = await base44.entities.Gasto.list("-fecha_compra", 500);
+      setGastos(Array.isArray(rows) ? rows : rows.items || []);
     } finally {
       setCargando(false);
     }
@@ -74,11 +74,15 @@ export default function Gastos() {
   useEffect(() => {
     let activo = true;
     base44.entities.Pago
-      .filter(
-        { metodo_pago: "Efectivo", fecha_pago: { $gte: `${semana.inicio}T00:00:00`, $lte: `${semana.fin}T23:59:59` } },
-        { limit: 500 }
-      )
-      .then((p) => { if (activo) setEntradasEfectivo(redondear(p.items.reduce((s, x) => s + (Number(x.monto) || 0), 0))); })
+      .list("-fecha_pago", 500)
+      .then((p) => {
+        if (!activo) return;
+        const filas = Array.isArray(p) ? p : p.items || [];
+        const enSemana = filas.filter((x) => (x.metodo_pago === "Efectivo")
+          && (x.fecha_pago || "").slice(0, 10) >= semana.inicio
+          && (x.fecha_pago || "").slice(0, 10) <= semana.fin);
+        setEntradasEfectivo(redondear(enSemana.reduce((s, x) => s + (Number(x.monto) || 0), 0)));
+      })
       .catch(() => { if (activo) setEntradasEfectivo(null); });
     return () => { activo = false; };
   }, [semana, gastos]);

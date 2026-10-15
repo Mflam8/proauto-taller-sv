@@ -46,8 +46,8 @@ export default function GastoForm({ open, onClose, gasto, onSaved }) {
         expediente_id: gasto.expediente_id || "",
         notas: gasto.notas || "",
       } : vacio());
-      base44.entities.Expediente.filter({}, { sort: "-created_date", limit: 50, fields: ["numero_expediente", "motivo_visita"] })
-        .then((p) => setExpedientes(p.items))
+      base44.entities.Expediente.filter({}, "-created_date", 50)
+        .then((p) => setExpedientes(Array.isArray(p) ? p : p.items || []))
         .catch(() => setExpedientes([]));
     }
   }, [open, gasto]);
