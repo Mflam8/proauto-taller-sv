@@ -180,16 +180,24 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
   };
 
   const handleDelete = async (t) => {
-    await base44.entities.TrabajoExpediente.delete(t.id);
-    const remaining = trabajos.filter(w => w.id !== t.id);
-    const total = remaining.reduce((s, w) => s + (w.subtotal || 0), 0);
-    await base44.entities.Expediente.update(expediente.id, {
-      total_cobrado: total,
-      saldo_pendiente: total - (expediente.total_pagado || 0)
-    });
-    qc.invalidateQueries(["trabajos", expediente.id]);
-    qc.invalidateQueries(["expediente", expediente.id]);
-    refetch();
+    if (expediente.factura_generada) {
+      alert("El expediente ya fue facturado; los ajustes se hacen en la factura.");
+      return;
+    }
+    try {
+      await base44.entities.TrabajoExpediente.delete(t.id);
+      const remaining = trabajos.filter(w => w.id !== t.id);
+      const total = remaining.reduce((s, w) => s + (w.subtotal || 0), 0);
+      await base44.entities.Expediente.update(expediente.id, {
+        total_cobrado: total,
+        saldo_pendiente: total - (expediente.total_pagado || 0)
+      });
+      qc.invalidateQueries(["trabajos", expediente.id]);
+      qc.invalidateQueries(["expediente", expediente.id]);
+      refetch();
+    } catch (error) {
+      alert("Error al borrar el trabajo: " + (error.message || error));
+    }
   };
 
   const handleEstado = async (t, estado) => {

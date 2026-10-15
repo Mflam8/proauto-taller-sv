@@ -92,7 +92,7 @@ export function enforceWrite(actor, entity, operation, data, old, scope) {
   const p = actor.profile;
   if (p === "gerencia") return;
   if (entity === "ConfigTaller") fail();
-  if (operation === "delete") fail();
+  if (operation === "delete" && entity !== "TrabajoExpediente") fail();
   const keys = Object.keys(data);
   if (p === "admin") {
     if (entity === "Empleado") {
@@ -121,6 +121,10 @@ export function enforceWrite(actor, entity, operation, data, old, scope) {
       return;
     }
     if (entity === "TrabajoExpediente") {
+      if (operation === "delete") {
+        if (!capOk(actor, "asignar_trabajos") && !capOk(actor, "aprobar_trabajos")) fail();
+        return;
+      }
       if (keys.some(k => CAMPOS_PRECIO_TRABAJO.includes(k))) needCap(actor, "definir_precios");
       else if (!capOk(actor, "asignar_trabajos") && !capOk(actor, "aprobar_trabajos")) fail();
       return;
@@ -215,6 +219,10 @@ export async function handleTaller(db, user, body) {
   const data = pick(original, SCHEMA_FIELDS[entity]);
   const old = operation === "create" ? null : await db[entity].get(id);
   if (operation !== "create" && !old) fail("Registro no disponible.",404);
+  if (entity === "TrabajoExpediente" && operation === "delete" && actor.profile !== "gerencia" && old?.expediente_id) {
+    const exp = await db.Expediente.get(old.expediente_id);
+    if (exp?.factura_generada) fail("El expediente ya fue facturado. Los ajustes se hacen en la factura, no borrando trabajos.",400);
+  }
   enforceWrite(actor,entity,operation,data,old,scope);
   if (entity === "Empleado") {
     if (operation === "delete") fail("Desactiva al empleado para conservar su historial.",400);
