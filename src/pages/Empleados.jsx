@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Search, UserCircle, Phone, Mail, Wrench, Cake } from "lucide-react";
 import { motion } from "framer-motion";
-import { PERFILES_ACCESO, capacidadesPerfil, esDueno } from "@/lib/permissions";
+import { PERFILES_ACCESO, capacidadesPerfil, esDueno, puede } from "@/lib/permissions";
 import CapacidadesEditor from "@/components/empleados/CapacidadesEditor";
 
 const TIPOS = ["Recepción", "Técnico", "Administración", "Gerencia", "Carwash", "Pintura", "Otro"];
@@ -50,6 +50,7 @@ export default function Empleados() {
 
   const { data: yo } = useQuery({ queryKey: ["yo-empleados"], queryFn: () => base44.auth.me() });
   const soyDueno = esDueno(yo);
+  const puedeGestionarEmpleados = puede(yo, "gestionar_empleados");
 
   const { data: empleados = [] } = useQuery({
     queryKey: ["empleados"],
@@ -102,9 +103,11 @@ export default function Empleados() {
           <h1 className="text-2xl font-bold text-gray-900">Empleados</h1>
           <p className="text-gray-500 text-sm">{activos} activos · {empleados.length} total</p>
         </div>
-        <Button onClick={openNew} className="bg-[#E31E24] hover:bg-[#B71C1C] gap-2">
-          <Plus className="w-4 h-4" /> Nuevo Empleado
-        </Button>
+        {puedeGestionarEmpleados && (
+          <Button onClick={openNew} className="bg-[#E31E24] hover:bg-[#B71C1C] gap-2">
+            <Plus className="w-4 h-4" /> Nuevo Empleado
+          </Button>
+        )}
       </div>
 
       {/* Recordatorio de cumpleaños */}
@@ -143,8 +146,8 @@ export default function Empleados() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
-            className={`bg-white rounded-xl border p-5 cursor-pointer hover:shadow-md transition-shadow ${!emp.activo ? "opacity-60" : ""}`}
-            onClick={() => openEdit(emp)}
+            className={`bg-white rounded-xl border p-5 hover:shadow-md transition-shadow ${!emp.activo ? "opacity-60" : ""} ${puedeGestionarEmpleados ? "cursor-pointer" : "cursor-default"}`}
+            onClick={() => puedeGestionarEmpleados && openEdit(emp)}
           >
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-3">

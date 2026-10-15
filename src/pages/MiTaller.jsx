@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { esAdmin, esJefeTaller } from "@/lib/permissions";
+import { esAdmin, esDueno, puede } from "@/lib/permissions";
 import {
   LogIn, LogOut, MapPin, Wrench, Loader2, Clock,
   Play, CheckCircle2, Users, Save, AlertTriangle, CheckCircle,
@@ -34,7 +34,8 @@ export default function MiTaller() {
 
   const miEmail = user?.email ? user.email.toLowerCase() : null;
   const esAdminRol = esAdmin(user);
-  const esJefe = esJefeTaller(user);
+  const puedeGestionarAsistencia = puede(user, "gestionar_asistencia");
+  const soyDueno = esDueno(user);
 
   // Asistencia propia de hoy
   const { data: miDia = [] } = useQuery({
@@ -47,14 +48,14 @@ export default function MiTaller() {
   const { data: diaTodos = [] } = useQuery({
     queryKey: ["asistencia-dia"],
     queryFn: () => base44.entities.Asistencia.filter({ fecha_sv: hoySV() }),
-    enabled: !!miEmail && (esAdminRol || esJefe),
+    enabled: !!miEmail && puedeGestionarAsistencia,
   });
 
-  // Ubicación del taller (solo admin puede configurarla)
+  // Ubicación del taller (solo Super Admin puede configurarla)
   const { data: config = [] } = useQuery({
     queryKey: ["config-taller"],
     queryFn: () => base44.entities.ConfigTaller.list(),
-    enabled: esAdminRol,
+    enabled: soyDueno,
   });
 
   // Mis trabajos asignados (por ficha de empleado)
@@ -213,7 +214,7 @@ export default function MiTaller() {
             )}
           </div>
 
-          {esAdminRol && (
+          {soyDueno && (
             <div className="flex items-center justify-between gap-3 rounded-xl bg-gray-50 border p-3">
               <div className="text-xs text-gray-600">
                 <p className="font-semibold text-gray-800">Ubicación del taller</p>
@@ -232,8 +233,8 @@ export default function MiTaller() {
         </CardContent>
       </Card>
 
-      {/* Asistencia del día (admin / jefe de taller) */}
-      {(esAdminRol || esJefe) && diaTodos.length > 0 && (
+      {/* Asistencia del día (con capacidad de gestionar asistencia) */}
+      {puedeGestionarAsistencia && diaTodos.length > 0 && (
         <Card className="border-0 shadow-md">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-lg">

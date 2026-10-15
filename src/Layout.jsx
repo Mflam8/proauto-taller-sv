@@ -24,7 +24,7 @@ import {
   ShieldCheck,
   Clock
 } from "lucide-react";
-import { esDueno, puedeVerPagina, paginaInicio, nombrePerfil, rolEfectivo } from "@/lib/permissions";
+import { esDueno, puedeVerPagina, paginaInicio, nombrePerfil, rolEfectivo, puede } from "@/lib/permissions";
 import { Navigate } from "react-router-dom";
 import {
   Sidebar,
@@ -62,18 +62,21 @@ const navigationItems = [
     url: createPageUrl("Clientes"),
     icon: Users,
     roles: ["admin", "jefe_taller"],
+    caps: ["gestionar_clientes"],
   },
   {
     title: "Vehículos",
     url: createPageUrl("Vehiculos"),
     icon: Car,
     roles: ["admin", "jefe_taller"],
+    caps: ["gestionar_clientes"],
   },
   {
     title: "Cotizaciones",
     url: createPageUrl("Cotizaciones"),
     icon: FileText,
     roles: ["admin", "jefe_taller"],
+    caps: ["asignar_trabajos"],
   },
   {
     title: "Órdenes de Trabajo",
@@ -103,12 +106,14 @@ const navigationItems = [
     url: createPageUrl("Facturacion"),
     icon: DollarSign,
     roles: ["admin", "jefe_taller"],
+    caps: ["crear_facturas", "editar_facturas", "registrar_cobros"],
   },
   {
     title: "Empleados",
     url: createPageUrl("Empleados"),
     icon: Users,
     roles: ["admin"],
+    caps: ["gestionar_empleados"],
   },
   {
     title: "Expedientes",
@@ -209,6 +214,7 @@ export default function Layout({ children, currentPageName }) {
                   {navigationItems.filter((item) => {
                     if (!puedeVerPagina(user, item.url.slice(1))) return false;
                     if (item.soloDueno && !esDueno(user)) return false;
+                    if (item.caps && !item.caps.some((c) => puede(user, c))) return false;
                     if (item.roles && miRol !== "admin" && !item.roles.includes(miRol)) return false;
                     return true;
                   }).map((item) => {

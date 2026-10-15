@@ -9,6 +9,7 @@ import { Users, Search, Plus, Phone, Mail, MapPin, Edit, Trash2, Car, Eye } from
 import { motion, AnimatePresence } from "framer-motion";
 import ClienteForm from "../components/clientes/ClienteForm.jsx";
 import ClienteDetalle from "../components/clientes/ClienteDetalle.jsx";
+import { puede, esDueno } from "@/lib/permissions";
 
 export default function Clientes() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -28,6 +29,10 @@ export default function Clientes() {
     queryFn: () => base44.entities.Vehiculo.list(),
     initialData: [],
   });
+
+  const { data: usuario } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
+  const puedeGestionar = puede(usuario, 'gestionar_clientes');
+  const soyDueno = esDueno(usuario);
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Cliente.delete(id),
@@ -80,13 +85,15 @@ export default function Clientes() {
               <p className="text-gray-600">Gestiona tu base de clientes</p>
             </div>
           </div>
-          <Button
-            onClick={() => setShowForm(true)}
-            className="bg-gradient-to-r from-[#E31E24] to-[#B71C1C] hover:from-[#B71C1C] hover:to-[#E31E24] text-white shadow-md hover:shadow-lg transition-all duration-300"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Nuevo Cliente
-          </Button>
+          {puedeGestionar && (
+            <Button
+              onClick={() => setShowForm(true)}
+              className="bg-gradient-to-r from-[#E31E24] to-[#B71C1C] hover:from-[#B71C1C] hover:to-[#E31E24] text-white shadow-md hover:shadow-lg transition-all duration-300"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Nuevo Cliente
+            </Button>
+          )}
         </motion.div>
 
         {/* Search Bar */}
@@ -226,22 +233,26 @@ export default function Clientes() {
                           <Eye className="w-4 h-4 mr-1" />
                           Ver
                         </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEdit(cliente)}
-                          className="border-gray-200 hover:border-blue-500 hover:text-blue-600 transition-colors"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDelete(cliente.id)}
-                          className="border-gray-200 hover:border-red-500 hover:text-red-600 transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        {puedeGestionar && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEdit(cliente)}
+                            className="border-gray-200 hover:border-blue-500 hover:text-blue-600 transition-colors"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                        )}
+                        {soyDueno && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDelete(cliente.id)}
+                            className="border-gray-200 hover:border-red-500 hover:text-red-600 transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -256,7 +267,7 @@ export default function Clientes() {
                 <p className="text-gray-600 mb-6">
                   {searchTerm ? 'Intenta con otros términos de búsqueda' : 'Comienza agregando tu primer cliente'}
                 </p>
-                {!searchTerm && (
+                {!searchTerm && puedeGestionar && (
                   <Button
                     onClick={() => setShowForm(true)}
                     className="bg-gradient-to-r from-[#E31E24] to-[#B71C1C] text-white"

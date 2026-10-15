@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import VehiculoForm from "../components/vehiculos/VehiculoForm.jsx";
 import VehiculoDetalle from "../components/vehiculos/VehiculoDetalle.jsx";
 import { Badge } from "@/components/ui/badge";
+import { puede, esDueno } from "@/lib/permissions";
 
 export default function Vehiculos() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -31,6 +32,10 @@ export default function Vehiculos() {
     queryFn: () => base44.entities.Cliente.list(),
     initialData: [],
   });
+
+  const { data: usuario } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
+  const puedeGestionar = puede(usuario, 'gestionar_clientes');
+  const soyDueno = esDueno(usuario);
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Vehiculo.delete(id),
@@ -90,13 +95,15 @@ export default function Vehiculos() {
               <p className="text-gray-600">Gestiona los vehículos de tus clientes</p>
             </div>
           </div>
-          <Button
-            onClick={() => setShowForm(true)}
-            className="bg-gradient-to-r from-[#E31E24] to-[#B71C1C] hover:from-[#B71C1C] hover:to-[#E31E24] text-white shadow-md hover:shadow-lg transition-all duration-300"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Nuevo Vehículo
-          </Button>
+          {puedeGestionar && (
+            <Button
+              onClick={() => setShowForm(true)}
+              className="bg-gradient-to-r from-[#E31E24] to-[#B71C1C] hover:from-[#B71C1C] hover:to-[#E31E24] text-white shadow-md hover:shadow-lg transition-all duration-300"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Nuevo Vehículo
+            </Button>
+          )}
         </motion.div>
 
         {/* Filters */}
@@ -267,22 +274,26 @@ export default function Vehiculos() {
                           <Eye className="w-4 h-4 mr-1" />
                           Ver
                         </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEdit(vehiculo)}
-                          className="border-gray-200 hover:border-[#E31E24] hover:text-[#E31E24] transition-colors"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDelete(vehiculo.id)}
-                          className="border-gray-200 hover:border-red-500 hover:text-red-600 transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        {puedeGestionar && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEdit(vehiculo)}
+                            className="border-gray-200 hover:border-[#E31E24] hover:text-[#E31E24] transition-colors"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                        )}
+                        {soyDueno && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDelete(vehiculo.id)}
+                            className="border-gray-200 hover:border-red-500 hover:text-red-600 transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -297,7 +308,7 @@ export default function Vehiculos() {
                 <p className="text-gray-600 mb-6">
                   {searchTerm || filterCliente !== "all" ? 'Intenta con otros filtros' : 'Comienza registrando el primer vehículo'}
                 </p>
-                {!searchTerm && filterCliente === "all" && (
+                {!searchTerm && filterCliente === "all" && puedeGestionar && (
                   <Button
                     onClick={() => setShowForm(true)}
                     className="bg-gradient-to-r from-[#E31E24] to-[#B71C1C] text-white"
