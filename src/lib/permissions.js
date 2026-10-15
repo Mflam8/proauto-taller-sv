@@ -64,6 +64,7 @@ export const CAPACIDADES = [
   { grupo: "Facturación y cobros", key: "registrar_cobros", label: "Registrar cobros de clientes" },
   { grupo: "Facturación y cobros", key: "imprimir_facturas", label: "Imprimir facturas en la térmica" },
   { grupo: "Reportes", key: "ver_reportes", label: "Consultar reportes" },
+  { grupo: "Páginas", key: "ver_dashboard", label: "Ver el Dashboard (métricas y facturación total)" },
 ];
 
 // Capacidades iniciales según el perfil (los interruptores individuales las ajustan después).
@@ -88,7 +89,7 @@ export const puedeDefinirCostos = (user) => puede(user, "definir_precios");
 // Páginas visibles por rol (admin ve la gestión completa; reportes según capacidad).
 const PAGINAS_POR_ROL = {
   admin: [
-    "MiTaller", "MisTrabajos", "Clientes", "Vehiculos", "Cotizaciones",
+    "MiTaller", "Clientes", "Vehiculos", "Cotizaciones",
     "OrdenesTrabajos", "Inspecciones", "Inventario", "Proveedores",
     "Facturacion", "Expedientes", "ExpedienteVista",
   ],
@@ -98,6 +99,8 @@ const PAGINAS_POR_ROL = {
 
 export const puedeVerPagina = (user, pageName) => {
   if (esAdmin(user)) {
+    if (pageName === "MisTrabajos") return false; // solo personal técnico usa "Mis trabajos"
+    if (pageName === "Dashboard" && !puede(user, "ver_dashboard")) return false;
     if ((pageName === "Reportes" || pageName === "InformeRemesas") && !puede(user, "ver_reportes")) return false;
     return true;
   }
@@ -105,7 +108,8 @@ export const puedeVerPagina = (user, pageName) => {
   return paginas.includes(pageName);
 };
 
-export const paginaInicio = (user) => (esAdmin(user) ? "/Dashboard" : "/MiTaller");
+export const paginaInicio = (user) =>
+  esAdmin(user) && puede(user, "ver_dashboard") ? "/Dashboard" : "/MiTaller";
 
 // Vista previa de perfiles (solo Super Admin): cambia lo que se ve en pantalla sin cambiar permisos reales.
 const CLAVE_SIMULACION = "proauto_simular_perfil";

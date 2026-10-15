@@ -48,7 +48,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 const navigationItems = [
   { title: "Mi Taller", url: "/MiTaller", icon: Clock },
-  { title: "Mis trabajos", url: "/MisTrabajos", icon: ClipboardList },
+  { title: "Mis trabajos", url: "/MisTrabajos", icon: ClipboardList, roles: ["tecnico"] },
   {
     title: "Tablero Diario",
     url: "/OperacionDiaria",
@@ -60,6 +60,7 @@ const navigationItems = [
     url: createPageUrl("Dashboard"),
     icon: LayoutDashboard,
     roles: ["admin"],
+    caps: ["ver_dashboard"],
   },
   {
     title: "Clientes",
