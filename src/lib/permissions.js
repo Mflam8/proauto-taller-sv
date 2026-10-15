@@ -65,6 +65,7 @@ export const CAPACIDADES = [
   { grupo: "Facturación y cobros", key: "imprimir_facturas", label: "Imprimir facturas en la térmica" },
   { grupo: "Reportes", key: "ver_reportes", label: "Consultar reportes" },
   { grupo: "Páginas", key: "ver_dashboard", label: "Ver el Dashboard (métricas y facturación total)" },
+  { grupo: "Páginas", key: "ver_ordenes", label: "Ver las Órdenes de Trabajo" },
 ];
 
 // Capacidades iniciales según el perfil (los interruptores individuales las ajustan después).
@@ -101,6 +102,7 @@ export const puedeVerPagina = (user, pageName) => {
   if (esAdmin(user)) {
     if (pageName === "MisTrabajos") return false; // solo personal técnico usa "Mis trabajos"
     if (pageName === "Dashboard" && !puede(user, "ver_dashboard")) return false;
+    if (pageName === "OrdenesTrabajos" && !puede(user, "ver_ordenes")) return false;
     if ((pageName === "Reportes" || pageName === "InformeRemesas") && !puede(user, "ver_reportes")) return false;
     return true;
   }

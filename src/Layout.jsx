@@ -88,6 +88,7 @@ const navigationItems = [
     url: createPageUrl("OrdenesTrabajos"),
     icon: ClipboardList,
     roles: ["admin", "jefe_taller"],
+    caps: ["ver_ordenes"],
   },
   {
     title: "Inspecciones",
