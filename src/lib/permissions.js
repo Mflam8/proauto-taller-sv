@@ -101,6 +101,7 @@ const PAGINAS_POR_ROL = {
 export const puedeVerPagina = (user, pageName) => {
   if (esAdmin(user)) {
     if (pageName === "MisTrabajos") return false; // solo personal técnico usa "Mis trabajos"
+    if (pageName === "ControlFacturas" && !esDueno(user)) return false; // Control Interno: solo Super Admin
     if (pageName === "Dashboard" && !puede(user, "ver_dashboard")) return false;
     if (pageName === "OrdenesTrabajos" && !puede(user, "ver_ordenes")) return false;
     if ((pageName === "Reportes" || pageName === "InformeRemesas") && !puede(user, "ver_reportes")) return false;
