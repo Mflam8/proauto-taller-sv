@@ -20,6 +20,7 @@ import OrdenesTrabajos from './pages/OrdenesTrabajos';
 import InformeRemesas from './pages/InformeRemesas';
 import OperacionDiaria from './pages/OperacionDiaria';
 import ControlFacturas from './pages/ControlFacturas';
+import Gastos from './pages/Gastos';
 import MiTaller from './pages/MiTaller';
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -82,6 +83,7 @@ const AuthenticatedApp = () => {
       <Route path="/OrdenesTrabajos" element={<LayoutWrapper currentPageName="OrdenesTrabajos"><OrdenesTrabajos /></LayoutWrapper>} />
       <Route path="/InformeRemesas" element={<LayoutWrapper currentPageName="InformeRemesas"><InformeRemesas /></LayoutWrapper>} />
       <Route path="/ControlFacturas" element={<LayoutWrapper currentPageName="ControlFacturas"><ControlFacturas /></LayoutWrapper>} />
+      <Route path="/Gastos" element={<LayoutWrapper currentPageName="Gastos"><Gastos /></LayoutWrapper>} />
       <Route path="/MiTaller" element={<LayoutWrapper currentPageName="MiTaller"><MiTaller /></LayoutWrapper>} />
       <Route path="/OperacionDiaria" element={<LayoutWrapper currentPageName="OperacionDiaria"><OperacionDiaria /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />

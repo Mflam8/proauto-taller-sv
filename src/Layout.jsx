@@ -22,7 +22,8 @@ import {
   LayoutGrid,
   Receipt,
   ShieldCheck,
-  Clock
+  Clock,
+  Wallet
 } from "lucide-react";
 import {
   esDueno, puedeVerPagina, paginaInicio, nombrePerfil, rolEfectivo, puede,
@@ -137,6 +138,12 @@ const navigationItems = [
     url: "/InformeRemesas",
     icon: Receipt,
     roles: ["admin", "recepcion_cobros"],
+  },
+  {
+    title: "Gastos",
+    url: "/Gastos",
+    icon: Wallet,
+    roles: ["admin"],
   },
   {
     title: "Control Interno",
