@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Receipt, User, Car, Calendar, CreditCard, DollarSign, Printer, Mail, Loader2, Lock } from "lucide-react";
+import { Receipt, User, Car, Calendar, CreditCard, DollarSign, Printer, Mail, Loader2, Lock, Ban } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -22,9 +22,13 @@ export default function FacturaDetalle({ factura }) {
   const [motivoCierre, setMotivoCierre] = useState("");
   const [cerrando, setCerrando] = useState(false);
 
-  const handleCerrarFactura = async () => {
+  const handleAnularFactura = async () => {
     if (!motivoCierre.trim()) {
-      toast({ variant: "destructive", title: "Motivo requerido", description: "Debes ingresar el motivo del cierre." });
+      toast({ variant: "destructive", title: "Motivo requerido", description: "Debes ingresar el motivo de la anulación." });
+      return;
+    }
+    if ((factura.monto_pagado || 0) > 0) {
+      toast({ variant: "destructive", title: "No se puede anular", description: "Esta factura ya tiene cobros registrados." });
       return;
     }
     setCerrando(true);
@@ -33,9 +37,15 @@ export default function FacturaDetalle({ factura }) {
         estado_pago: "Cerrada",
         motivo_cierre: motivoCierre.trim(),
       });
-      queryClient.invalidateQueries({ queryKey: ['facturas'] });
-      queryClient.invalidateQueries({ queryKey: ['pagos-factura', factura.id] });
-      toast({ title: "Factura cerrada", description: "La factura se marcó como Cerrada." });
+      if (factura.expediente_id) {
+        await base44.entities.Expediente.update(factura.expediente_id, {
+          factura_generada: false,
+          total_cobrado: 0,
+          saldo_pendiente: 0,
+        });
+      }
+      queryClient.invalidateQueries();
+      toast({ title: "Factura anulada", description: "Ya no cuenta en ventas y el expediente puede facturarse de nuevo." });
       setShowCerrarDialog(false);
       setMotivoCierre("");
     } catch (error) {
@@ -217,8 +227,8 @@ export default function FacturaDetalle({ factura }) {
                     className="bg-white text-slate-600 hover:bg-slate-100 gap-2 border border-slate-300"
                     size="sm"
                   >
-                    <Lock className="w-4 h-4" />
-                    Cerrar
+                    <Ban className="w-4 h-4" />
+                    Anular
                   </Button>
                 )}
                 <Badge className={`
@@ -227,7 +237,7 @@ export default function FacturaDetalle({ factura }) {
                     factura.estado_pago === 'Cerrada' ? 'bg-slate-500' : 'bg-red-500'} 
                   text-white border-0 text-lg px-4 py-2
                 `}>
-                  {factura.estado_pago}
+                  {factura.estado_pago === 'Cerrada' ? 'Anulada' : factura.estado_pago}
                 </Badge>
               </div>
             </div>
@@ -421,27 +431,27 @@ export default function FacturaDetalle({ factura }) {
         </Card>
       )}
 
-      {/* Dialog Cerrar Factura */}
+      {/* Dialog Anular Factura */}
       <Dialog open={showCerrarDialog} onOpenChange={setShowCerrarDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Lock className="w-5 h-5 text-slate-600" />
-              Cerrar Factura #{factura.numero_factura}
+              <Ban className="w-5 h-5 text-slate-600" />
+              Anular Factura #{factura.numero_factura}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
               <p className="text-sm text-amber-800">
-                Al cerrar esta factura, se marcará como <strong>Cerrada</strong> y no aparecerá como pendiente de cobro.
-                El saldo pendiente actual es <strong>${saldoPendiente.toFixed(2)}</strong>.
-                Esta acción deja un registro permanente del motivo.
+                Al anular esta factura, se marcará como <strong>Anulada</strong>, dejará de contar en las ventas y el
+                expediente quedará libre para emitir una nueva factura corregida. La factura anulada no se borra:
+                queda como registro con el motivo.
               </p>
             </div>
             <div className="space-y-2">
-              <Label className="text-sm font-semibold">Motivo del cierre</Label>
+              <Label className="text-sm font-semibold">Motivo de la anulación</Label>
               <Textarea
-                placeholder="Ej: Cliente se fue sin pagar, factura incobrable, acuerdo fuera del sistema..."
+                placeholder="Ej: Precio equivocado, se facturó el vehículo incorrecto..."
                 value={motivoCierre}
                 onChange={(e) => setMotivoCierre(e.target.value)}
                 rows={3}
@@ -450,12 +460,12 @@ export default function FacturaDetalle({ factura }) {
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setShowCerrarDialog(false)}>Cancelar</Button>
               <Button
-                onClick={handleCerrarFactura}
+                onClick={handleAnularFactura}
                 disabled={cerrando || !motivoCierre.trim()}
                 className="bg-slate-600 hover:bg-slate-700 text-white gap-2"
               >
-                {cerrando ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
-                {cerrando ? "Cerrando..." : "Cerrar Factura"}
+                {cerrando ? <Loader2 className="w-4 h-4 animate-spin" /> : <Ban className="w-4 h-4" />}
+                {cerrando ? "Anulando..." : "Anular Factura"}
               </Button>
             </div>
           </div>

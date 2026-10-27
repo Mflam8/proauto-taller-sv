@@ -54,7 +54,8 @@ export default function PagoForm({ factura, onClose }) {
 
       // Sincronizar el expediente asociado (si existe)
       if (factura.expediente_id) {
-        const facturasExp = await base44.entities.Factura.filter({ expediente_id: factura.expediente_id });
+        const facturasExp = (await base44.entities.Factura.filter({ expediente_id: factura.expediente_id }))
+          .filter(f => f.estado_pago !== 'Cerrada');
         const totalCobrado = facturasExp.reduce((sum, f) => sum + (f.total || 0), 0);
         const totalPagado = facturasExp.reduce((sum, f) => sum + (f.monto_pagado || 0), 0);
         const saldoExp = Math.max(0, totalCobrado - totalPagado);

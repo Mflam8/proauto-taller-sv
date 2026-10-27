@@ -33,11 +33,13 @@ export default async function(req) {
     }
 
     // Una sola factura por expediente: evita duplicados por doble clic o reintentos
+    // Las facturas anuladas (Cerrada) no cuentan: el expediente puede facturarse de nuevo
     const existentes = await base44.asServiceRole.entities.Factura.filter({ expediente_id: expedienteId });
-    if (existentes && existentes.length) {
+    const activa = (existentes || []).find((f) => f.estado_pago !== 'Cerrada');
+    if (activa) {
       return Response.json({
-        error: `Este expediente ya tiene la factura #${existentes[0].numero_factura || existentes[0].id.slice(0, 8)}.`,
-        factura: existentes[0],
+        error: `Este expediente ya tiene la factura #${activa.numero_factura || activa.id.slice(0, 8)}.`,
+        factura: activa,
       }, { status: 409 });
     }
 

@@ -66,9 +66,11 @@ export default function Dashboard() {
     c.estado === 'Pendiente'
   ).length;
 
-  const facturasTotal = facturas.reduce((sum, f) => sum + (f.total || 0), 0);
+  const facturasTotal = facturas
+    .filter(f => f.estado_pago !== 'Cerrada')
+    .reduce((sum, f) => sum + (f.total || 0), 0);
   const facturasPendientes = facturas.filter(f => 
-    (f.saldo_pendiente || 0) > 0 && f.estado_pago !== 'Pagada'
+    (f.saldo_pendiente || 0) > 0 && f.estado_pago !== 'Pagada' && f.estado_pago !== 'Cerrada'
   ).length;
 
   const ordenesRecientes = ordenes.slice(0, 5);

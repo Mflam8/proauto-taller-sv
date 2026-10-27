@@ -83,7 +83,9 @@ export default function Facturacion() {
   };
 
   // Estadísticas
-  const totalFacturado = facturas.reduce((sum, f) => sum + (f.total || 0), 0);
+  const totalFacturado = facturas
+    .filter(f => f.estado_pago !== 'Cerrada')
+    .reduce((sum, f) => sum + (f.total || 0), 0);
   const totalCobrado = pagos.reduce((sum, p) => sum + (p.monto || 0), 0);
   const facturasConDeuda = facturas.filter(f => (f.saldo_pendiente || 0) > 0 && f.estado_pago !== 'Pagada' && f.estado_pago !== 'Cerrada');
   const pendienteCobro = facturasConDeuda.reduce((sum, f) => sum + (f.saldo_pendiente || 0), 0);

@@ -128,7 +128,7 @@ export default function InformeRemesas() {
 
   // Facturas emitidas en el mes: total facturado y repuestos incluidos en ellas
   const resumenFacturas = useMemo(() => {
-    const delMes = facturas.filter(f => enMes(f.fecha_emision || f.created_date, mes, anio));
+    const delMes = facturas.filter(f => f.estado_pago !== 'Cerrada' && enMes(f.fecha_emision || f.created_date, mes, anio));
     let facturado = 0;
     let repuestos = 0;
     let insumos = 0;

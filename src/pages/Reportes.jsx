@@ -93,7 +93,8 @@ export default function Reportes() {
   };
 
   // === DATOS FILTRADOS POR PERIODO ===
-  const facturasPeriodo = facturas.filter(f => enPeriodo(f, 'fecha_emision'));
+  // Las facturas anuladas no cuentan como venta
+  const facturasPeriodo = facturas.filter(f => f.estado_pago !== 'Cerrada' && enPeriodo(f, 'fecha_emision'));
   const ordenesPeriodo = ordenes.filter(o => enPeriodo(o, 'created_date'));
   const pagosPeriodo = pagos.filter(p => enPeriodo(p, 'fecha_pago'));
   const clientesPeriodo = clientes.filter(c => enPeriodo(c, 'created_date'));
@@ -213,7 +214,7 @@ export default function Reportes() {
     trabajosPeriodo.filter(t => t.tipo === 'Mano de Obra Pintura').map(t => t.expediente_id)
   );
   const facturasPinturaIds = new Set(
-    facturas.filter(f => expedientesConPintura.has(f.expediente_id)).map(f => f.id)
+    facturas.filter(f => f.estado_pago !== 'Cerrada' && expedientesConPintura.has(f.expediente_id)).map(f => f.id)
   );
   const totalCobradoPintura = pagosPeriodo
     .filter(p => facturasPinturaIds.has(p.factura_id))

@@ -30,9 +30,10 @@ export default function ClienteDetalle({ cliente }) {
     initialData: [],
   });
 
-  const totalFacturado = facturas.reduce((sum, f) => sum + (f.total || 0), 0);
-  const totalPagado = facturas.reduce((sum, f) => sum + (f.monto_pagado || 0), 0);
-  const saldoPendiente = facturas.reduce((sum, f) => sum + (f.saldo_pendiente || 0), 0);
+  const facturasVigentes = facturas.filter(f => f.estado_pago !== 'Cerrada');
+  const totalFacturado = facturasVigentes.reduce((sum, f) => sum + (f.total || 0), 0);
+  const totalPagado = facturasVigentes.reduce((sum, f) => sum + (f.monto_pagado || 0), 0);
+  const saldoPendiente = facturasVigentes.reduce((sum, f) => sum + (f.saldo_pendiente || 0), 0);
 
   const expedientesOrdenados = [...expedientes].sort((a, b) =>
     new Date(b.fecha_ingreso || b.created_date) - new Date(a.fecha_ingreso || a.created_date)
