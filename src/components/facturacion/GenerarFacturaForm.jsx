@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,8 @@ export default function GenerarFacturaForm({ expediente, cliente, vehiculo, onSu
   const [numeroFactura, setNumeroFactura] = useState("");
   const [clienteFacturacionId, setClienteFacturacionId] = useState(expediente.cliente_id || "");
   const [newItem, setNewItem] = useState({ descripcion: "", cantidad: 1, precio_unitario: 0 });
+  const [errorMsg, setErrorMsg] = useState("");
+  const generandoRef = useRef(false);
 
   const { data: clientes = [] } = useQuery({
     queryKey: ["clientes"],
@@ -94,33 +96,29 @@ export default function GenerarFacturaForm({ expediente, cliente, vehiculo, onSu
 
   const createFacturaMutation = useMutation({
     mutationFn: async () => {
-      const facturaData = {
-        numero_factura: numeroFactura,
-        expediente_id: expediente.id,
-        fecha_emision: new Date().toISOString(),
-        cliente_id: clienteFacturacionId,
-        vehiculo_id: expediente.vehiculo_id,
-        forma_pago: formaPago,
-        aplica_iva: aplicaIva,
-        items: displayItems,
-        subtotal: importeBruto,
-        importe_neto: importeNeto,
-        iva: iva,
-        total: totalFactura,
-        ganancia_mano_obra: gananciaManoObra,
-        estado_pago: "Pendiente",
-        monto_pagado: 0,
-        saldo_pendiente: totalFactura,
-      };
-
-      const factura = await base44.entities.Factura.create(facturaData);
-
-      // Update expediente with financial totals and flag
-      await base44.entities.Expediente.update(expediente.id, {
-        total_cobrado: totalFactura,
-        saldo_pendiente: totalFactura - (expediente.total_pagado || 0),
-        factura_generada: true,
+      // El servidor asigna el número, valida que no exista otra factura para este
+      // expediente y actualiza los totales (evita duplicados por doble clic o reintentos).
+      const res = await base44.functions.invoke('crearFactura', {
+        factura: {
+          expediente_id: expediente.id,
+          fecha_emision: new Date().toISOString(),
+          cliente_id: clienteFacturacionId,
+          vehiculo_id: expediente.vehiculo_id,
+          forma_pago: formaPago,
+          aplica_iva: aplicaIva,
+          items: displayItems,
+          subtotal: importeBruto,
+          importe_neto: importeNeto,
+          iva: iva,
+          total: totalFactura,
+          ganancia_mano_obra: gananciaManoObra,
+        },
       });
+
+      if (!res.data?.factura) {
+        throw new Error(res.data?.error || "No se pudo generar la factura.");
+      }
+      const factura = res.data.factura;
 
       // Registro interno de creación (solo visible para el dueño)
       base44.functions.invoke('registrarEventoFactura', {
@@ -142,7 +140,20 @@ export default function GenerarFacturaForm({ expediente, cliente, vehiculo, onSu
       queryClient.invalidateQueries({ queryKey: ["expediente", expediente.id] });
       if (onSuccess) onSuccess();
     },
+    onError: (error) => {
+      setErrorMsg(error.response?.data?.error || error.message || "No se pudo generar la factura.");
+      queryClient.invalidateQueries({ queryKey: ["expediente", expediente.id] });
+    },
   });
+
+  const handleGenerar = () => {
+    if (generandoRef.current) return;
+    generandoRef.current = true;
+    setErrorMsg("");
+    createFacturaMutation.mutate(undefined, {
+      onSettled: () => { generandoRef.current = false; },
+    });
+  };
 
   return (
     <div className="space-y-5 max-h-[75vh] overflow-y-auto pr-1">
@@ -292,11 +303,17 @@ export default function GenerarFacturaForm({ expediente, cliente, vehiculo, onSu
         </div>
       </div>
 
+      {errorMsg && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          {errorMsg}
+        </div>
+      )}
+
       {/* Actions */}
       <div className="flex justify-end gap-3 pt-2 border-t">
         <Button variant="outline" onClick={onClose}>Cancelar</Button>
         <Button
-          onClick={() => createFacturaMutation.mutate()}
+          onClick={handleGenerar}
           disabled={createFacturaMutation.isPending || displayItems.length === 0}
           className="bg-gradient-to-r from-[#E31E24] to-[#B71C1C] hover:from-[#B71C1C] hover:to-[#8B0000] text-white shadow-md gap-2"
         >
