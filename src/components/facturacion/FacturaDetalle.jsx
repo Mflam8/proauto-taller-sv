@@ -237,7 +237,7 @@ export default function FacturaDetalle({ factura }) {
                     factura.estado_pago === 'Cerrada' ? 'bg-slate-500' : 'bg-red-500'} 
                   text-white border-0 text-lg px-4 py-2
                 `}>
-                  {factura.estado_pago === 'Cerrada' ? 'Anulada' : factura.estado_pago}
+                  {factura.estado_pago}
                 </Badge>
               </div>
             </div>
