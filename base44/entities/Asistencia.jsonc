@@ -56,6 +56,18 @@
     "fecha_sv"
   ],
   "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.empleado_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
     "read": {
       "$or": [
         {
@@ -79,25 +91,6 @@
               "data.empleado_email": "{{user.email}}"
             }
           ]
-        }
-      ]
-    },
-    "create": {
-      "$or": [
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        },
-        {
-          "user_condition": {
-            "role": "jefe_taller"
-          }
-        },
-        {
-          "user_condition": {
-            "role": "tecnico"
-          }
         }
       ]
     },
