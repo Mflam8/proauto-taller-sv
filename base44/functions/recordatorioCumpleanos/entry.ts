@@ -88,7 +88,12 @@ export default async function(req: Request): Promise<Response> {
       return Response.json({ error: `Gmail API error: ${errorText}` }, { status: 500 });
     }
 
-    return Response.json({ enviados: correos.length, cumpleanos: cumplen.map(c => c.nombre) });
+    // Los nombres del personal solo se devuelven a un administrador con sesión;
+    // la invocación programada (sin sesión) únicamente recibe el conteo.
+    return Response.json({
+      enviados: correos.length,
+      cumpleanos: user ? cumplen.map(c => c.nombre) : [],
+    });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

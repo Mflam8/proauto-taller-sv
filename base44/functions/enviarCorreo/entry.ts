@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { normalizarCorreo } from '../../shared/destinatario.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -17,6 +18,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Faltan campos requeridos (to, subject, body)' }, { status: 400 });
     }
 
+    // Evita inyección de cabeceras (CRLF) en el mensaje RFC 2822
+    const destinatario = normalizarCorreo(to);
+    if (!destinatario) {
+      return Response.json({ error: 'Correo de destinatario inválido' }, { status: 400 });
+    }
+
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
 
     // RFC 2047 encode the subject for non-ASCII characters
@@ -25,7 +32,7 @@ Deno.serve(async (req) => {
     // Build RFC 2822 message with base64 body for UTF-8 support
     const boundary = 'proauto_boundary_' + Math.random().toString(36).substring(2);
     const rawMessage = [
-      `To: ${to}`,
+      `To: ${destinatario}`,
       `From: PROAUTO Taller SV <me>`,
       `Subject: ${encodedSubject}`,
       `MIME-Version: 1.0`,

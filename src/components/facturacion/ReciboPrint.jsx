@@ -16,7 +16,7 @@ export default function ReciboPrint({ factura, cliente, vehiculo }) {
       .map(
         (item) => `
         <tr>
-          <td class="col-cant">${item.cantidad}</td>
+          <td class="col-cant">${escapeHtml(item.cantidad ?? "")}</td>
           <td class="col-desc">${escapeHtml(item.descripcion || "")}</td>
           <td class="col-precio">${(item.precio_unitario || 0).toFixed(2)}</td>
           <td class="col-total">${(item.subtotal || item.cantidad * item.precio_unitario || 0).toFixed(2)}</td>

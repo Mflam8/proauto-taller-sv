@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import { jsPDF } from 'npm:jspdf@2.5.2';
+import { normalizarCorreo } from '../../shared/destinatario.ts';
 
 const LOGO_URL = "https://media.base44.com/images/public/691be028b7c98b3edbc7aec7/3462a2501_527724637_10228100711375307_2433035938491200389_n.jpg";
 
@@ -48,6 +49,10 @@ Deno.serve(async (req) => {
 
     const { to, factura, cliente, vehiculo } = await req.json();
     if (!to || !factura) return Response.json({ error: 'Faltan campos requeridos' }, { status: 400 });
+
+    // Evita inyección de cabeceras (CRLF) en el mensaje RFC 2822
+    const destinatario = normalizarCorreo(to);
+    if (!destinatario) return Response.json({ error: 'Correo de destinatario inválido' }, { status: 400 });
 
     const numeroFactura = factura.numero_factura || factura.id?.slice(0, 8) || "N/A";
 
@@ -334,7 +339,7 @@ Deno.serve(async (req) => {
     const bodyB64 = btoa(unescape(encodeURIComponent(bodyText)));
 
     const rawMessage = [
-      `To: ${to}`,
+      `To: ${destinatario}`,
       `From: PROAUTO Taller SV <me>`,
       `Subject: ${encodedSubject}`,
       `MIME-Version: 1.0`,
