@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
-import { jsPDF } from 'npm:jspdf@2.5.2';
+import { jsPDF } from 'npm:jspdf@4.2.1';
 import { normalizarCorreo } from '../../shared/destinatario.ts';
 
 const LOGO_URL = "https://media.base44.com/images/public/691be028b7c98b3edbc7aec7/3462a2501_527724637_10228100711375307_2433035938491200389_n.jpg";
