@@ -52,6 +52,8 @@ export default function Facturacion() {
   };
 
   const filteredFacturas = facturas.filter(factura => {
+    // Las anuladas solo se ven al filtrar por "Anuladas": no estorban en la operación diaria
+    if (filterEstado === "all" && factura.estado_pago === "Cerrada") return false;
     const matchesSearch = 
       factura.numero_factura?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       getClienteNombre(factura.cliente_id).toLowerCase().includes(searchTerm.toLowerCase());
@@ -183,7 +185,7 @@ export default function Facturacion() {
                   <SelectItem value="Parcial">Parcial</SelectItem>
                   <SelectItem value="Pagada">Pagada</SelectItem>
                   <SelectItem value="Vencida">Vencida</SelectItem>
-                  <SelectItem value="Cerrada">Cerrada</SelectItem>
+                  <SelectItem value="Cerrada">Anuladas</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -228,7 +230,7 @@ export default function Facturacion() {
                                   </h3>
                                   <Badge className={`${estadoBadge.color} border flex items-center gap-1`}>
                                     <EstadoIcon className="w-3 h-3" />
-                                    {factura.estado_pago}
+                                    {factura.estado_pago === 'Cerrada' ? 'Anulada' : factura.estado_pago}
                                   </Badge>
                                 </div>
                                 <p className="text-gray-600 font-medium mb-1">
@@ -255,9 +257,11 @@ export default function Facturacion() {
                                 </p>
                               </div>
 
-                              <div className="p-3 bg-red-50 rounded-lg">
-                                <p className="text-xs text-gray-600">Saldo Pendiente</p>
-                                <p className="text-xl font-bold text-red-700">
+                              <div className={`p-3 rounded-lg ${factura.estado_pago === 'Cerrada' ? 'bg-slate-100' : 'bg-red-50'}`}>
+                                <p className="text-xs text-gray-600">
+                                  {factura.estado_pago === 'Cerrada' ? 'Anulada · no cuenta' : 'Saldo Pendiente'}
+                                </p>
+                                <p className={`text-xl font-bold ${factura.estado_pago === 'Cerrada' ? 'text-slate-400 line-through' : 'text-red-700'}`}>
                                   ${((factura.total || 0) - (factura.monto_pagado || 0)).toFixed(2)}
                                 </p>
                               </div>
@@ -292,7 +296,7 @@ export default function Facturacion() {
                               Ver
                             </Button>
                             
-                            {puedeRegistrarPagos && factura.estado_pago !== 'Pagada' && (
+                            {puedeRegistrarPagos && factura.estado_pago !== 'Pagada' && factura.estado_pago !== 'Cerrada' && (
                               <Button
                                 onClick={() => handleRegistrarPago(factura)}
                                 className="flex-1 md:w-32 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white"

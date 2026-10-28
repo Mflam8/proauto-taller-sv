@@ -38,7 +38,8 @@ export default function ClienteDetalle({ cliente }) {
   const expedientesOrdenados = [...expedientes].sort((a, b) =>
     new Date(b.fecha_ingreso || b.created_date) - new Date(a.fecha_ingreso || a.created_date)
   );
-  const facturasOrdenadas = [...facturas].sort((a, b) =>
+  // Las anuladas no se muestran ni suman: no son deuda ni venta del cliente
+  const facturasOrdenadas = facturasVigentes.sort((a, b) =>
     new Date(b.fecha_emision || b.created_date) - new Date(a.fecha_emision || a.created_date)
   );
 
