@@ -13,24 +13,55 @@ const PERFIL_A_ROL = {
   'sin_acceso': 'user',
 };
 
+// Cuentas de gerencia: las únicas que pueden sincronizar el rol de otra persona desde la app.
+const CORREOS_GERENCIA = ['mayaflamenco89@gmail.com', 'proautotallersv@gmail.com'];
+const PERFILES_ADMIN = ['admin', 'jefe_taller', 'recepcion_cobros'];
+const normalizar = (v) => String(v || '').trim().toLowerCase();
+
+// Perfil Admin activo con la capacidad de gestionar empleados habilitada.
+function puedeSincronizarOtros(empleado) {
+  if (!empleado || empleado.activo !== true) return false;
+  if (!PERFILES_ADMIN.includes(empleado.perfil_acceso)) return false;
+  const caps = empleado.capacidades;
+  if (caps && typeof caps === 'object' && Object.hasOwn(caps, 'gestionar_empleados')) return caps.gestionar_empleados === true;
+  return true;
+}
+
 export default async function(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-
-    // Correo objetivo: el enviado en el payload (workflow / ficha de empleados),
-    // o el de la sesión como respaldo.
-    let email = null;
     const body = await req.json().catch(() => ({}));
-    if (body.email) email = String(body.email).toLowerCase();
-    if (!email) {
-      try {
-        const session = await base44.auth.me();
-        if (session?.email) email = String(session.email).toLowerCase();
-      } catch (e) {
-        // Sin sesión (invocación desde workflow): continuar
+    const session = await base44.auth.me().catch((e) => (e && (e.status === 401 || e.status === 403) ? null : Promise.reject(e)));
+
+    let email = null;
+
+    if (session?.email) {
+      // Con sesión iniciada solo se sincroniza la propia cuenta, salvo gerencia
+      // o un perfil Admin con permiso de empleados.
+      const propio = normalizar(session.email);
+      const solicitado = normalizar(body.email);
+      if (!solicitado || solicitado === propio) {
+        email = propio;
+      } else {
+        let autorizado = CORREOS_GERENCIA.includes(propio);
+        if (!autorizado) {
+          const fichas = await base44.asServiceRole.entities.Empleado.filter({ email: propio });
+          autorizado = puedeSincronizarOtros(fichas[0]);
+        }
+        if (!autorizado) return Response.json({ error: 'No tienes permiso para esta acción.' }, { status: 403 });
+        email = solicitado;
       }
+    } else {
+      // Invocación automática del registro/inicio de sesión: exige el identificador de la
+      // cuenta que entrega el evento, así un tercero no puede elegir el correo a sincronizar.
+      const objetivo = normalizar(body.email);
+      const userId = String(body.user_id || '');
+      if (!objetivo || !userId) return Response.json({ error: 'Solicitud inválida.' }, { status: 400 });
+      const usuarios = await base44.asServiceRole.entities.User.filter({ email: objetivo });
+      const cuenta = usuarios[0];
+      if (!cuenta || cuenta.id !== userId) return Response.json({ error: 'Solicitud inválida.' }, { status: 400 });
+      email = objetivo;
     }
-    if (!email) return Response.json({ ok: false, error: 'Sin correo para sincronizar' }, { status: 400 });
 
     const empleados = await base44.asServiceRole.entities.Empleado.filter({ email });
     const empleado = empleados[0];
@@ -46,7 +77,8 @@ export default async function(req: Request): Promise<Response> {
       await base44.asServiceRole.entities.User.update(appUser.id, { role: rol });
     }
 
-    return Response.json({ ok: true, email, rol });
+    // Respuesta genérica: no revela si el correo pertenece a un empleado ni qué perfil tiene.
+    return Response.json({ ok: true });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

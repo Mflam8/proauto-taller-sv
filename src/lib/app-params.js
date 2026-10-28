@@ -35,9 +35,13 @@ const getAppParamValue = (paramName, { defaultValue = undefined, removeFromUrl =
 }
 
 const getAppParams = () => {
+	// Limpia cualquier servidor persistido por versiones anteriores (podía venir de la URL).
+	try { storage.removeItem("base44_server_url"); } catch { /* almacenamiento no disponible */ }
 	return {
 		appId: getAppParamValue("app_id", { defaultValue: import.meta.env.VITE_BASE44_APP_ID }),
-		serverUrl: getAppParamValue("server_url", { defaultValue: import.meta.env.VITE_BASE44_BACKEND_URL }),
+		// El servidor de la API es siempre el de la plataforma (definido al compilar).
+		// Nunca se toma de la URL: un enlace manipulado redirigiría el token de sesión a otro dominio.
+		serverUrl: import.meta.env.VITE_BASE44_BACKEND_URL,
 		token: getAppParamValue("access_token", { removeFromUrl: true }),
 		fromUrl: getAppParamValue("from_url", { defaultValue: window.location.href }),
 		functionsVersion: getAppParamValue("functions_version"),
