@@ -272,6 +272,19 @@ export async function handleTaller(db, user, body) {
     await db.Factura.get(data.factura_id);
     data.recibido_por = user.email;
   }
+  if (entity === "Factura" && operation === "create") {
+    const existentes = await allRecords(db.Factura);
+    const activa = existentes.find(f => f.expediente_id && f.expediente_id === data.expediente_id && f.estado_pago !== "Cerrada");
+    if (activa) fail(`Este expediente ya tiene la factura #${activa.numero_factura || activa.id.slice(0, 8)}.`, 409);
+    // El número lo asigna el servidor: así ningún navegador puede repetirlo.
+    const usados = new Set(existentes.map(f => String(f.numero_factura || "").trim()));
+    let numero = existentes.reduce((max, f) => {
+      const m = String(f.numero_factura || "").match(/(\d+)/);
+      return m ? Math.max(max, parseInt(m[1], 10)) : max;
+    }, 0) + 1;
+    while (usados.has(String(numero))) numero += 1;
+    data.numero_factura = String(numero);
+  }
   if (operation === "delete") return await db[entity].delete(id);
   const saved = operation === "create" ? await db[entity].create(data) : await db[entity].update(id,data);
   return sanitize(entity,saved,actor);

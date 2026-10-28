@@ -43,9 +43,20 @@ export default async function(req) {
       }, { status: 409 });
     }
 
+    // El número se reserva verificando contra la base: nunca se repite
     let numero = await siguienteNumeroFactura(base44);
-    const ocupado = await base44.asServiceRole.entities.Factura.filter({ numero_factura: numero });
-    if (ocupado && ocupado.length) numero = String(Number(numero) + 1);
+    for (let intento = 0; intento < 25; intento++) {
+      const ocupado = await base44.asServiceRole.entities.Factura.filter({ numero_factura: numero });
+      if (!ocupado || !ocupado.length) break;
+      numero = String(Number(numero) + 1);
+    }
+
+    // El expediente se valida ANTES de crear: nunca queda una factura huérfana
+    const expediente = await base44.asServiceRole.entities.Expediente.get(expedienteId)
+      .catch((e) => (e.status === 404 ? null : Promise.reject(e)));
+    if (!expediente) {
+      return Response.json({ error: 'Expediente no disponible.' }, { status: 404 });
+    }
 
     const total = Number(datos.total) || 0;
     const factura = await base44.asServiceRole.entities.Factura.create({
@@ -55,12 +66,6 @@ export default async function(req) {
       monto_pagado: 0,
       saldo_pendiente: total,
     });
-
-    const expediente = await base44.asServiceRole.entities.Expediente.get(expedienteId)
-      .catch((e) => (e.status === 404 ? null : Promise.reject(e)));
-    if (!expediente) {
-      return Response.json({ error: 'Expediente no disponible.' }, { status: 404 });
-    }
 
     await base44.asServiceRole.entities.Expediente.update(expedienteId, {
       total_cobrado: total,
