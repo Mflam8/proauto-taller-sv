@@ -236,6 +236,8 @@ export async function handleTaller(db, user, body) {
     if (actor.profile !== "gerencia" && operation === "create" && data.capacidades !== undefined) delete data.capacidades;
     const next = { ...old, ...data };
     next.email = normalize(next.email);
+    // Fichas antiguas sin perfil definido: se guardan como "sin acceso" en lugar de rechazar el cambio.
+    if (!next.perfil_acceso) next.perfil_acceso = "sin_acceso";
     if (!next.nombre_completo?.trim() || !PROFILES.includes(next.perfil_acceso)) fail("Selecciona un perfil de acceso válido.",400);
     if (next.perfil_acceso !== "sin_acceso" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(next.email)) fail("El perfil necesita un correo válido.",400);
     if (next.email && employees.some(e=> e.id!==id && normalize(e.email)===next.email)) fail("Ese correo ya está asociado a otro empleado.",409);
