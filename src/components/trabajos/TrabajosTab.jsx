@@ -126,7 +126,7 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
         fecha_ajuste_precio: new Date().toISOString(),
       });
       const total = trabajos.reduce((s, trabajo) =>
-        s + (trabajo.id === trabajoEnRevision.id ? subtotal : (trabajo.subtotal || 0)), 0);
+        s + (trabajo.id === trabajoEnRevision.id ? subtotal : (Number(trabajo.subtotal) || 0)), 0);
       await base44.entities.Expediente.update(expediente.id, {
         total_cobrado: total,
         saldo_pendiente: total - (expediente.total_pagado || 0),
@@ -142,6 +142,8 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
     }
   };
 
+  const mensajeError = (error) => error?.response?.data?.message || error?.message || String(error);
+
   const handleSave = async () => {
     if (!form.descripcion) return;
     setSaving(true);
@@ -149,8 +151,9 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
       const data = {
         ...form,
         expediente_id: expediente.id,
-        cantidad: parseFloat(form.cantidad) || 1,
-        precio_unitario: parseFloat(form.precio_unitario) || 0,
+        cantidad: Number(form.cantidad) || 1,
+        precio_unitario: Number(form.precio_unitario) || 0,
+        precio_sugerido: Number(form.precio_sugerido) || 0,
         subtotal: calcSubtotal(form),
       };
       const tecnicoSel = empleados.find(e => e.nombre_completo === form.tecnico_nombre);
@@ -158,21 +161,25 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
         data.tecnico_id = tecnicoSel.id;
         data.tecnico_email = (tecnicoSel.email || "").toLowerCase();
       }
-      await base44.entities.TrabajoExpediente.create(data);
-      // Actualizar totales en expediente
-      const allTrabajos = [...trabajos, data];
-      const total = allTrabajos.reduce((s, t) => s + (t.subtotal || 0), 0);
-      await base44.entities.Expediente.update(expediente.id, {
-        total_cobrado: total,
-        saldo_pendiente: total - (expediente.total_pagado || 0)
-      });
+      const creado = await base44.entities.TrabajoExpediente.create(data);
       qc.invalidateQueries(["trabajos", expediente.id]);
-      qc.invalidateQueries(["expediente", expediente.id]);
-      if (onTotalesChange) onTotalesChange();
       setForm(emptyTrabajo);
       setShowForm(false);
+
+      // Actualizar totales en expediente (si falla, el trabajo ya quedó guardado)
+      try {
+        const total = [...trabajos, creado].reduce((s, t) => s + (Number(t.subtotal) || 0), 0);
+        await base44.entities.Expediente.update(expediente.id, {
+          total_cobrado: total,
+          saldo_pendiente: total - (Number(expediente.total_pagado) || 0)
+        });
+        if (onTotalesChange) onTotalesChange();
+      } catch (error) {
+        alert("El trabajo quedó guardado, pero no se pudo actualizar el total del expediente: " + mensajeError(error));
+      }
+      qc.invalidateQueries(["expediente", expediente.id]);
     } catch (error) {
-      alert("Error al guardar el trabajo: " + (error.message || error));
+      alert("Error al guardar el trabajo: " + mensajeError(error));
     } finally {
       setSaving(false);
       refetch();
@@ -187,7 +194,7 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
     try {
       await base44.entities.TrabajoExpediente.delete(t.id);
       const remaining = trabajos.filter(w => w.id !== t.id);
-      const total = remaining.reduce((s, w) => s + (w.subtotal || 0), 0);
+      const total = remaining.reduce((s, w) => s + (Number(w.subtotal) || 0), 0);
       await base44.entities.Expediente.update(expediente.id, {
         total_cobrado: total,
         saldo_pendiente: total - (expediente.total_pagado || 0)
