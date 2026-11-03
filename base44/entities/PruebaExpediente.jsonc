@@ -1,0 +1,211 @@
+{
+  "name": "PruebaExpediente",
+  "type": "object",
+  "properties": {
+    "numero_prueba": {
+      "type": "string",
+      "description": "N\u00famero del expediente dentro del entorno de prueba"
+    },
+    "cliente_nombre": {
+      "type": "string"
+    },
+    "cliente_telefono": {
+      "type": "string"
+    },
+    "vehiculo_marca": {
+      "type": "string"
+    },
+    "vehiculo_modelo": {
+      "type": "string"
+    },
+    "vehiculo_placa": {
+      "type": "string"
+    },
+    "vehiculo_anio": {
+      "type": "number"
+    },
+    "motivo_visita": {
+      "type": "string"
+    },
+    "estado_interno": {
+      "type": "string",
+      "enum": [
+        "Recibido",
+        "En Diagn\u00f3stico",
+        "Listo para Facturar",
+        "Facturado",
+        "Cerrado",
+        "Cancelado"
+      ],
+      "default": "Recibido",
+      "enumColors": [
+        "blue",
+        "yellow",
+        "purple",
+        "green",
+        "gray",
+        "red"
+      ]
+    },
+    "pintura_habilitada": {
+      "type": "boolean",
+      "default": false,
+      "description": "Solo cuando Yanira marca pintura en el Tablero Diario de la prueba"
+    },
+    "habilitado_por": {
+      "type": "string"
+    },
+    "fecha_habilitacion_pintura": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "inspeccion_mecanica": {
+      "type": "object",
+      "description": "Autor\u00eda de la inspecci\u00f3n inicial de mec\u00e1nica",
+      "properties": {
+        "realizada_por": {
+          "type": "string"
+        },
+        "fecha": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "hallazgos": {
+          "type": "string"
+        },
+        "kilometraje": {
+          "type": "number"
+        }
+      }
+    },
+    "inspeccion_pintura": {
+      "type": "object",
+      "description": "Autor\u00eda de la revisi\u00f3n de pintura",
+      "properties": {
+        "realizada_por": {
+          "type": "string"
+        },
+        "fecha": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "hallazgos": {
+          "type": "string"
+        }
+      }
+    },
+    "diagnostico_mecanica": {
+      "type": "object",
+      "description": "Autor\u00eda del diagn\u00f3stico de mec\u00e1nica (puede ser otra persona)",
+      "properties": {
+        "registrado_por": {
+          "type": "string"
+        },
+        "fecha": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "diagnostico": {
+          "type": "string"
+        },
+        "recomendaciones": {
+          "type": "string"
+        }
+      }
+    },
+    "diagnostico_pintura": {
+      "type": "object",
+      "description": "Autor\u00eda del diagn\u00f3stico de pintura",
+      "properties": {
+        "registrado_por": {
+          "type": "string"
+        },
+        "fecha": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "diagnostico": {
+          "type": "string"
+        },
+        "recomendaciones": {
+          "type": "string"
+        }
+      }
+    },
+    "factura_emitida": {
+      "type": "boolean",
+      "default": false
+    },
+    "registrado_por": {
+      "type": "string",
+      "description": "Qui\u00e9n ingres\u00f3 el expediente en la prueba"
+    },
+    "notas": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "cliente_nombre",
+    "vehiculo_marca",
+    "vehiculo_modelo",
+    "motivo_visita"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        }
+      ]
+    },
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        }
+      ]
+    }
+  }
+}

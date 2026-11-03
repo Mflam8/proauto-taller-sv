@@ -22,6 +22,7 @@ import OperacionDiaria from './pages/OperacionDiaria';
 import ControlFacturas from './pages/ControlFacturas';
 import Gastos from './pages/Gastos';
 import MiTaller from './pages/MiTaller';
+import ModoPrueba from './pages/ModoPrueba';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -84,6 +85,7 @@ const AuthenticatedApp = () => {
       <Route path="/InformeRemesas" element={<LayoutWrapper currentPageName="InformeRemesas"><InformeRemesas /></LayoutWrapper>} />
       <Route path="/ControlFacturas" element={<LayoutWrapper currentPageName="ControlFacturas"><ControlFacturas /></LayoutWrapper>} />
       <Route path="/Gastos" element={<LayoutWrapper currentPageName="Gastos"><Gastos /></LayoutWrapper>} />
+      <Route path="/ModoPrueba" element={<LayoutWrapper currentPageName="ModoPrueba"><ModoPrueba /></LayoutWrapper>} />
       <Route path="/MiTaller" element={<LayoutWrapper currentPageName="MiTaller"><MiTaller /></LayoutWrapper>} />
       <Route path="/OperacionDiaria" element={<LayoutWrapper currentPageName="OperacionDiaria"><OperacionDiaria /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />

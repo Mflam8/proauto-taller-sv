@@ -1,0 +1,88 @@
+{
+  "name": "PruebaEvento",
+  "type": "object",
+  "properties": {
+    "expediente_prueba_id": {
+      "type": "string"
+    },
+    "accion": {
+      "type": "string"
+    },
+    "actor_nombre": {
+      "type": "string"
+    },
+    "actor_perfil": {
+      "type": "string"
+    },
+    "detalle": {
+      "type": "string"
+    },
+    "fecha": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "expediente_prueba_id",
+    "accion",
+    "actor_nombre"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        }
+      ]
+    },
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        }
+      ]
+    }
+  }
+}

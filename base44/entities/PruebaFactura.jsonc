@@ -1,0 +1,135 @@
+{
+  "name": "PruebaFactura",
+  "type": "object",
+  "properties": {
+    "expediente_prueba_id": {
+      "type": "string",
+      "description": "Expediente de prueba al que pertenece"
+    },
+    "numero_prueba_factura": {
+      "type": "string",
+      "description": "N\u00famero asignado por el servidor en el entorno de prueba"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "descripcion": {
+            "type": "string"
+          },
+          "cantidad": {
+            "type": "number"
+          },
+          "precio_unitario": {
+            "type": "number"
+          },
+          "subtotal": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "subtotal": {
+      "type": "number"
+    },
+    "iva": {
+      "type": "number"
+    },
+    "total": {
+      "type": "number"
+    },
+    "aplica_iva": {
+      "type": "boolean",
+      "default": true
+    },
+    "estado": {
+      "type": "string",
+      "enum": [
+        "Borrador",
+        "Emitida"
+      ],
+      "default": "Borrador",
+      "enumColors": [
+        "yellow",
+        "green"
+      ]
+    },
+    "preparada_por": {
+      "type": "string"
+    },
+    "emitida_por": {
+      "type": "string"
+    },
+    "fecha_emision": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "notas": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "expediente_prueba_id",
+    "items",
+    "total"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        }
+      ]
+    },
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "email": "proautotallersv@gmail.com"
+          }
+        },
+        {
+          "user_condition": {
+            "email": "mayaflamenco89@gmail.com"
+          }
+        }
+      ]
+    }
+  }
+}

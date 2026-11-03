@@ -23,7 +23,8 @@ import {
   Receipt,
   ShieldCheck,
   Clock,
-  Wallet
+  Wallet,
+  FlaskConical
 } from "lucide-react";
 import {
   esDueno, puedeVerPagina, paginaInicio, nombrePerfil, rolEfectivo, puede,
@@ -144,6 +145,12 @@ const navigationItems = [
     url: "/Gastos",
     icon: Wallet,
     roles: ["admin"],
+  },
+  {
+    title: "Modo de Prueba",
+    url: "/ModoPrueba",
+    icon: FlaskConical,
+    soloDueno: true,
   },
   {
     title: "Control Interno",
