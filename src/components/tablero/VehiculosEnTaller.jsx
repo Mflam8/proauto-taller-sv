@@ -141,7 +141,7 @@ export default function VehiculosEnTaller({ expedientes, clienteMap, vehiculoMap
                   </td>
                   <td className="px-4 py-3">
                     <div className="font-semibold text-gray-900 text-sm">
-                      {vehiculo ? `${vehiculo.marca} ${vehiculo.modelo}` : "—"}
+                      {vehiculo ? `${vehiculo.marca} ${vehiculo.modelo}` : "Sin vehículo"}
                     </div>
                     {vehiculo?.placa && (
                       <div className="text-xs text-gray-400 font-mono">{vehiculo.placa}</div>
@@ -208,7 +208,7 @@ export default function VehiculosEnTaller({ expedientes, clienteMap, vehiculoMap
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <p className="font-bold text-gray-900">
-                    {vehiculo ? `${vehiculo.marca} ${vehiculo.modelo}` : "—"}
+                    {vehiculo ? `${vehiculo.marca} ${vehiculo.modelo}` : "Sin vehículo"}
                   </p>
                   {vehiculo?.placa && <p className="text-xs font-mono text-gray-400">{vehiculo.placa}</p>}
                 </div>

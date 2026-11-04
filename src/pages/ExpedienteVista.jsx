@@ -160,7 +160,7 @@ export default function ExpedienteVista() {
 
       {/* Tabs */}
       <div className="flex gap-1 bg-gray-100 rounded-xl p-1 mb-5 overflow-x-auto">
-        {TABS.map(t => (
+        {TABS.filter(t => t.id !== "inspeccion" || expediente.vehiculo_id).map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
             className={`flex items-center gap-1.5 flex-shrink-0 justify-center py-2 px-3 rounded-lg text-xs sm:text-sm font-medium transition-all ${tab === t.id ? "bg-white shadow text-gray-900" : "text-gray-500 hover:text-gray-700"}`}>
             <t.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" /><span className="hidden sm:inline">{t.label}</span><span className="sm:hidden">{t.label.split(" ")[0]}</span>
@@ -180,6 +180,11 @@ export default function ExpedienteVista() {
           </div>
           <div className="bg-white border rounded-xl p-4">
             <div className="flex items-center gap-2 mb-3"><Car className="w-4 h-4 text-[#E31E24]" /><h3 className="font-semibold">Vehículo</h3></div>
+            {!vehiculo && (
+              <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-2">
+                Servicio sin vehículo (pieza)
+              </p>
+            )}
             <InfoRow label="Vehículo" value={vehiculo ? `${vehiculo.marca} ${vehiculo.modelo} ${vehiculo.anio || ""}` : null} />
             <InfoRow label="Placa" value={vehiculo?.placa} />
             <InfoRow label="Color" value={vehiculo?.color} />

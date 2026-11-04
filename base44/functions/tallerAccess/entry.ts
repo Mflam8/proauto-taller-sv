@@ -63,7 +63,7 @@ export async function makeScope(db, actor) {
   const assignedIds = new Set(jobs.filter(t => t.tecnico_id === actor.employee.id).map(t => t.expediente_id));
   const current = exps.filter(e => assignedIds.has(e.id) && !doneExp(e));
   const expIds = new Set(current.map(e => e.id));
-  const vehicleIds = new Set(current.map(e => e.vehiculo_id));
+  const vehicleIds = new Set(current.map(e => e.vehiculo_id).filter(Boolean));
   const history = exps.filter(e => vehicleIds.has(e.vehiculo_id));
   return { expIds, vehicleIds, historyIds: new Set(history.map(e => e.id)), clientIds: new Set(history.map(e => e.cliente_id)) };
 }

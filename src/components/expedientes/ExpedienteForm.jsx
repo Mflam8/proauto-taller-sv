@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Search, User, Car, ClipboardList, Plus, ChevronRight, Check } from "lucide-react";
+import { Search, User, Car, ClipboardList, Plus, ChevronRight, Check, Wrench } from "lucide-react";
 
 // ─── Paso 1: Buscar / Crear Cliente ───────────────────────────────────────────
 function PasoCliente({ clientes, onSelect }) {
@@ -123,7 +123,7 @@ function PasoCliente({ clientes, onSelect }) {
 }
 
 // ─── Paso 2: Buscar / Crear Vehículo ──────────────────────────────────────────
-function PasoVehiculo({ cliente, vehiculos, onSelect }) {
+function PasoVehiculo({ cliente, vehiculos, onSelect, onSinVehiculo }) {
   const vehiculosCliente = vehiculos.filter(v => v.cliente_id === cliente.id);
   const [creando, setCreando] = useState(vehiculosCliente.length === 0);
   const [saving, setSaving] = useState(false);
@@ -151,6 +151,13 @@ function PasoVehiculo({ cliente, vehiculos, onSelect }) {
         <span className="font-medium">{cliente.nombre_completo}</span>
         <span className="text-gray-400">· {cliente.telefono}</span>
       </div>
+
+      <button
+        onClick={onSinVehiculo}
+        className="w-full flex items-center gap-2 px-4 py-3 rounded-xl border border-dashed border-[#E31E24]/40 text-sm text-[#E31E24] hover:bg-red-50 transition-colors"
+      >
+        <Wrench className="w-4 h-4" /> Servicio sin vehículo — pintura de pieza
+      </button>
 
       {vehiculosCliente.length > 0 && !creando && (
         <div className="border rounded-xl divide-y overflow-hidden">
@@ -299,12 +306,12 @@ function PasoRecepcion({ cliente, vehiculo, onSave }) {
     const siguiente = String(delAnio.length + 1).padStart(4, "0");
     const numero_expediente = `EXP-${year}-${siguiente}`;
 
-    // 1. Crear expediente
+    // 1. Crear expediente (sin vehículo cuando es un servicio de pieza suelta)
     const expediente = await base44.entities.Expediente.create({
       ...form,
       numero_expediente,
       cliente_id: cliente.id,
-      vehiculo_id: vehiculo.id,
+      ...(vehiculo ? { vehiculo_id: vehiculo.id } : {}),
       fecha_ingreso: new Date().toISOString(),
       estado_interno: "Recibido",
       estado_cliente: "En revisión",
@@ -312,19 +319,21 @@ function PasoRecepcion({ cliente, vehiculo, onSave }) {
       llaves_cantidad: Number(form.llaves_cantidad) || 1,
     });
 
-    // 2. Actualizar vehículo a "En taller"
-    await base44.entities.Vehiculo.update(vehiculo.id, { estado_actual: "En taller" });
+    if (vehiculo) {
+      // 2. Actualizar vehículo a "En taller"
+      await base44.entities.Vehiculo.update(vehiculo.id, { estado_actual: "En taller" });
 
-    // 3. Crear inspección vinculada
-    await base44.entities.Inspeccion.create({
-      expediente_id: expediente.id,
-      vehiculo_id: vehiculo.id,
-      cliente_id: cliente.id,
-      fecha: new Date().toISOString(),
-      kilometraje: Number(form.kilometraje_entrada) || 0,
-      estado: "Pendiente",
-      ...inspeccion,
-    });
+      // 3. Crear inspección vinculada
+      await base44.entities.Inspeccion.create({
+        expediente_id: expediente.id,
+        vehiculo_id: vehiculo.id,
+        cliente_id: cliente.id,
+        fecha: new Date().toISOString(),
+        kilometraje: Number(form.kilometraje_entrada) || 0,
+        estado: "Pendiente",
+        ...inspeccion,
+      });
+    }
 
     setSaving(false);
     onSave();
@@ -337,47 +346,60 @@ function PasoRecepcion({ cliente, vehiculo, onSave }) {
         <Badge className="bg-[#E31E24]/10 text-[#E31E24] border-0">
           <User className="w-3 h-3 mr-1" />{cliente.nombre_completo}
         </Badge>
-        <Badge className="bg-blue-50 text-blue-700 border-0">
-          <Car className="w-3 h-3 mr-1" />{vehiculo.marca} {vehiculo.modelo} · {vehiculo.placa === "SIN PLACA" ? `Sin placa${vehiculo.poliza ? ' · Póliza ' + vehiculo.poliza : ''}` : vehiculo.placa}
-        </Badge>
+        {vehiculo ? (
+          <Badge className="bg-blue-50 text-blue-700 border-0">
+            <Car className="w-3 h-3 mr-1" />{vehiculo.marca} {vehiculo.modelo} · {vehiculo.placa === "SIN PLACA" ? `Sin placa${vehiculo.poliza ? ' · Póliza ' + vehiculo.poliza : ''}` : vehiculo.placa}
+          </Badge>
+        ) : (
+          <Badge className="bg-amber-50 text-amber-800 border-0">
+            <Wrench className="w-3 h-3 mr-1" />Servicio sin vehículo
+          </Badge>
+        )}
       </div>
 
       {/* Motivo */}
       <div>
-        <Label>Motivo de visita *</Label>
-        <Input value={form.motivo_visita} onChange={e => set("motivo_visita", e.target.value)} placeholder="Ej: Mantenimiento, Frenos, Diagnóstico..." />
+        <Label>{vehiculo ? "Motivo de visita *" : "Servicio o pieza *"}</Label>
+        <Input value={form.motivo_visita} onChange={e => set("motivo_visita", e.target.value)} placeholder={vehiculo ? "Ej: Mantenimiento, Frenos, Diagnóstico..." : "Ej: Pintura de tapa de baúl"} />
       </div>
 
-      <div>
-        <Label>Síntomas reportados</Label>
-        <Textarea value={form.sintomas_cliente} onChange={e => set("sintomas_cliente", e.target.value)} rows={2} placeholder="¿Qué siente el cliente en el vehículo?" />
-      </div>
+      {vehiculo && (
+        <div>
+          <Label>Síntomas reportados</Label>
+          <Textarea value={form.sintomas_cliente} onChange={e => set("sintomas_cliente", e.target.value)} rows={2} placeholder="¿Qué siente el cliente en el vehículo?" />
+        </div>
+      )}
 
       <div>
-        <Label>Indicaciones del cliente</Label>
-        <Textarea value={form.indicaciones_cliente} onChange={e => set("indicaciones_cliente", e.target.value)} rows={2} placeholder="Instrucciones especiales..." />
+        <Label>{vehiculo ? "Indicaciones del cliente" : "Detalle de la pieza o trabajo"}</Label>
+        <Textarea value={form.indicaciones_cliente} onChange={e => set("indicaciones_cliente", e.target.value)} rows={2} placeholder={vehiculo ? "Instrucciones especiales..." : "Pieza, color, acabado, observaciones del cliente..."} />
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <Label>Kilometraje entrada</Label>
-          <Input type="number" value={form.kilometraje_entrada} onChange={e => set("kilometraje_entrada", e.target.value)} />
-        </div>
-        <div>
           <Label>Fecha promesa entrega</Label>
           <Input type="datetime-local" value={form.fecha_promesa_entrega} onChange={e => set("fecha_promesa_entrega", e.target.value)} />
         </div>
-        <div>
-          <Label>Cantidad de llaves</Label>
-          <Input type="number" value={form.llaves_cantidad} onChange={e => set("llaves_cantidad", e.target.value)} min={0} />
-        </div>
-        <div>
-          <Label>Obs. llaves</Label>
-          <Input value={form.llaves_observaciones} onChange={e => set("llaves_observaciones", e.target.value)} placeholder="Llavero, copias..." />
-        </div>
+        {vehiculo && (
+          <>
+            <div>
+              <Label>Kilometraje entrada</Label>
+              <Input type="number" value={form.kilometraje_entrada} onChange={e => set("kilometraje_entrada", e.target.value)} />
+            </div>
+            <div>
+              <Label>Cantidad de llaves</Label>
+              <Input type="number" value={form.llaves_cantidad} onChange={e => set("llaves_cantidad", e.target.value)} min={0} />
+            </div>
+            <div>
+              <Label>Obs. llaves</Label>
+              <Input value={form.llaves_observaciones} onChange={e => set("llaves_observaciones", e.target.value)} placeholder="Llavero, copias..." />
+            </div>
+          </>
+        )}
       </div>
 
       {/* Inspección rápida */}
+      {vehiculo && (
       <div className="border rounded-xl p-4 space-y-3 bg-gray-50">
         <p className="text-sm font-semibold text-gray-700 flex items-center gap-2">
           <ClipboardList className="w-4 h-4" /> Inspección rápida de ingreso
@@ -439,6 +461,7 @@ function PasoRecepcion({ cliente, vehiculo, onSave }) {
           <Textarea value={inspeccion.observaciones} onChange={e => setInsp("observaciones", e.target.value)} rows={2} placeholder="Golpes, rayaduras, faltantes..." />
         </div>
       </div>
+      )}
 
       <div>
         <Label>Observaciones generales</Label>
@@ -467,10 +490,11 @@ export default function ExpedienteForm({ open, onClose, clientes, vehiculos, onS
   const [paso, setPaso] = useState(0);
   const [cliente, setCliente] = useState(null);
   const [vehiculo, setVehiculo] = useState(null);
+  const [servicioSuelto, setServicioSuelto] = useState(false);
 
   // Reset al abrir
   useEffect(() => {
-    if (open) { setPaso(0); setCliente(null); setVehiculo(null); }
+    if (open) { setPaso(0); setCliente(null); setVehiculo(null); setServicioSuelto(false); }
   }, [open]);
 
   // Si es edición, usar el formulario simple original
@@ -479,7 +503,8 @@ export default function ExpedienteForm({ open, onClose, clientes, vehiculos, onS
   }
 
   const handleSelectCliente = (c) => { setCliente(c); setPaso(1); };
-  const handleSelectVehiculo = (v) => { setVehiculo(v); setPaso(2); };
+  const handleSelectVehiculo = (v) => { setVehiculo(v); setServicioSuelto(false); setPaso(2); };
+  const handleSinVehiculo = () => { setVehiculo(null); setServicioSuelto(true); setPaso(2); };
   const handleSave = () => { onSave(); onClose(); };
 
   return (
@@ -515,9 +540,14 @@ export default function ExpedienteForm({ open, onClose, clientes, vehiculos, onS
           <PasoCliente clientes={clientes} onSelect={handleSelectCliente} />
         )}
         {paso === 1 && cliente && (
-          <PasoVehiculo cliente={cliente} vehiculos={vehiculos} onSelect={handleSelectVehiculo} />
+          <PasoVehiculo
+            cliente={cliente}
+            vehiculos={vehiculos}
+            onSelect={handleSelectVehiculo}
+            onSinVehiculo={handleSinVehiculo}
+          />
         )}
-        {paso === 2 && cliente && vehiculo && (
+        {paso === 2 && cliente && (vehiculo || servicioSuelto) && (
           <PasoRecepcion cliente={cliente} vehiculo={vehiculo} onSave={handleSave} />
         )}
       </DialogContent>

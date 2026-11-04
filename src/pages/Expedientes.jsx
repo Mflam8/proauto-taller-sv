@@ -149,7 +149,7 @@ export default function Expedientes() {
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Car className="w-3 h-3" />
-                {vehiculo ? `${vehiculo.marca} ${vehiculo.modelo} · ${vehiculo.placa}` : "—"}
+                {vehiculo ? `${vehiculo.marca} ${vehiculo.modelo} · ${vehiculo.placa}` : "Servicio sin vehículo"}
               </div>
               {exp.fecha_ingreso && (
                 <div className="flex items-center gap-1 text-xs text-gray-400">

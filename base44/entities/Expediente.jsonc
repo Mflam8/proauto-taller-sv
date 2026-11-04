@@ -12,7 +12,7 @@
     },
     "vehiculo_id": {
       "type": "string",
-      "description": "ID del veh\u00edculo"
+      "description": "ID del veh\u00edculo (vac\u00edo cuando el servicio es de una pieza sin veh\u00edculo)"
     },
     "recibido_por_id": {
       "type": "string",
@@ -180,7 +180,6 @@
   },
   "required": [
     "cliente_id",
-    "vehiculo_id",
     "motivo_visita"
   ],
   "rls": {

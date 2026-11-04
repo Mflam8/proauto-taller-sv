@@ -182,7 +182,7 @@ export default function GenerarFacturaForm({ expediente, cliente, vehiculo, onSu
           <div>
             <p className="text-xs text-gray-500">Vehículo</p>
             <p className="font-semibold text-sm">
-              {vehiculo ? `${vehiculo.marca} ${vehiculo.modelo} ${vehiculo.anio || ""}` : "N/A"}
+              {vehiculo ? `${vehiculo.marca} ${vehiculo.modelo} ${vehiculo.anio || ""}` : "Servicio sin vehículo"}
             </p>
             {vehiculo?.placa && <p className="text-xs text-gray-500">Placa: {vehiculo.placa}</p>}
           </div>
