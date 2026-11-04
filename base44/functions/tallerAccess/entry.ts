@@ -245,8 +245,13 @@ export async function handleTaller(db, user, body) {
     data.email = next.email;
   }
   if (data.tecnico_id) {
-    const assigned = employees.find(e=>e.id===data.tecnico_id && e.activo===true && ["tecnico","pintura","admin","jefe_taller"].includes(e.perfil_acceso));
-    if (!assigned) fail("Selecciona un empleado activo con perfil de taller.",400);
+    const assigned = employees.find(e => e.id === data.tecnico_id);
+    const perfilTaller = ["tecnico", "pintura", "admin", "jefe_taller"].includes(assigned?.perfil_acceso);
+    // Asignar un trabajo no concede acceso a la app: también admite técnicos activos sin cuenta o perfil.
+    const asignable = entity === "TrabajoExpediente"
+      ? assigned && assigned.activo !== false && (["Técnico", "Pintura"].includes(assigned.tipo) || perfilTaller)
+      : assigned && assigned.activo === true && perfilTaller;
+    if (!asignable) fail("Selecciona un empleado activo habilitado para realizar este trabajo.",400);
     if (entity === "TrabajoExpediente") data.tecnico_nombre = assigned.nombre_completo;
   }
   if (entity === "TrabajoExpediente" && data.estado && actor.profile !== "gerencia") {
@@ -292,13 +297,16 @@ export async function handleTaller(db, user, body) {
   return sanitize(entity,saved,actor);
 }
 
-Deno.serve(async req => {
+export default async function(req) {
   try {
     const sdk = createClientFromRequest(req);
-    const user = await sdk.auth.me();
-    const result = await handleTaller(sdk.asServiceRole.entities, user, await req.json());
+    const user = await sdk.auth.me().catch(error => error.status === 401 ? null : Promise.reject(error));
+    if (!user) return Response.json({ error: "Inicia sesión." }, { status: 401 });
+    const body = await req.json().catch(() => null);
+    if (!body || typeof body !== "object" || Array.isArray(body)) return Response.json({ error: "Datos inválidos." }, { status: 400 });
+    const result = await handleTaller(sdk.asServiceRole.entities, user, body);
     return Response.json(result);
   } catch (error) {
     return Response.json({ error: error.status ? error.message : "No se pudo completar la operación." }, { status: error.status || 500 });
   }
-});
+}

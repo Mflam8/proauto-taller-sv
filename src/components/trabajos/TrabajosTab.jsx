@@ -147,14 +147,10 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
 
   const handleSave = async () => {
     if (!form.descripcion) return;
-    const tecnicoSel = form.tecnico_nombre ? empleados.find(e => e.nombre_completo === form.tecnico_nombre) : null;
-    if (tecnicoSel) {
-      const asignable = tecnicoSel.activo !== false &&
-        ["tecnico", "pintura", "admin", "jefe_taller"].includes(tecnicoSel.perfil_acceso);
-      if (!asignable) {
-        alert(`El técnico ${tecnicoSel.nombre_completo} no tiene un perfil de taller habilitado. Actívaselo en Empleados o asigna otro técnico.`);
-        return;
-      }
+    const tecnicoSel = form.tecnico_nombre ? tecnicos.find(e => e.nombre_completo === form.tecnico_nombre) : null;
+    if (form.tecnico_nombre && !tecnicoSel) {
+      alert("Selecciona un técnico activo de la lista.");
+      return;
     }
     setSaving(true);
     try {
