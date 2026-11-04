@@ -154,9 +154,15 @@ function PasoVehiculo({ cliente, vehiculos, onSelect, onSinVehiculo }) {
 
       <button
         onClick={onSinVehiculo}
-        className="w-full flex items-center gap-2 px-4 py-3 rounded-xl border border-dashed border-[#E31E24]/40 text-sm text-[#E31E24] hover:bg-red-50 transition-colors"
+        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-dashed border-[#E31E24] bg-red-50/60 hover:bg-red-50 transition-colors text-left"
       >
-        <Wrench className="w-4 h-4" /> Servicio sin vehículo — pintura de pieza
+        <div className="w-9 h-9 rounded-full bg-[#E31E24] flex items-center justify-center flex-shrink-0">
+          <Wrench className="w-5 h-5 text-white" />
+        </div>
+        <div>
+          <p className="font-semibold text-sm text-[#E31E24]">Servicio sin vehículo</p>
+          <p className="text-xs text-gray-600">Pintura de una pieza suelta, sin registrar carro</p>
+        </div>
       </button>
 
       {vehiculosCliente.length > 0 && !creando && (
