@@ -142,10 +142,20 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
     }
   };
 
-  const mensajeError = (error) => error?.response?.data?.message || error?.message || String(error);
+  const mensajeError = (error) =>
+    error?.response?.data?.error || error?.response?.data?.message || error?.message || String(error);
 
   const handleSave = async () => {
     if (!form.descripcion) return;
+    const tecnicoSel = form.tecnico_nombre ? empleados.find(e => e.nombre_completo === form.tecnico_nombre) : null;
+    if (tecnicoSel) {
+      const asignable = tecnicoSel.activo !== false &&
+        ["tecnico", "pintura", "admin", "jefe_taller"].includes(tecnicoSel.perfil_acceso);
+      if (!asignable) {
+        alert(`El técnico ${tecnicoSel.nombre_completo} no tiene un perfil de taller habilitado. Actívaselo en Empleados o asigna otro técnico.`);
+        return;
+      }
+    }
     setSaving(true);
     try {
       const data = {
@@ -156,11 +166,7 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
         precio_sugerido: Number(form.precio_sugerido) || 0,
         subtotal: calcSubtotal(form),
       };
-      const tecnicoSel = empleados.find(e => e.nombre_completo === form.tecnico_nombre);
-      if (tecnicoSel) {
-        data.tecnico_id = tecnicoSel.id;
-        data.tecnico_email = (tecnicoSel.email || "").toLowerCase();
-      }
+      if (tecnicoSel) data.tecnico_id = tecnicoSel.id;
       const creado = await base44.entities.TrabajoExpediente.create(data);
       qc.invalidateQueries(["trabajos", expediente.id]);
       setForm(emptyTrabajo);

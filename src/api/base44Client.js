@@ -13,8 +13,18 @@ const sdk = createClient({
 });
 
 async function access(body) {
-  const response = await sdk.functions.invoke("tallerAccess", body);
-  return response.data;
+  try {
+    const response = await sdk.functions.invoke("tallerAccess", body);
+    return response.data;
+  } catch (error) {
+    // El servidor devuelve el motivo real (permiso, técnico sin perfil, factura duplicada…).
+    // Sin esto el navegador solo mostraba "Request failed with status code 400".
+    const detalle = error?.response?.data?.error || error?.response?.data?.message;
+    throw Object.assign(new Error(detalle || error?.message || "No se pudo completar la operación."), {
+      status: error?.response?.status,
+      response: error?.response,
+    });
+  }
 }
 const entities = new Proxy({}, {
   get: (_, entity) => {
