@@ -28,11 +28,11 @@ export default function RecepcionTab({ expediente, cliente, vehiculo, inspeccion
 
   const handleSave = async () => {
     if (!recibido || !probado || !conforme) {
-      alert("Confirme las tres casillas: recibi\u00f3 el veh\u00edculo, lo prob\u00f3 y est\u00e1 conforme con el estado.");
+      alert("Debe marcar las tres casillas: el cliente recibió el vehículo, lo probó y está de acuerdo con su estado.");
       return;
     }
     if (!nombre.trim()) {
-      alert("Ingrese el nombre de quien retira el veh\u00edculo.");
+      alert("Escriba el nombre de la persona que retira el vehículo.");
       return;
     }
     if (!firma) {
@@ -54,7 +54,7 @@ export default function RecepcionTab({ expediente, cliente, vehiculo, inspeccion
       });
       qc.invalidateQueries(["expediente", expediente.id]);
     } catch (e) {
-      alert("Error al guardar la conformidad de recepci\u00f3n.");
+      alert("No se pudo guardar la conformidad del cliente. Intente de nuevo.");
     }
     setSaving(false);
   };
@@ -77,10 +77,10 @@ export default function RecepcionTab({ expediente, cliente, vehiculo, inspeccion
         <div className="flex items-start gap-3 bg-green-50 border border-green-200 rounded-xl p-4">
           <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
           <div className="flex-1">
-            <p className="font-semibold text-green-900">Recepci\u00f3n confirmada</p>
+            <p className="font-semibold text-green-900">Conformidad firmada</p>
             <p className="text-sm text-green-800">
-              El veh\u00edculo fue retirado por <strong>{rec.nombre_firma}</strong> el{" "}
-              {new Date(rec.fecha_recepcion).toLocaleString("es-SV")}. M\u00e9todo: {rec.metodo}.
+              El vehículo fue entregado a <strong>{rec.nombre_firma}</strong> el{" "}
+              {new Date(rec.fecha_recepcion).toLocaleString("es-SV")}. Firma: {rec.metodo}.
             </p>
           </div>
           <Button onClick={handleDownload} className="gap-1.5 bg-[#E31E24] hover:bg-[#B71C1C]">
@@ -91,23 +91,24 @@ export default function RecepcionTab({ expediente, cliente, vehiculo, inspeccion
         <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4">
           <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
           <div className="flex-1">
-            <p className="font-semibold text-amber-900">Pendiente de conformidad de recepci\u00f3n</p>
+            <p className="font-semibold text-amber-900">Falta la conformidad del cliente</p>
             <p className="text-sm text-amber-800">
-              Seg\u00fan recomendaci\u00f3n legal, el cliente debe firmar que recibi\u00f3 el veh\u00edculo, lo prob\u00f3
-              y est\u00e1 satisfecho al momento del retiro, para evitar reclamos o demandas posteriores.
+              Antes de entregar el vehículo, el cliente debe firmar este documento confirmando que lo
+              recibió, que lo probó y que está de acuerdo con su estado. Así el taller queda protegido
+              ante cualquier reclamo posterior.
             </p>
           </div>
         </div>
       )}
 
-      {/* Resumen r\u00e1pido */}
+      {/* Resumen rápido */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="bg-white border rounded-xl p-3">
           <p className="text-xs text-gray-500">Trabajos realizados</p>
           <p className="text-lg font-bold text-gray-900">{trabajos.length}</p>
         </div>
         <div className="bg-white border rounded-xl p-3">
-          <p className="text-xs text-gray-500">Inspecci\u00f3n de ingreso</p>
+          <p className="text-xs text-gray-500">Inspección de ingreso</p>
           <p className="text-lg font-bold text-gray-900">
             {inspeccion ? (
               <Badge className="bg-green-100 text-green-800">{inspeccion.estado || "Completada"}</Badge>
@@ -117,17 +118,17 @@ export default function RecepcionTab({ expediente, cliente, vehiculo, inspeccion
           </p>
         </div>
         <div className="bg-white border rounded-xl p-3">
-          <p className="text-xs text-gray-500">Da\u00f1os preexistentes</p>
-          <p className="text-lg font-bold text-gray-900">{inspeccion?.da\u00f1os?.length || 0}</p>
+          <p className="text-xs text-gray-500">Daños preexistentes</p>
+          <p className="text-lg font-bold text-gray-900">{inspeccion?.daños?.length || 0}</p>
         </div>
       </div>
 
-      {/* Formulario de recepci\u00f3n */}
+      {/* Formulario de conformidad */}
       <div className="bg-white border rounded-xl p-5 space-y-5">
         <div className="flex items-center gap-2">
           <FileSignature className="w-5 h-5 text-[#E31E24]" />
           <h3 className="font-semibold text-gray-900">
-            {yaRecibido ? "Conformidad de recepci\u00f3n registrada" : "Registrar conformidad de recepci\u00f3n"}
+            {yaRecibido ? "Conformidad del cliente registrada" : "Firma de conformidad del cliente"}
           </h3>
         </div>
 
@@ -141,8 +142,8 @@ export default function RecepcionTab({ expediente, cliente, vehiculo, inspeccion
               className="w-5 h-5 mt-0.5 accent-[#E31E24] disabled:opacity-50"
             />
             <div>
-              <p className="font-medium text-gray-900">Recibi\u00f3 el veh\u00edculo</p>
-              <p className="text-sm text-gray-500">El cliente confirma haber recibido la unidad y las llaves.</p>
+              <p className="font-medium text-gray-900">Recibió el vehículo</p>
+              <p className="text-sm text-gray-500">El cliente confirma que se llevó la unidad junto con sus llaves.</p>
             </div>
           </label>
 
@@ -155,8 +156,8 @@ export default function RecepcionTab({ expediente, cliente, vehiculo, inspeccion
               className="w-5 h-5 mt-0.5 accent-[#E31E24] disabled:opacity-50"
             />
             <div>
-              <p className="font-medium text-gray-900">Lo prob\u00f3 y est\u00e1 satisfecho</p>
-              <p className="text-sm text-gray-500">El cliente prob\u00f3/manej\u00f3 el veh\u00edculo y est\u00e1 conforme hasta este momento.</p>
+              <p className="font-medium text-gray-900">Lo probó y quedó satisfecho</p>
+              <p className="text-sm text-gray-500">El cliente manejó el vehículo y el trabajo quedó a su satisfacción.</p>
             </div>
           </label>
 
@@ -169,19 +170,19 @@ export default function RecepcionTab({ expediente, cliente, vehiculo, inspeccion
               className="w-5 h-5 mt-0.5 accent-[#E31E24] disabled:opacity-50"
             />
             <div>
-              <p className="font-medium text-gray-900">Conforme con el estado al recibirlo</p>
-              <p className="text-sm text-gray-500">El cliente est\u00e1 de acuerdo con el estado en que recibe la unidad.</p>
+              <p className="font-medium text-gray-900">Conforme con el estado del vehículo</p>
+              <p className="text-sm text-gray-500">El cliente acepta el estado en que se le entrega la unidad.</p>
             </div>
           </label>
         </div>
 
         <div>
-          <Label className="mb-1.5 block">Nombre de quien retira el veh\u00edculo *</Label>
+          <Label className="mb-1.5 block">Nombre de la persona que retira el vehículo *</Label>
           <Input
             value={nombre}
             disabled={yaRecibido}
             onChange={(e) => setNombre(e.target.value)}
-            placeholder="Nombre completo del cliente o representante"
+            placeholder="Nombre completo del cliente o de su representante"
             className="h-11 border-gray-300 focus:border-[#E31E24]"
           />
         </div>
@@ -205,7 +206,7 @@ export default function RecepcionTab({ expediente, cliente, vehiculo, inspeccion
               className="flex-1 gap-2 bg-gradient-to-r from-[#E31E24] to-[#B71C1C] hover:from-[#B71C1C] hover:to-[#E31E24] text-white"
             >
               <ShieldCheck className="w-4 h-4" />
-              {saving ? "Guardando..." : "Guardar conformidad de recepci\u00f3n"}
+              {saving ? "Guardando..." : "Guardar conformidad del cliente"}
             </Button>
             <Button variant="outline" onClick={handleDownload} className="gap-2">
               <Download className="w-4 h-4" /> Previsualizar PDF
@@ -216,7 +217,7 @@ export default function RecepcionTab({ expediente, cliente, vehiculo, inspeccion
 
       {yaRecibido && (
         <p className="text-xs text-gray-400 flex items-center gap-1.5 justify-center">
-          <Lock className="w-3 h-3" /> La conformidad est\u00e1 bloqueada. Para corregir, contacte al administrador.
+          <Lock className="w-3 h-3" /> La conformidad ya está firmada y no puede editarse. Para corregirla, contacte al administrador.
         </p>
       )}
     </div>

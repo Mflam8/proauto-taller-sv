@@ -24,7 +24,7 @@ const TABS = [
   { id: "diagnostico", label: "Diagnóstico", icon: Stethoscope },
   { id: "trabajos", label: "Trabajos", icon: Wrench },
   { id: "materiales", label: "Materiales", icon: Package },
-  { id: "recepcion", label: "Recepción", icon: ShieldCheck },
+  { id: "recepcion", label: "Conformidad del cliente", icon: ShieldCheck },
   { id: "caja", label: "Caja", icon: DollarSign },
   { id: "cierre", label: "Cierre", icon: TruckIcon },
 ];

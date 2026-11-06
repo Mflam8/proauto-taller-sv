@@ -131,7 +131,7 @@ export default function SignaturePad({ value, onChange, disabled }) {
         />
         {!hasContent && !disabled && (
           <span className="absolute inset-0 flex items-center justify-center text-gray-300 text-sm pointer-events-none select-none">
-            Firme aqu\u00ed
+            Firme aquí
           </span>
         )}
       </div>
