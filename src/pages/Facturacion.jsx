@@ -52,15 +52,17 @@ export default function Facturacion() {
   };
 
   const filteredFacturas = facturas.filter(factura => {
-    // Las anuladas solo se ven al filtrar por "Anuladas": no estorban en la operación diaria
-    if (filterEstado === "all" && factura.estado_pago === "Cerrada") return false;
     const matchesSearch = 
       factura.numero_factura?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       getClienteNombre(factura.cliente_id).toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesEstado = filterEstado === "all" || factura.estado_pago === filterEstado;
-    
-    return matchesSearch && matchesEstado;
+    if (!matchesSearch || !matchesEstado) return false;
+
+    // Las anuladas no estorban en la operación diaria, pero sí deben aparecer al buscarlas
+    if (filterEstado === "all" && factura.estado_pago === "Cerrada" && !searchTerm.trim()) return false;
+
+    return true;
   });
 
   const handleRegistrarPago = (factura) => {

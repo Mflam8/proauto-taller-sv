@@ -4,13 +4,36 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { ShieldCheck, FilePlus2, Printer, Activity, Lock, Search } from "lucide-react";
+import { ShieldCheck, FilePlus2, Printer, Activity, Lock, Search, Eye, AlertTriangle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import FacturaDetalle from "@/components/facturacion/FacturaDetalle";
 import { esDueno } from "@/lib/permissions";
 
 export default function ControlFacturas() {
   const [user, setUser] = useState(null);
   const [cargandoUser, setCargandoUser] = useState(true);
   const [busqueda, setBusqueda] = useState("");
+  const [facturaVista, setFacturaVista] = useState(null);
+  const [cargandoFactura, setCargandoFactura] = useState(null);
+  const [noEncontrada, setNoEncontrada] = useState(null);
+
+  // Desde la bitácora se abre la factura guardada; si ya no existe, se avisa con su número
+  const abrirFactura = async (registro) => {
+    if (!registro?.factura_id) {
+      setNoEncontrada(registro);
+      return;
+    }
+    setCargandoFactura(registro.id);
+    try {
+      const f = await base44.entities.Factura.get(registro.factura_id);
+      setFacturaVista(f);
+    } catch {
+      setNoEncontrada(registro);
+    } finally {
+      setCargandoFactura(null);
+    }
+  };
 
   useEffect(() => {
     base44.auth.me()
@@ -152,7 +175,20 @@ export default function ControlFacturas() {
                 <tbody className="divide-y">
                   {resumenFacturas.map(([id, r]) => (
                     <tr key={id} className="hover:bg-gray-50">
-                      <td className="py-2.5 pr-3 font-mono font-semibold text-gray-900">#{r.numero_factura}</td>
+                      <td className="py-2.5 pr-3 font-mono font-semibold text-gray-900">
+                        <div className="flex items-center gap-2">
+                          #{r.numero_factura}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 text-[#E31E24] hover:bg-red-50"
+                            disabled={cargandoFactura === id}
+                            onClick={() => abrirFactura({ id, factura_id: id, numero_factura: r.numero_factura })}
+                          >
+                            <Eye className="w-3.5 h-3.5 mr-1" /> Ver
+                          </Button>
+                        </div>
+                      </td>
                       <td className="py-2.5 pr-3 text-gray-700">{r.cliente_nombre || "—"}</td>
                       <td className="py-2.5 pr-3 text-right font-semibold text-gray-900">${r.monto_total.toFixed(2)}</td>
                       <td className="py-2.5 pr-3 text-center">
@@ -220,7 +256,22 @@ export default function ControlFacturas() {
                           {r.evento}
                         </Badge>
                       </td>
-                      <td className="py-2.5 pr-3 font-mono text-gray-900">#{r.numero_factura || "—"}</td>
+                      <td className="py-2.5 pr-3 font-mono text-gray-900">
+                        <div className="flex items-center gap-2">
+                          #{r.numero_factura || "—"}
+                          {r.factura_id && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 px-2 text-[#E31E24] hover:bg-red-50"
+                              disabled={cargandoFactura === r.id}
+                              onClick={() => abrirFactura(r)}
+                            >
+                              <Eye className="w-3.5 h-3.5 mr-1" /> Ver
+                            </Button>
+                          )}
+                        </div>
+                      </td>
                       <td className="py-2.5 pr-3 text-gray-700">{r.cliente_nombre || "—"}</td>
                       <td className="py-2.5 pr-3 text-right font-semibold text-gray-900">${(r.monto_total || 0).toFixed(2)}</td>
                       <td className="py-2.5 pr-3 text-gray-700">
@@ -238,6 +289,42 @@ export default function ControlFacturas() {
           )}
         </CardContent>
       </Card>
+
+      {/* Factura guardada, abierta desde la bitácora */}
+      <Dialog open={!!facturaVista} onOpenChange={() => setFacturaVista(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Factura #{facturaVista?.numero_factura}</DialogTitle>
+          </DialogHeader>
+          {facturaVista && <FacturaDetalle factura={facturaVista} />}
+        </DialogContent>
+      </Dialog>
+
+      {/* La bitácora tiene el evento, pero la factura ya no existe */}
+      <Dialog open={!!noEncontrada} onOpenChange={() => setNoEncontrada(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-amber-500" /> Factura no disponible
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 text-sm text-gray-600">
+            <p>
+              La bitácora registró la factura{" "}
+              <span className="font-mono font-semibold text-gray-900">
+                #{noEncontrada?.numero_factura || "—"}
+              </span>{" "}
+              por ${(noEncontrada?.monto_total || 0).toFixed(2)}
+              {noEncontrada?.cliente_nombre ? ` de ${noEncontrada.cliente_nombre}` : ""}, pero ese registro ya no
+              existe en el sistema: alguien la eliminó.
+            </p>
+            <p>
+              Para recuperarla, ve a Datos → tabla Factura → <span className="font-semibold">Recientemente eliminados</span>{" "}
+              y restáurala.
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
