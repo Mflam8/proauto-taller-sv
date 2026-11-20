@@ -17,6 +17,7 @@ export default function CierreTab({ expediente, onCerrar }) {
   const [kmSalida, setKmSalida] = useState(expediente.kilometraje_salida || "");
   const [saving, setSaving] = useState(false);
   const [pagado, setPagado] = useState(false);
+  const [idempotenciaId] = useState(() => crypto.randomUUID());
 
   // Buscar factura asociada al expediente
   const { data: facturas = [] } = useQuery({
@@ -31,46 +32,29 @@ export default function CierreTab({ expediente, onCerrar }) {
   const sinFactura = !factura && expediente.factura_generada !== true;
 
   const handlePagar = async () => {
-    if (!pago.monto || !factura) return;
+    if (!pago.monto || !factura || saving) return;
     setSaving(true);
-    const montoNum = parseFloat(pago.monto);
-
-    // 1. Crear registro de Pago vinculado a la Factura
-    const currentUser = await base44.auth.me();
-    await base44.entities.Pago.create({
-      factura_id: factura.id,
-      monto: montoNum,
-      metodo_pago: pago.metodo,
-      referencia: pago.referencia,
-      fecha_pago: new Date().toISOString(),
-      recibido_por: currentUser?.full_name || "",
-      notas: pago.notas,
-    });
-
-    // 2. Actualizar Factura
-    const nuevoMontoPagadoFactura = (factura.monto_pagado || 0) + montoNum;
-    const nuevoSaldoFactura = factura.total - nuevoMontoPagadoFactura;
-    const nuevoEstadoFactura = nuevoSaldoFactura <= 0.01 ? "Pagada" : "Parcial";
-    await base44.entities.Factura.update(factura.id, {
-      monto_pagado: nuevoMontoPagadoFactura,
-      saldo_pendiente: Math.max(0, nuevoSaldoFactura),
-      estado_pago: nuevoEstadoFactura,
-    });
-
-    // 3. Actualizar Expediente
-    const nuevoTotalPagado = (expediente.total_pagado || 0) + montoNum;
-    const nuevoSaldo = (expediente.total_cobrado || 0) - nuevoTotalPagado;
-    await base44.entities.Expediente.update(expediente.id, {
-      total_pagado: nuevoTotalPagado,
-      saldo_pendiente: Math.max(0, nuevoSaldo),
-    });
-
-    qc.invalidateQueries(["expediente", expediente.id]);
-    qc.invalidateQueries(["facturas-expediente", expediente.id]);
-    qc.invalidateQueries(["facturas"]);
-    qc.invalidateQueries(["pagos"]);
-    setPagado(true);
-    setSaving(false);
+    try {
+      const response = await base44.functions.invoke('registrarPago', {
+        factura_id: factura.id,
+        monto: parseFloat(pago.monto),
+        metodo_pago: pago.metodo,
+        referencia: pago.referencia,
+        fecha_pago: new Date().toISOString(),
+        notas: pago.notas,
+        idempotencia_id: idempotenciaId,
+      });
+      if (response.data?.error) throw new Error(response.data.error);
+      qc.invalidateQueries(["expediente", expediente.id]);
+      qc.invalidateQueries(["facturas-expediente", expediente.id]);
+      qc.invalidateQueries(["facturas"]);
+      qc.invalidateQueries(["pagos"]);
+      setPagado(true);
+    } catch (error) {
+      alert(error.message || 'No se pudo registrar el pago.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleEntregar = async () => {

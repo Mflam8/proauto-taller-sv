@@ -6,6 +6,10 @@
       "type": "string",
       "description": "ID de la factura"
     },
+    "idempotencia_id": {
+      "type": "string",
+      "description": "Clave del env\u00edo para evitar registrar dos veces el mismo intento de pago"
+    },
     "monto": {
       "type": "number",
       "description": "Monto del pago"
@@ -15,49 +19,39 @@
       "enum": [
         "Efectivo",
         "Transferencia",
-        "Tarjeta Débito",
-        "Tarjeta Crédito",
+        "Tarjeta D\u00e9bito",
+        "Tarjeta Cr\u00e9dito",
         "Cheque"
-      ],
-      "description": "Método de pago"
+      ]
     },
     "referencia": {
-      "type": "string",
-      "description": "Referencia del pago"
+      "type": "string"
     },
     "fecha_pago": {
       "type": "string",
-      "format": "date-time",
-      "description": "Fecha del pago"
+      "format": "date-time"
     },
     "fecha_remesa": {
       "type": "string",
-      "format": "date",
-      "description": "Fecha de remesa/cheque (cuando se depositó al banco)"
+      "format": "date"
     },
     "recibido_por": {
-      "type": "string",
-      "description": "Usuario que recibió el pago"
+      "type": "string"
     },
     "notas": {
-      "type": "string",
-      "description": "Notas del pago"
+      "type": "string"
     },
     "legacy_payment_id": {
-      "type": "string",
-      "description": "ID del cobro en sistema anterior (DBF)"
+      "type": "string"
     },
     "legacy_invoice_id": {
-      "type": "string",
-      "description": "ID de la factura en sistema anterior"
+      "type": "string"
     },
     "legacy_customer_id": {
-      "type": "string",
-      "description": "ID del cliente en sistema anterior"
+      "type": "string"
     },
     "legacy_raw_table": {
-      "type": "string",
-      "description": "Tabla de origen en sistema anterior"
+      "type": "string"
     }
   },
   "required": [

@@ -104,6 +104,19 @@
       "type": "number",
       "description": "Saldo pendiente"
     },
+    "pago_lock_id": {
+      "type": "string",
+      "description": "Clave interna de coordinaci\u00f3n de cobros"
+    },
+    "pago_lock_token": {
+      "type": "string",
+      "description": "Bloqueo temporal interno durante el registro de un pago"
+    },
+    "pago_lock_hasta": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Vencimiento del bloqueo temporal de pago"
+    },
     "fecha_vencimiento": {
       "type": "string",
       "format": "date",

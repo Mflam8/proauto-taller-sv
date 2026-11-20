@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Save, DollarSign } from "lucide-react";
 
 export default function PagoRapidoForm({ onSave, onCancel, facturas = [] }) {
+  const [idempotenciaId, setIdempotenciaId] = useState(() => crypto.randomUUID());
   const [formData, setFormData] = useState({
     factura_id: "",
     monto: "",
@@ -27,11 +28,21 @@ export default function PagoRapidoForm({ onSave, onCancel, facturas = [] }) {
   }, []);
 
   const mutation = useMutation({
-    mutationFn: (data) => base44.entities.Pago.create(data),
+    mutationFn: async (data) => {
+      if (!data.factura_id) return base44.entities.Pago.create(data);
+      const response = await base44.functions.invoke('registrarPago', {
+        ...data,
+        idempotencia_id: idempotenciaId,
+      });
+      if (response.data?.error) throw new Error(response.data.error);
+      return response.data;
+    },
     onSuccess: () => {
       qc.invalidateQueries(["pagos-tablero"]);
+      setIdempotenciaId(crypto.randomUUID());
       if (onSave) onSave();
     },
+    onError: (error) => alert(error.message || 'No se pudo registrar el pago.'),
   });
 
   const handleChange = (field, value) => setFormData(p => ({ ...p, [field]: value }));

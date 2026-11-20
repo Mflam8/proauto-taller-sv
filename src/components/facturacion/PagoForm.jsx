@@ -1,16 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Save, X, DollarSign } from "lucide-react";
-import { esAdmin } from "@/lib/permissions";
 
 export default function PagoForm({ factura, onClose }) {
-  const [user, setUser] = useState(null);
+  const [idempotenciaId] = useState(() => crypto.randomUUID());
+  const { toast } = useToast();
   const saldoPendiente = (factura.total || 0) - (factura.monto_pagado || 0);
   
   const [formData, setFormData] = useState({
@@ -25,47 +26,15 @@ export default function PagoForm({ factura, onClose }) {
 
   const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const currentUser = await base44.auth.me();
-        setUser(currentUser);
-        setFormData(prev => ({ ...prev, recibido_por: currentUser.full_name }));
-      } catch (error) {
-        console.error("Error loading user:", error);
-      }
-    };
-    loadUser();
-  }, []);
-
   const createPagoMutation = useMutation({
     mutationFn: async (data) => {
-      const pago = await base44.entities.Pago.create(data);
-
-      const nuevoMontoPagado = (factura.monto_pagado || 0) + data.monto;
-      const nuevoSaldo = factura.total - nuevoMontoPagado;
-      const nuevoEstado = nuevoSaldo <= 0.01 ? 'Pagada' : nuevoSaldo < factura.total ? 'Parcial' : 'Pendiente';
-
-      await base44.entities.Factura.update(factura.id, {
-        monto_pagado: nuevoMontoPagado,
-        saldo_pendiente: nuevoSaldo,
-        estado_pago: nuevoEstado
+      const response = await base44.functions.invoke('registrarPago', {
+        ...data,
+        factura_id: factura.id,
+        idempotencia_id: idempotenciaId,
       });
-
-      // Sincronizar el expediente asociado (si existe)
-      if (factura.expediente_id) {
-        const facturasExp = (await base44.entities.Factura.filter({ expediente_id: factura.expediente_id }))
-          .filter(f => f.estado_pago !== 'Cerrada');
-        const totalCobrado = facturasExp.reduce((sum, f) => sum + (f.total || 0), 0);
-        const totalPagado = facturasExp.reduce((sum, f) => sum + (f.monto_pagado || 0), 0);
-        const saldoExp = Math.max(0, totalCobrado - totalPagado);
-        // "total_cobrado" solo lo modifica la gerencia; recepción actualiza lo que corresponde al cobro.
-        const syncData = { total_pagado: totalPagado, saldo_pendiente: saldoExp };
-        if (esAdmin(user)) syncData.total_cobrado = totalCobrado;
-        await base44.entities.Expediente.update(factura.expediente_id, syncData);
-      }
-
-      return pago;
+      if (response.data?.error) throw new Error(response.data.error);
+      return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['facturas'] });
@@ -74,6 +43,11 @@ export default function PagoForm({ factura, onClose }) {
       queryClient.invalidateQueries({ queryKey: ['expedientes'] });
       onClose();
     },
+    onError: (error) => toast({
+      variant: 'destructive',
+      title: 'No se registró el pago',
+      description: error.message || 'Verifica el saldo y vuelve a intentarlo.',
+    }),
   });
 
   const handleSubmit = (e) => {
