@@ -47,7 +47,7 @@ const SiNoSelect = ({ label, value, onChange }) => (
   </div>
 );
 
-export default function InspeccionForm({ expediente, vehiculo, cliente, empleados, onSave, inspeccionExistente }) {
+export default function InspeccionForm({ expediente, vehiculo, cliente, empleados, onSave, inspeccionExistente, soloTecnico = false }) {
   const [form, setForm] = useState(inspeccionExistente || {
     realizada_por: "",
     kilometraje: vehiculo?.kilometraje_actual || "",
@@ -255,11 +255,13 @@ export default function InspeccionForm({ expediente, vehiculo, cliente, empleado
         <Textarea value={form.observaciones} onChange={e => set("observaciones", e.target.value)} rows={3} />
       </div>
 
-      <div className="bg-white border rounded-xl p-4 space-y-3">
-        <h3 className="font-semibold text-gray-800">Confirmación de ingreso</h3>
-        <div><Label>Nombre del cliente o representante</Label><Input value={form.firma_ingreso?.nombre_firma || ""} onChange={e => set("firma_ingreso", { ...(form.firma_ingreso || {}), nombre_firma: e.target.value, metodo: "Digital" })} /></div>
-        <div><Label>Firma del cliente</Label><SignaturePad value={form.firma_ingreso?.firma_data_url || ""} onChange={firma_data_url => set("firma_ingreso", { ...(form.firma_ingreso || {}), firma_data_url, metodo: "Digital" })} /></div>
-      </div>
+      {!soloTecnico && (
+        <div className="bg-white border rounded-xl p-4 space-y-3">
+          <h3 className="font-semibold text-gray-800">Confirmación de ingreso</h3>
+          <div><Label>Nombre del cliente o representante</Label><Input value={form.firma_ingreso?.nombre_firma || ""} onChange={e => set("firma_ingreso", { ...(form.firma_ingreso || {}), nombre_firma: e.target.value, metodo: "Digital" })} /></div>
+          <div><Label>Firma del cliente</Label><SignaturePad value={form.firma_ingreso?.firma_data_url || ""} onChange={firma_data_url => set("firma_ingreso", { ...(form.firma_ingreso || {}), firma_data_url, metodo: "Digital" })} /></div>
+        </div>
+      )}
 
       <Button className="w-full bg-[#E31E24] hover:bg-[#B71C1C] gap-2" onClick={handleSave} disabled={saving}>
         <CheckCircle className="w-4 h-4" />

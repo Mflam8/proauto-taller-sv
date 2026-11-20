@@ -17,6 +17,7 @@ import CajaChicaTab from "@/components/caja/CajaChicaTab";
 import CierreTab from "@/components/cierre/CierreTab";
 import GenerarFacturaForm from "@/components/facturacion/GenerarFacturaForm";
 import RecepcionTab from "@/components/autorizacion/RecepcionTab";
+import { esTecnico } from "@/lib/permissions";
 
 const TABS = [
   { id: "resumen", label: "Resumen", icon: FolderOpen },
@@ -28,6 +29,9 @@ const TABS = [
   { id: "caja", label: "Caja", icon: DollarSign },
   { id: "cierre", label: "Cierre", icon: TruckIcon },
 ];
+
+// El técnico solo trabaja el vehículo: facturación, caja y cierre son de administración.
+const TABS_TECNICO = ["resumen", "inspeccion", "diagnostico", "trabajos", "materiales"];
 
 const ESTADOS = [
   "Recibido", "En Diagnóstico", "Esperando Aprobación", "Aprobado",
@@ -56,6 +60,9 @@ export default function ExpedienteVista() {
   const qc = useQueryClient();
   const [tab, setTab] = useState("resumen");
   const [showFacturaForm, setShowFacturaForm] = useState(false);
+
+  const { data: usuario } = useQuery({ queryKey: ["me"], queryFn: () => base44.auth.me() });
+  const vistaTecnico = esTecnico(usuario);
 
   const { data: expediente, isLoading } = useQuery({
     queryKey: ["expediente", id],
@@ -136,7 +143,7 @@ export default function ExpedienteVista() {
         </div>
         <div className="flex items-center gap-2">
           <Badge className={estadoColor[expediente.estado_interno]}>{expediente.estado_interno}</Badge>
-          {!expediente.factura_generada ? (
+          {!vistaTecnico && (!expediente.factura_generada ? (
             <Button size="sm" onClick={() => setShowFacturaForm(true)}
               className="bg-gradient-to-r from-[#E31E24] to-[#B71C1C] text-white gap-1 text-xs">
               <Receipt className="w-3.5 h-3.5" /> Generar Factura
@@ -145,25 +152,27 @@ export default function ExpedienteVista() {
             <Badge className="bg-green-100 text-green-800 border border-green-200">
               <Receipt className="w-3 h-3 mr-1" /> Facturado
             </Badge>
-          )}
+          ))}
         </div>
       </div>
 
       {/* Cambiar estado */}
-      <div className="bg-white border rounded-xl p-3 mb-4 flex items-center gap-3">
-        <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Cambiar estado:</span>
-        <Select value={expediente.estado_interno} onValueChange={updateEstado}>
-          <SelectTrigger className="w-56"><SelectValue /></SelectTrigger>
-          <SelectContent>{ESTADOS.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}</SelectContent>
-        </Select>
-      </div>
+      {!vistaTecnico && (
+        <div className="bg-white border rounded-xl p-3 mb-4 flex items-center gap-3">
+          <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Cambiar estado:</span>
+          <Select value={expediente.estado_interno} onValueChange={updateEstado}>
+            <SelectTrigger className="w-56"><SelectValue /></SelectTrigger>
+            <SelectContent>{ESTADOS.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}</SelectContent>
+          </Select>
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="flex gap-1 bg-gray-100 rounded-xl p-1 mb-5 overflow-x-auto">
-        {TABS.filter(t => t.id !== "inspeccion" || expediente.vehiculo_id).map(t => (
+        {TABS.filter(t => (!vistaTecnico || TABS_TECNICO.includes(t.id)) && (t.id !== "inspeccion" || expediente.vehiculo_id)).map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
-            className={`flex items-center gap-1.5 flex-shrink-0 justify-center py-2 px-3 rounded-lg text-xs sm:text-sm font-medium transition-all ${tab === t.id ? "bg-white shadow text-gray-900" : "text-gray-500 hover:text-gray-700"}`}>
-            <t.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" /><span className="hidden sm:inline">{t.label}</span><span className="sm:hidden">{t.label.split(" ")[0]}</span>
+            className={`flex items-center gap-1.5 flex-shrink-0 justify-center py-2.5 px-3 rounded-lg text-xs sm:text-sm font-medium transition-all ${tab === t.id ? "bg-white shadow text-gray-900" : "text-gray-500 hover:text-gray-700"}`}>
+            <t.icon className="w-4 h-4" /><span className="whitespace-nowrap">{t.label}</span>
           </button>
         ))}
       </div>
@@ -199,6 +208,7 @@ export default function ExpedienteVista() {
             <InfoRow label="Ingreso" value={expediente.fecha_ingreso ? format(new Date(expediente.fecha_ingreso), "dd MMM yyyy HH:mm", { locale: es }) : null} />
             <InfoRow label="Promesa entrega" value={expediente.fecha_promesa_entrega ? format(new Date(expediente.fecha_promesa_entrega), "dd MMM yyyy HH:mm", { locale: es }) : "No definida"} />
           </div>
+          {!vistaTecnico && (
           <div className="bg-white border rounded-xl p-4">
             <div className="flex items-center gap-2 mb-3"><DollarSign className="w-4 h-4 text-[#E31E24]" /><h3 className="font-semibold">Estado Financiero</h3></div>
             <div className="grid grid-cols-3 gap-2">
@@ -207,6 +217,7 @@ export default function ExpedienteVista() {
               <div className="bg-red-50 rounded-lg p-2 text-center"><p className="text-xs text-gray-500">Pendiente</p><p className="font-bold text-red-700">${(expediente.saldo_pendiente || 0).toFixed(2)}</p></div>
             </div>
           </div>
+          )}
         </div>
       )}
 
@@ -253,6 +264,7 @@ export default function ExpedienteVista() {
               vehiculo={vehiculo}
               cliente={cliente}
               empleados={empleados}
+              soloTecnico={vistaTecnico}
               inspeccionExistente={inspeccion}
               onSave={() => { refetchInsp(); qc.invalidateQueries(["expediente", id]); setTab("diagnostico"); }}
             />

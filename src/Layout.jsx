@@ -47,6 +47,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import BottomNav from "@/components/tecnico/BottomNav";
 
 const navigationItems = [
   { title: "Mi Taller", url: "/MiTaller", icon: Clock },
@@ -167,6 +168,8 @@ export default function Layout({ children, currentPageName }) {
   const perfilSimulado = esDueno(user) ? leerPerfilSimulado() : null;
   const usuarioVista = perfilSimulado ? usuarioSimulado(user, perfilSimulado) : user;
   const miRol = rolEfectivo(usuarioVista);
+  // En el teléfono el técnico usa una barra inferior fija en lugar del menú lateral.
+  const vistaTecnico = miRol === "tecnico";
 
   useEffect(() => {
     const loadUser = async () => {
@@ -333,10 +336,11 @@ export default function Layout({ children, currentPageName }) {
             </div>
           </header>
 
-          <div className="flex-1 overflow-auto">
+          <div className={`flex-1 overflow-auto ${vistaTecnico ? "pb-24 lg:pb-0" : ""}`}>
             {children}
           </div>
         </main>
+        {vistaTecnico && <BottomNav />}
       </div>
     </SidebarProvider>
   );

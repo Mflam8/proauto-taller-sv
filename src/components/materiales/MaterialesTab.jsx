@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Package, Trash2 } from "lucide-react";
+import { esTecnico } from "@/lib/permissions";
 
 const ORIGENES = ["Inventario del taller", "Compra para este vehículo", "Proporcionado por el cliente"];
 const ESTADOS = ["Recibida", "Instalada", "No utilizada", "Devuelta"];
@@ -20,6 +21,10 @@ export default function MaterialesTab({ expediente, trabajos }) {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(emptyMaterial);
   const [saving, setSaving] = useState(false);
+
+  const { data: usuario } = useQuery({ queryKey: ["me"], queryFn: () => base44.auth.me() });
+  // El técnico consulta los materiales del vehículo; altas y cambios los hace administración.
+  const vistaTecnico = esTecnico(usuario);
 
   const { data: materiales = [], refetch } = useQuery({
     queryKey: ["materiales-trabajo", expediente.id],
@@ -72,9 +77,11 @@ export default function MaterialesTab({ expediente, trabajos }) {
           <h3 className="font-semibold text-gray-800">Materiales y repuestos</h3>
           <p className="text-xs text-gray-500">Registra qué se recibió, instaló, devolvió o quedó sin usar.</p>
         </div>
-        <Button size="sm" onClick={() => setShowForm(!showForm)} className="bg-[#E31E24] hover:bg-[#B71C1C] gap-1 text-xs">
-          <Plus className="w-3 h-3" /> Agregar
-        </Button>
+        {!vistaTecnico && (
+          <Button size="sm" onClick={() => setShowForm(!showForm)} className="bg-[#E31E24] hover:bg-[#B71C1C] gap-1 text-xs">
+            <Plus className="w-3 h-3" /> Agregar
+          </Button>
+        )}
       </div>
 
       {showForm && (
@@ -150,15 +157,19 @@ export default function MaterialesTab({ expediente, trabajos }) {
                 <p className="text-xs text-gray-500">{material.origen} · Cantidad: {material.cantidad}{material.numero_parte ? ` · Parte: ${material.numero_parte}` : ""}{material.costo_total > 0 ? ` · Costo: $${material.costo_total.toFixed(2)}${material.proveedor_nombre ? ` (${material.proveedor_nombre})` : ""}` : ""}</p>
                 {material.notas && <p className="text-xs text-gray-500 mt-1">{material.notas}</p>}
               </div>
-              <div className="flex items-center gap-1">
-                <Select value={material.estado} onValueChange={v => actualizarEstado(material, v)}>
-                  <SelectTrigger className="h-7 text-xs w-28"><SelectValue /></SelectTrigger>
-                  <SelectContent>{ESTADOS.map(estado => <SelectItem key={estado} value={estado}>{estado}</SelectItem>)}</SelectContent>
-                </Select>
-                <Button size="icon" variant="ghost" className="h-7 w-7 text-red-400 hover:text-red-600" onClick={() => eliminar(material)}>
-                  <Trash2 className="w-3 h-3" />
-                </Button>
-              </div>
+              {vistaTecnico ? (
+                <Badge className="text-[11px] bg-gray-200 text-gray-700 shrink-0">{material.estado}</Badge>
+              ) : (
+                <div className="flex items-center gap-1">
+                  <Select value={material.estado} onValueChange={v => actualizarEstado(material, v)}>
+                    <SelectTrigger className="h-7 text-xs w-28"><SelectValue /></SelectTrigger>
+                    <SelectContent>{ESTADOS.map(estado => <SelectItem key={estado} value={estado}>{estado}</SelectItem>)}</SelectContent>
+                  </Select>
+                  <Button size="icon" variant="ghost" className="h-7 w-7 text-red-400 hover:text-red-600" onClick={() => eliminar(material)}>
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </div>
+              )}
             </div>
           ))}
         </div>

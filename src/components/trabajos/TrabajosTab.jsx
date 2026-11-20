@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Plus, Trash2, CheckCircle, Clock, Wrench, ShieldCheck } from "lucide-react";
-import { puedeDefinirCostos } from "@/lib/permissions";
+import { puedeDefinirCostos, esTecnico } from "@/lib/permissions";
 
 const TIPOS = ["Mano de Obra", "Mano de Obra Pintura", "Repuesto", "Insumo", "Diagnóstico", "Otro"];
 
@@ -46,6 +46,7 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
 
   const { data: usuario } = useQuery({ queryKey: ["me"], queryFn: () => base44.auth.me() });
   const esSupervisor = puedeDefinirCostos(usuario);
+  const vistaTecnico = esTecnico(usuario);
 
   const tecnicos = empleados.filter(e => ["Técnico", "Pintura"].includes(e.tipo) && e.activo !== false);
 
@@ -227,7 +228,10 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="font-semibold text-gray-800">Trabajos y Servicios</h3>
-          <p className="text-xs text-gray-500">{trabajos.length} ítem(s) · Total: <span className="font-semibold text-gray-800">${total.toFixed(2)}</span></p>
+          <p className="text-xs text-gray-500">
+            {trabajos.length} ítem(s)
+            {!vistaTecnico && <> · Total: <span className="font-semibold text-gray-800">${total.toFixed(2)}</span></>}
+          </p>
         </div>
         {esSupervisor && (
           <Button size="sm" onClick={() => setShowForm(!showForm)} className="bg-[#E31E24] hover:bg-[#B71C1C] gap-1 text-xs">
@@ -322,7 +326,9 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
                 <Badge className="text-xs bg-gray-200 text-gray-700">{t.tipo}</Badge>
               </div>
               {t.tecnico_nombre && <p className="text-xs text-gray-500 mt-0.5">Técnico: {t.tecnico_nombre}</p>}
-              <p className="text-xs text-gray-500">{t.cantidad} × ${(t.precio_unitario || 0).toFixed(2)} = <span className="font-semibold text-gray-800">${(t.subtotal || 0).toFixed(2)}</span></p>
+              {!vistaTecnico && (
+                <p className="text-xs text-gray-500">{t.cantidad} × ${(t.precio_unitario || 0).toFixed(2)} = <span className="font-semibold text-gray-800">${(t.subtotal || 0).toFixed(2)}</span></p>
+              )}
               {t.precio_ajustado_por && <p className="text-[11px] text-green-700 mt-1">Revisado por: {t.precio_ajustado_por}{t.motivo_ajuste_precio ? ` · ${t.motivo_ajuste_precio}` : ""}</p>}
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
@@ -331,8 +337,12 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
                   <ShieldCheck className="w-3 h-3" /> Revisar
                 </Button>
               )}
-              <Select value={t.estado} onValueChange={v => handleEstado(t, v)}>
-                <SelectTrigger className="h-7 text-xs w-32">
+              <Select
+                value={t.estado}
+                onValueChange={v => handleEstado(t, v)}
+                disabled={vistaTecnico && t.tecnico_id !== usuario?.empleado_id}
+              >
+                <SelectTrigger className="h-8 text-xs w-32">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -351,7 +361,7 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
         ))}
       </div>
 
-      {trabajos.length > 0 && (
+      {!vistaTecnico && trabajos.length > 0 && (
         <div className="mt-4 bg-gray-900 text-white rounded-xl p-4 flex justify-between items-center">
           <span className="text-sm font-medium">Total trabajos</span>
           <span className="text-xl font-bold">${total.toFixed(2)}</span>

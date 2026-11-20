@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import ExpedienteForm from "@/components/expedientes/ExpedienteForm";
+import { esTecnico } from "@/lib/permissions";
 
 const ESTADOS = [
   "Todos", "Recibido", "En Diagnóstico", "Esperando Aprobación", "Aprobado",
@@ -55,6 +56,9 @@ export default function Expedientes() {
     queryFn: () => base44.entities.Vehiculo.list(),
   });
 
+  const { data: usuario } = useQuery({ queryKey: ["me"], queryFn: () => base44.auth.me() });
+  const vistaTecnico = esTecnico(usuario);
+
   const clienteMap = Object.fromEntries(clientes.map(c => [c.id, c]));
   const vehiculoMap = Object.fromEntries(vehiculos.map(v => [v.id, v]));
 
@@ -75,16 +79,18 @@ export default function Expedientes() {
   const listos = expedientes.filter(e => e.estado_interno === "Listo para Entrega").length;
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Expedientes</h1>
           <p className="text-gray-500 text-sm">{activos} activos · {listos} listos para entrega</p>
         </div>
-        <Button onClick={() => setShowForm(true)} className="bg-[#E31E24] hover:bg-[#B71C1C] gap-2">
-          <Plus className="w-4 h-4" /> Nuevo Expediente
-        </Button>
+        {!vistaTecnico && (
+          <Button onClick={() => setShowForm(true)} className="bg-[#E31E24] hover:bg-[#B71C1C] gap-2">
+            <Plus className="w-4 h-4" /> Nuevo Expediente
+          </Button>
+        )}
       </div>
 
       {/* Alertas */}
