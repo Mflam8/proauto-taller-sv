@@ -42,6 +42,7 @@ export default async function(req) {
       pago_lock_id: facturaId,
       $or: [
         { pago_lock_hasta: { $exists: false } },
+        { pago_lock_hasta: null },
         { pago_lock_hasta: { $lt: ahora.toISOString() } },
       ],
     }, { $set: { pago_lock_token: tokenBloqueo, pago_lock_hasta: venceBloqueo } });
