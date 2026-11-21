@@ -26,13 +26,25 @@ export default function Contacto() {
   const [form, setForm] = useState({ nombre: "", telefono: "", mensaje: "" });
   const [enviado, setEnviado] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    await base44.entities.ContactoWeb.create({ ...form });
-    setEnviado(true);
-    setLoading(false);
+    setError("");
+    try {
+      const response = await base44.functions.invoke("enviarContactoWeb", form);
+      if (!response.data?.success) {
+        setError(response.data?.error || "No se pudo enviar tu mensaje. Intenta de nuevo o contáctanos por WhatsApp.");
+        if (response.data?.saved) setForm({ nombre: "", telefono: "", mensaje: "" });
+        return;
+      }
+      setEnviado(true);
+    } catch {
+      setError("No se pudo enviar tu mensaje. Intenta de nuevo o contáctanos por WhatsApp.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -193,6 +205,7 @@ export default function Contacto() {
                         className="w-full bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:border-[#E31E24] rounded-md px-3 py-2 text-sm outline-none resize-none focus:ring-1 focus:ring-[#E31E24]"
                       />
                     </div>
+                    {error && <p role="alert" className="rounded-lg border border-red-400/40 bg-red-950/40 p-3 text-sm text-red-200">{error}</p>}
                     <Button
                       type="submit"
                       disabled={loading}

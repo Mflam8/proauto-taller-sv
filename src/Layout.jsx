@@ -24,6 +24,7 @@ import {
   ShieldCheck,
   Clock,
   Wallet,
+  MessageSquare,
   FlaskConical
 } from "lucide-react";
 import {
@@ -144,6 +145,12 @@ const navigationItems = [
     title: "Gastos",
     url: "/Gastos",
     icon: Wallet,
+    roles: ["admin"],
+  },
+  {
+    title: "Mensajes web",
+    url: "/MensajesWeb",
+    icon: MessageSquare,
     roles: ["admin"],
   },
   {
