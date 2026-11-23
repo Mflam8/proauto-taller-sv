@@ -62,10 +62,16 @@ export async function makeScope(db, actor) {
   const exps = await allRecords(db.Expediente);
   const assignedIds = new Set(jobs.filter(t => t.tecnico_id === actor.employee.id).map(t => t.expediente_id));
   const current = exps.filter(e => assignedIds.has(e.id) && !doneExp(e));
-  const expIds = new Set(current.map(e => e.id));
-  const vehicleIds = new Set(current.map(e => e.vehiculo_id).filter(Boolean));
-  const history = exps.filter(e => vehicleIds.has(e.vehiculo_id));
-  return { expIds, vehicleIds, historyIds: new Set(history.map(e => e.id)), clientIds: new Set(history.map(e => e.cliente_id)) };
+  const assignedExpIds = new Set(current.map(e => e.id));
+  const assignedVehicleIds = new Set(current.map(e => e.vehiculo_id).filter(Boolean));
+  const assignedHistory = exps.filter(e => assignedVehicleIds.has(e.vehiculo_id));
+  return {
+    expIds: new Set(exps.map(e => e.id)),
+    assignedExpIds,
+    vehicleIds: new Set(exps.map(e => e.vehiculo_id).filter(Boolean)),
+    historyIds: new Set(assignedHistory.map(e => e.id)),
+    clientIds: new Set(exps.map(e => e.cliente_id).filter(Boolean)),
+  };
 }
 export function inScope(entity, row, scope, actor) {
   if (!scope) return true;
@@ -73,7 +79,8 @@ export function inScope(entity, row, scope, actor) {
   if (entity === "Asistencia") return normalize(row.empleado_email) === normalize(actor.user.email);
   if (entity === "Cliente") return scope.clientIds.has(row.id);
   if (entity === "Vehiculo") return scope.vehicleIds.has(row.id);
-  if (entity === "Expediente") return scope.historyIds.has(row.id);
+  if (entity === "Expediente") return scope.expIds.has(row.id);
+  if (entity === "Inspeccion") return scope.expIds.has(row.expediente_id);
   return scope.historyIds.has(row.expediente_id);
 }
 export function sanitize(entity, row, actor) {
@@ -173,6 +180,7 @@ export function enforceWrite(actor, entity, operation, data, old, scope) {
     const exp = old?.expediente_id || data.expediente_id;
     if (!scope?.expIds.has(exp)) fail();
     if (old && data.expediente_id && data.expediente_id !== old.expediente_id) fail();
+    if (["TrabajoExpediente", "Diagnostico"].includes(entity) && !scope.assignedExpIds.has(exp)) fail();
     if (entity === "TrabajoExpediente") {
       if (operation !== "update" || old.tecnico_id !== actor.employee.id) fail();
       if (keys.some(k => !["estado","notas","evidencia_urls","prueba_final"].includes(k))) fail();
