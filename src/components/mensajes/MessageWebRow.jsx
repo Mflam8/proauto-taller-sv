@@ -29,6 +29,7 @@ export default function MessageWebRow({ message, onMarkRead, marking = false }) 
             {message.leido && <span className="text-xs font-medium text-gray-600">Leído</span>}
           </div>
           <p className="mb-1 break-all text-sm text-gray-700">{message.telefono}</p>
+          {message.correo && <a href={`mailto:${message.correo}`} className="mb-1 block break-all text-sm text-[#8E1B20] underline underline-offset-2">{message.correo}</a>}
           <p className="line-clamp-2 break-words text-sm leading-6 text-gray-800">{message.mensaje}</p>
           <p className="mt-2 text-xs text-gray-600">{fecha} · Formulario de contacto</p>
         </div>

@@ -8,17 +8,20 @@ export default async function(req: Request): Promise<Response> {
     const body = await req.json().catch(() => ({}));
     const nombre = String(body.nombre || '').trim();
     const telefono = String(body.telefono || '').trim();
+    const correo = String(body.correo || '').trim();
     const mensaje = String(body.mensaje || '').trim();
 
     if (!nombre || nombre.length > 120) return Response.json({ error: 'Escribe un nombre de hasta 120 caracteres.' }, { status: 400 });
     if (!telefono || telefono.length > 40) return Response.json({ error: 'Escribe un teléfono válido de hasta 40 caracteres.' }, { status: 400 });
+    if (correo && (correo.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo))) return Response.json({ error: 'Escribe un correo electrónico válido.' }, { status: 400 });
     if (!mensaje || mensaje.length > 2000) return Response.json({ error: 'El mensaje debe tener entre 1 y 2000 caracteres.' }, { status: 400 });
 
-    const contacto = await base44.entities.ContactoWeb.create({ nombre, telefono, mensaje, leido: false });
+    const contacto = await base44.entities.ContactoWeb.create({ nombre, telefono, ...(correo ? { correo } : {}), mensaje, leido: false });
     const fecha = new Date().toLocaleString('es-SV', { timeZone: 'America/El_Salvador' });
     const emailVariables = {
       nombre,
       telefono,
+      correo: correo || 'No proporcionado',
       mensaje,
       fecha,
       mensaje_resumen: mensaje.slice(0, 140),

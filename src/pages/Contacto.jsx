@@ -23,7 +23,7 @@ const TikTokIcon = ({ className }) => (
 );
 
 export default function Contacto() {
-  const [form, setForm] = useState({ nombre: "", telefono: "", mensaje: "" });
+  const [form, setForm] = useState({ nombre: "", telefono: "", correo: "", mensaje: "" });
   const [enviado, setEnviado] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -36,7 +36,7 @@ export default function Contacto() {
       const response = await base44.functions.invoke("enviarContactoWeb", form);
       if (!response.data?.success) {
         setError(response.data?.error || "No se pudo enviar tu mensaje. Intenta de nuevo o contáctanos por WhatsApp.");
-        if (response.data?.saved) setForm({ nombre: "", telefono: "", mensaje: "" });
+        if (response.data?.saved) setForm({ nombre: "", telefono: "", correo: "", mensaje: "" });
         return;
       }
       setEnviado(true);
@@ -191,6 +191,18 @@ export default function Contacto() {
                         value={form.telefono}
                         onChange={e => setForm({ ...form, telefono: e.target.value })}
                         placeholder="Tu teléfono"
+                        className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-[#E31E24]"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="contacto-correo" className="text-sm text-white/60 mb-1 block">Correo electrónico (opcional)</label>
+                      <Input
+                        id="contacto-correo"
+                        type="email"
+                        autoComplete="email"
+                        value={form.correo}
+                        onChange={e => setForm({ ...form, correo: e.target.value })}
+                        placeholder="tu@correo.com"
                         className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-[#E31E24]"
                       />
                     </div>
