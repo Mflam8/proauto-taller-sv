@@ -250,7 +250,7 @@ export default function InspeccionForm({ expediente, vehiculo, cliente, empleado
       <div className="space-y-3 rounded-xl border bg-white p-4">
         <div>
           <h3 className="font-semibold text-gray-800">Fotos de recepción: {Math.min(fotosGuardadas, ANGULOS_FOTO.length)}/{ANGULOS_FOTO.length}</h3>
-          <p className="mt-1 text-sm text-gray-600">Toma una foto de cada ángulo del vehículo con la cámara del móvil.</p>
+          <p className="mt-1 text-sm text-gray-600">Usa la cámara del dispositivo del taller. Cada foto se sube directo al expediente y queda guardada de forma privada.</p>
         </div>
         <div role="status" className={`rounded-lg border px-3 py-2 text-sm ${fotosGuardadas >= ANGULOS_FOTO.length ? "border-green-200 bg-green-50 text-green-800" : "border-amber-200 bg-amber-50 text-amber-800"}`}>
           {fotosGuardadas >= ANGULOS_FOTO.length ? "Recepción fotográfica completa. Ya puedes continuar con la facturación." : `Pendiente de fotografías: ${Math.min(fotosGuardadas, ANGULOS_FOTO.length)}/4. Completa los cuatro ángulos antes de facturar.`}

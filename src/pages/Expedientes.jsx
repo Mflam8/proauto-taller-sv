@@ -104,12 +104,12 @@ export default function Expedientes() {
       </div>
 
       {/* Tabs de estado */}
-      <div className="flex gap-2 flex-wrap mb-5">
+      <div className="-mx-3 mb-5 flex gap-2 overflow-x-auto px-3 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">
         {ESTADOS.slice(0, 8).map(estado => (
           <button
             key={estado}
             onClick={() => setFiltroEstado(estado)}
-            className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${filtroEstado === estado ? "bg-[#E31E24] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+            className={`min-h-9 shrink-0 whitespace-nowrap rounded-full px-3 text-xs font-medium transition-all ${filtroEstado === estado ? "bg-[#E31E24] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
           >
             {estado}
             {estado !== "Todos" && (
