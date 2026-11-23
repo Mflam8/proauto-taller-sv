@@ -4,6 +4,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { esDueno } from "@/lib/permissions";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
@@ -41,6 +43,7 @@ export default function GenerarFacturaForm({ expediente, cliente, vehiculo, onSu
   const [numeroFactura, setNumeroFactura] = useState("");
   const [clienteFacturacionId, setClienteFacturacionId] = useState(expediente.cliente_id || "");
   const [newItem, setNewItem] = useState({ descripcion: "", cantidad: 1, precio_unitario: 0 });
+  const [motivoExcepcion, setMotivoExcepcion] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const generandoRef = useRef(false);
 
@@ -48,6 +51,8 @@ export default function GenerarFacturaForm({ expediente, cliente, vehiculo, onSu
     queryKey: ["clientes"],
     queryFn: () => base44.entities.Cliente.list(),
   });
+  const { data: usuario } = useQuery({ queryKey: ["me"], queryFn: () => base44.auth.me() });
+  const esGerencia = esDueno(usuario);
 
   const clienteFacturacion = clientes.find(c => c.id === clienteFacturacionId) || cliente;
 
@@ -112,6 +117,7 @@ export default function GenerarFacturaForm({ expediente, cliente, vehiculo, onSu
           iva: iva,
           total: totalFactura,
           ganancia_mano_obra: gananciaManoObra,
+          ...(!vehiculo ? { excepcion_recepcion_motivo: motivoExcepcion.trim() } : {}),
         },
       });
 
@@ -188,6 +194,16 @@ export default function GenerarFacturaForm({ expediente, cliente, vehiculo, onSu
           </div>
         </div>
       </div>
+
+      {!vehiculo && (
+        <div className="space-y-2 rounded-xl border border-amber-200 bg-amber-50 p-4">
+          <p className="font-semibold text-amber-900">Excepción gerencial: servicio sin vehículo</p>
+          {esGerencia ? <>
+            <Label htmlFor="motivo-excepcion-recepcion">Explica por qué se factura sin inspección fotográfica *</Label>
+            <Textarea id="motivo-excepcion-recepcion" value={motivoExcepcion} onChange={event => setMotivoExcepcion(event.target.value)} rows={3} maxLength={1000} placeholder="Motivo de la excepción" />
+          </> : <p className="text-sm text-amber-800">Solo Gerencia puede autorizar esta excepción y debe dejar el motivo registrado.</p>}
+        </div>
+      )}
 
       {/* Factura fields */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -314,7 +330,7 @@ export default function GenerarFacturaForm({ expediente, cliente, vehiculo, onSu
         <Button variant="outline" onClick={onClose}>Cancelar</Button>
         <Button
           onClick={handleGenerar}
-          disabled={createFacturaMutation.isPending || displayItems.length === 0}
+          disabled={createFacturaMutation.isPending || displayItems.length === 0 || (!vehiculo && (!esGerencia || !motivoExcepcion.trim()))}
           className="bg-gradient-to-r from-[#E31E24] to-[#B71C1C] hover:from-[#B71C1C] hover:to-[#8B0000] text-white shadow-md gap-2"
         >
           <Receipt className="w-4 h-4" />

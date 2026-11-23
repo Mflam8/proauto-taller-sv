@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.54';
 import { siguienteNumeroFactura } from '../../shared/numeroFactura.ts';
+import { validarRecepcionFactura } from '../../shared/recepcionFactura.ts';
 
 export default async function(req) {
   try {
@@ -58,9 +59,30 @@ export default async function(req) {
       return Response.json({ error: 'Expediente no disponible.' }, { status: 404 });
     }
 
+    const validacionRecepcion = await validarRecepcionFactura(
+      base44.asServiceRole.entities,
+      expediente,
+      user,
+      perfil.perfil_acceso,
+      datos.excepcion_recepcion_motivo,
+    );
+    if (!validacionRecepcion.ok) {
+      return Response.json({ error: validacionRecepcion.error }, { status: validacionRecepcion.status });
+    }
+    const datosExcepcion = validacionRecepcion.metadata;
+
+    const datosFactura = { ...datos };
+    delete datosFactura.excepcion_recepcion_motivo;
+    delete datosFactura.excepcion_recepcion_autorizada_por;
+    delete datosFactura.excepcion_recepcion_fecha;
+    datosFactura.expediente_id = expedienteId;
+    if (expediente.vehiculo_id) datosFactura.vehiculo_id = expediente.vehiculo_id;
+    else delete datosFactura.vehiculo_id;
+
     const total = Number(datos.total) || 0;
     const factura = await base44.asServiceRole.entities.Factura.create({
-      ...datos,
+      ...datosFactura,
+      ...datosExcepcion,
       numero_factura: numero,
       estado_pago: 'Pendiente',
       monto_pagado: 0,

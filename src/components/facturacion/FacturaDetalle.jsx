@@ -286,6 +286,13 @@ export default function FacturaDetalle({ factura }) {
             </div>
           )}
 
+          {factura.excepcion_recepcion_motivo && (
+            <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3">
+              <p className="text-sm font-semibold text-amber-900">Excepción de recepción fotográfica</p>
+              <p className="mt-1 text-sm text-amber-800">{factura.excepcion_recepcion_motivo}</p>
+              <p className="mt-1 text-xs text-amber-700">Autorizada por {factura.excepcion_recepcion_autorizada_por || "Gerencia"}{factura.excepcion_recepcion_fecha ? ` · ${new Date(factura.excepcion_recepcion_fecha).toLocaleString("es-SV")}` : ""}</p>
+            </div>
+          )}
           {factura.estado_pago === 'Cerrada' && factura.motivo_cierre && (
             <div className="mt-4 flex items-center gap-2 p-3 bg-slate-100 rounded-lg border border-slate-200">
               <Lock className="w-5 h-5 text-slate-500" />

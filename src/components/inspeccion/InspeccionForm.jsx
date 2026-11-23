@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, CheckCircle, Camera } from "lucide-react";
 import SignaturePad from "@/components/autorizacion/SignaturePad";
+import FotoRecepcion, { ANGULOS_FOTO } from "@/components/inspeccion/FotoRecepcion";
 
 const ESTADOS_CONDICION = ["Bueno", "Regular", "Malo"];
 const TIPOS_DANO = ["Rayón", "Golpe", "Quebrado", "Faltante", "Óxido", "Vidrio dañado", "Daño eléctrico", "Otro"];
@@ -78,6 +79,7 @@ export default function InspeccionForm({ expediente, vehiculo, cliente, empleado
   const [nuevoDano, setNuevoDano] = useState({ tipo: "Rayón", ubicacion: "", descripcion: "" });
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+  const fotosGuardadas = (form.fotos || []).filter(foto => typeof foto === "string" && foto.trim()).length;
 
   const agregarDano = () => {
     if (!nuevoDano.ubicacion) return;
@@ -94,18 +96,18 @@ export default function InspeccionForm({ expediente, vehiculo, cliente, empleado
     set("evaluaciones", estado ? [...sinElemento, { categoria, elemento, estado }] : sinElemento);
   };
 
-  const handleFotos = async (event) => {
-    const files = Array.from(event.target.files || []);
-    if (!files.length) return;
+  const handleFotoAngulo = async (index, event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
     setUploading(true);
     try {
-      const uploaded = await Promise.all(files.map(async (file) => {
-        const { file_url } = await base44.integrations.Core.UploadFile({ file });
-        return file_url;
-      }));
-      set("fotos", [...(form.fotos || []), ...uploaded]);
-    } catch (error) {
-      alert("No se pudieron cargar las fotos. Intente nuevamente.");
+      const { file_uri } = await base44.integrations.Core.UploadPrivateFile({ file });
+      const fotos = [...(form.fotos || [])];
+      while (fotos.length < ANGULOS_FOTO.length) fotos.push("");
+      fotos[index] = file_uri;
+      set("fotos", fotos);
+    } catch {
+      alert("No se pudo guardar la foto. Intenta nuevamente.");
     } finally {
       setUploading(false);
       event.target.value = "";
@@ -120,7 +122,7 @@ export default function InspeccionForm({ expediente, vehiculo, cliente, empleado
       vehiculo_id: vehiculo.id,
       cliente_id: cliente.id,
       fecha: new Date().toISOString(),
-      estado: "Completada",
+      estado: fotosGuardadas >= ANGULOS_FOTO.length ? "Completada" : "Pendiente",
       firma_ingreso: form.firma_ingreso?.firma_data_url ? {
         ...form.firma_ingreso,
         fecha: new Date().toISOString(),
@@ -133,7 +135,7 @@ export default function InspeccionForm({ expediente, vehiculo, cliente, empleado
       await base44.entities.Inspeccion.create(data);
     }
     setSaving(false);
-    onSave();
+    onSave(fotosGuardadas >= ANGULOS_FOTO.length);
   };
 
   return (
@@ -245,9 +247,32 @@ export default function InspeccionForm({ expediente, vehiculo, cliente, empleado
       </div>
 
       {/* Fotos y confirmación inicial */}
-      <div className="bg-white border rounded-xl p-4 space-y-3">
-        <div className="flex items-center justify-between"><h3 className="font-semibold text-gray-800">Fotos de recepción</h3><label className="cursor-pointer text-sm font-medium text-[#E31E24]"><Camera className="inline w-4 h-4 mr-1" />{uploading ? "Cargando..." : "Agregar fotos"}<input type="file" accept="image/*" capture="environment" multiple className="hidden" onChange={handleFotos} disabled={uploading} /></label></div>
-        {(form.fotos || []).length > 0 && <div className="grid grid-cols-3 gap-2">{form.fotos.map((url, i) => <img key={url + i} src={url} alt={`Evidencia ${i + 1}`} className="h-20 w-full object-cover rounded-lg" />)}</div>}
+      <div className="space-y-3 rounded-xl border bg-white p-4">
+        <div>
+          <h3 className="font-semibold text-gray-800">Fotos de recepción: {Math.min(fotosGuardadas, ANGULOS_FOTO.length)}/{ANGULOS_FOTO.length}</h3>
+          <p className="mt-1 text-sm text-gray-600">Toma una foto de cada ángulo del vehículo con la cámara del móvil.</p>
+        </div>
+        <div role="status" className={`rounded-lg border px-3 py-2 text-sm ${fotosGuardadas >= ANGULOS_FOTO.length ? "border-green-200 bg-green-50 text-green-800" : "border-amber-200 bg-amber-50 text-amber-800"}`}>
+          {fotosGuardadas >= ANGULOS_FOTO.length ? "Recepción fotográfica completa. Ya puedes continuar con la facturación." : `Pendiente de fotografías: ${Math.min(fotosGuardadas, ANGULOS_FOTO.length)}/4. Completa los cuatro ángulos antes de facturar.`}
+        </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {ANGULOS_FOTO.map((angulo, index) => {
+            const fileUri = form.fotos?.[index];
+            return (
+              <div key={angulo} className="space-y-2 rounded-lg border border-gray-200 p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="font-medium text-gray-800">{index + 1}. {angulo}</p>
+                  <span className={`text-xs font-medium ${fileUri ? "text-green-700" : "text-amber-700"}`}>{fileUri ? "Guardada" : "Pendiente"}</span>
+                </div>
+                {fileUri ? <FotoRecepcion fileUri={fileUri} alt={`Vista ${angulo}`} className="h-36 w-full rounded-md object-cover" /> : <div className="flex h-24 items-center justify-center rounded-md bg-gray-50 text-sm text-gray-500">Foto pendiente</div>}
+                <label className="inline-flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                  <Camera className="h-4 w-4" aria-hidden="true" />{uploading ? "Guardando foto…" : fileUri ? "Cambiar foto" : "Tomar foto"}
+                  <input type="file" accept="image/*" capture="environment" className="sr-only" onChange={event => handleFotoAngulo(index, event)} disabled={uploading} />
+                </label>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       <div>
@@ -261,7 +286,7 @@ export default function InspeccionForm({ expediente, vehiculo, cliente, empleado
         <div><Label>Firma del cliente</Label><SignaturePad value={form.firma_ingreso?.firma_data_url || ""} onChange={firma_data_url => set("firma_ingreso", { ...(form.firma_ingreso || {}), firma_data_url, metodo: "Digital" })} /></div>
       </div>
 
-      <Button className="w-full bg-[#E31E24] hover:bg-[#B71C1C] gap-2" onClick={handleSave} disabled={saving}>
+      <Button className="w-full bg-[#E31E24] hover:bg-[#B71C1C] gap-2" onClick={handleSave} disabled={saving || uploading}>
         <CheckCircle className="w-4 h-4" />
         {saving ? "Guardando..." : "Guardar Inspección"}
       </Button>

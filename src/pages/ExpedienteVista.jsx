@@ -6,10 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, FolderOpen, Car, User, ClipboardList, Stethoscope, Wrench, DollarSign, Package, TruckIcon, Receipt, ShieldCheck } from "lucide-react";
+import { ArrowLeft, FolderOpen, Car, User, ClipboardList, Stethoscope, Wrench, DollarSign, Package, TruckIcon, Receipt, ShieldCheck, Camera } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import InspeccionForm from "@/components/inspeccion/InspeccionForm";
+import FotoRecepcion, { ANGULOS_FOTO } from "@/components/inspeccion/FotoRecepcion";
+import { esAdmin, esDueno, puede } from "@/lib/permissions";
 import DiagnosticoForm from "@/components/diagnostico/DiagnosticoForm";
 import TrabajosTab from "@/components/trabajos/TrabajosTab";
 import MaterialesTab from "@/components/materiales/MaterialesTab";
@@ -82,6 +84,8 @@ export default function ExpedienteVista() {
     queryFn: () => base44.entities.Empleado.list(),
   });
 
+  const { data: usuario } = useQuery({ queryKey: ["me"], queryFn: () => base44.auth.me() });
+
   const { data: inspecciones = [], refetch: refetchInsp } = useQuery({
     queryKey: ["inspecciones", id],
     queryFn: () => base44.entities.Inspeccion.filter({ expediente_id: id }),
@@ -104,8 +108,12 @@ export default function ExpedienteVista() {
     return <div className="p-6 text-gray-400">Cargando expediente...</div>;
   }
 
-  const inspeccion = inspecciones[0];
-  const inspeccionCompletada = inspeccion?.estado === "Completada";
+  const inspeccion = [...inspecciones].sort((a, b) => new Date(b.fecha || b.created_date || 0) - new Date(a.fecha || a.created_date || 0))[0];
+  const fotosRecepcion = inspeccion?.fotos || [];
+  const fotosRecepcionCount = fotosRecepcion.filter(foto => typeof foto === "string" && foto.trim()).length;
+  const inspeccionCompletada = inspeccion?.estado === "Completada" && fotosRecepcionCount >= ANGULOS_FOTO.length;
+  const esGerencia = esDueno(usuario);
+  const puedeFacturar = esGerencia || (esAdmin(usuario) && puede(usuario, "crear_facturas"));
   const diagnostico = diagnosticos[0];
 
   const InfoRow = ({ label, value }) => value ? (
@@ -137,8 +145,9 @@ export default function ExpedienteVista() {
         <div className="flex flex-wrap items-center gap-2">
           <Badge className={estadoColor[expediente.estado_interno]}>{expediente.estado_interno}</Badge>
           {!expediente.factura_generada ? (
-            <Button size="sm" onClick={() => setShowFacturaForm(true)}
-              className="bg-gradient-to-r from-[#E31E24] to-[#B71C1C] text-white gap-1 text-xs">
+           <Button size="sm" onClick={() => setShowFacturaForm(true)} disabled={!puedeFacturar || (vehiculo ? !inspeccionCompletada : !esGerencia)}
+             title={vehiculo && !inspeccionCompletada ? "Completa la inspección y guarda las 4 fotos de recepción" : !vehiculo && !esGerencia ? "Solo Gerencia puede autorizar una excepción para servicios sin vehículo" : undefined}
+             className="bg-gradient-to-r from-[#E31E24] to-[#B71C1C] text-white gap-1 text-xs">
               <Receipt className="w-3.5 h-3.5" /> Generar Factura
             </Button>
           ) : (
@@ -148,6 +157,18 @@ export default function ExpedienteVista() {
           )}
         </div>
       </div>
+
+      {vehiculo ? (
+        <div className={`mb-4 flex flex-col gap-3 rounded-xl border p-3 sm:flex-row sm:items-center sm:justify-between ${inspeccionCompletada ? "border-green-200 bg-green-50" : "border-amber-200 bg-amber-50"}`}>
+          <div className="flex min-w-0 items-start gap-3">
+            <Camera className={`mt-0.5 h-5 w-5 shrink-0 ${inspeccionCompletada ? "text-green-700" : "text-amber-700"}`} aria-hidden="true" />
+            <div><p className="font-semibold text-gray-900">Recepción fotográfica</p><p className="text-sm text-gray-700">{inspeccionCompletada ? `Completa: ${ANGULOS_FOTO.length}/4 ángulos guardados.` : `Pendiente de fotografías: ${Math.min(fotosRecepcionCount, ANGULOS_FOTO.length)}/4. La factura requiere los cuatro ángulos.`}</p></div>
+          </div>
+          {!inspeccionCompletada && <Button variant="outline" className="min-h-11 w-full sm:w-auto" onClick={() => setTab("inspeccion")}>Tomar fotos</Button>}
+        </div>
+      ) : (
+        <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">Servicio sin vehículo: Gerencia debe registrar una excepción con su motivo para poder facturar.</div>
+      )}
 
       {/* Cambiar estado */}
       <div className="mb-4 flex flex-col gap-2 rounded-xl border bg-white p-3 sm:flex-row sm:items-center sm:gap-3">
@@ -246,6 +267,9 @@ export default function ExpedienteVista() {
                 </div>
               )}
               <p className="text-xs text-gray-400 mt-3">Realizada por: {inspeccion.realizada_por} · {inspeccion.fecha ? format(new Date(inspeccion.fecha), "dd MMM yyyy HH:mm", { locale: es }) : ""}</p>
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {ANGULOS_FOTO.map((angulo, index) => fotosRecepcion[index] && <div key={angulo} className="space-y-1"><p className="text-xs font-medium text-gray-600">{angulo}</p><FotoRecepcion fileUri={fotosRecepcion[index]} alt={`Foto ${angulo}`} className="h-36 w-full rounded-lg object-cover" /></div>)}
+              </div>
             </div>
           ) : (
             <InspeccionForm
@@ -254,7 +278,7 @@ export default function ExpedienteVista() {
               cliente={cliente}
               empleados={empleados}
               inspeccionExistente={inspeccion}
-              onSave={() => { refetchInsp(); qc.invalidateQueries(["expediente", id]); setTab("diagnostico"); }}
+              onSave={(completa) => { refetchInsp(); qc.invalidateQueries(["expediente", id]); if (completa) setTab("diagnostico"); }}
             />
           )}
         </div>

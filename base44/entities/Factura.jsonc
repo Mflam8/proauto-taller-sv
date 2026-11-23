@@ -89,11 +89,31 @@
         "Cerrada"
       ],
       "default": "Pendiente",
+      "enumColors": [
+        "yellow",
+        "yellow",
+        "green",
+        "red",
+        "gray"
+      ],
       "description": "Estado del pago"
     },
     "motivo_cierre": {
       "type": "string",
       "description": "Motivo por el que se cerr\u00f3 la factura sin cobro completo"
+    },
+    "excepcion_recepcion_motivo": {
+      "type": "string",
+      "description": "Motivo de la excepci\u00f3n gerencial a la inspecci\u00f3n fotogr\u00e1fica"
+    },
+    "excepcion_recepcion_autorizada_por": {
+      "type": "string",
+      "description": "Correo de la persona de gerencia que autoriz\u00f3 la excepci\u00f3n"
+    },
+    "excepcion_recepcion_fecha": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha de autorizaci\u00f3n de la excepci\u00f3n"
     },
     "monto_pagado": {
       "type": "number",

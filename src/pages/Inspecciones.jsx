@@ -14,6 +14,7 @@ import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import ReporteInspecciones from "@/components/inspeccion/ReporteInspecciones";
+import FotoRecepcion from "@/components/inspeccion/FotoRecepcion";
 import { BarChart3, List } from "lucide-react";
 
 const condicionColor = {
@@ -411,12 +412,12 @@ function InspeccionDetalle({ inspeccion, vehiculo, cliente }) {
       )}
 
       {/* Fotos de evidencia */}
-      {inspeccion.fotos?.length > 0 && (
+      {inspeccion.fotos?.filter(foto => typeof foto === "string" && foto.trim()).length > 0 && (
         <div className="bg-white border rounded-xl p-4">
-          <h3 className="font-semibold text-gray-800 mb-3">Fotos de Evidencia ({inspeccion.fotos.length})</h3>
-          <div className="grid grid-cols-3 gap-2">
-            {inspeccion.fotos.map((url, i) => (
-              <img key={i} src={url} alt={`Foto ${i + 1}`} className="w-full h-24 object-cover rounded-lg" />
+          <h3 className="font-semibold text-gray-800 mb-3">Fotos de Evidencia ({inspeccion.fotos.filter(foto => typeof foto === "string" && foto.trim()).length})</h3>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {inspeccion.fotos.filter(foto => typeof foto === "string" && foto.trim()).map((url, i) => (
+              <FotoRecepcion key={url + i} fileUri={url} alt={`Foto ${i + 1}`} className="h-24 w-full rounded-lg object-cover" />
             ))}
           </div>
         </div>
