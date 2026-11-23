@@ -67,7 +67,7 @@ export default function MaterialesTab({ expediente, trabajos }) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4 gap-3">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="font-semibold text-gray-800">Materiales y repuestos</h3>
           <p className="text-xs text-gray-500">Registra qué se recibió, instaló, devolvió o quedó sin usar.</p>
@@ -143,16 +143,16 @@ export default function MaterialesTab({ expediente, trabajos }) {
       ) : (
         <div className="space-y-2">
           {materiales.map(material => (
-            <div key={material.id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl border">
+            <div key={material.id} className="flex flex-col gap-3 rounded-xl border bg-gray-50 p-3 sm:flex-row sm:items-start">
               <Package className="w-4 h-4 text-[#E31E24] mt-0.5 flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-sm text-gray-900">{material.descripcion}</p>
                 <p className="text-xs text-gray-500">{material.origen} · Cantidad: {material.cantidad}{material.numero_parte ? ` · Parte: ${material.numero_parte}` : ""}{material.costo_total > 0 ? ` · Costo: $${material.costo_total.toFixed(2)}${material.proveedor_nombre ? ` (${material.proveedor_nombre})` : ""}` : ""}</p>
                 {material.notas && <p className="text-xs text-gray-500 mt-1">{material.notas}</p>}
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex w-full items-center gap-1 sm:w-auto sm:self-start">
                 <Select value={material.estado} onValueChange={v => actualizarEstado(material, v)}>
-                  <SelectTrigger className="h-7 text-xs w-28"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="h-10 w-full text-xs sm:h-7 sm:w-28"><SelectValue /></SelectTrigger>
                   <SelectContent>{ESTADOS.map(estado => <SelectItem key={estado} value={estado}>{estado}</SelectItem>)}</SelectContent>
                 </Select>
                 <Button size="icon" variant="ghost" className="h-7 w-7 text-red-400 hover:text-red-600" onClick={() => eliminar(material)}>

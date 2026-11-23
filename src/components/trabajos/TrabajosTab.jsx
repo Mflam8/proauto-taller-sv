@@ -315,7 +315,7 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
           </div>
         )}
         {trabajosOrdenados.map(t => (
-          <div key={t.id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl border">
+          <div key={t.id} className="flex flex-col gap-3 rounded-xl border bg-gray-50 p-3 sm:flex-row sm:items-start">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-medium text-sm text-gray-900">{t.descripcion}</span>
@@ -325,14 +325,14 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
               <p className="text-xs text-gray-500">{t.cantidad} × ${(t.precio_unitario || 0).toFixed(2)} = <span className="font-semibold text-gray-800">${(t.subtotal || 0).toFixed(2)}</span></p>
               {t.precio_ajustado_por && <p className="text-[11px] text-green-700 mt-1">Revisado por: {t.precio_ajustado_por}{t.motivo_ajuste_precio ? ` · ${t.motivo_ajuste_precio}` : ""}</p>}
             </div>
-            <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap sm:flex-shrink-0">
               {esSupervisor && (
-                <Button size="sm" variant="outline" className="h-7 gap-1 px-2 text-xs" onClick={() => abrirRevision(t)}>
+                <Button size="sm" variant="outline" className="min-h-10 flex-1 gap-1 px-2 text-xs sm:min-h-7 sm:flex-none" onClick={() => abrirRevision(t)}>
                   <ShieldCheck className="w-3 h-3" /> Revisar
                 </Button>
               )}
               <Select value={t.estado} onValueChange={v => handleEstado(t, v)}>
-                <SelectTrigger className="h-7 text-xs w-32">
+                <SelectTrigger className="h-10 w-full text-xs sm:h-7 sm:w-32">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

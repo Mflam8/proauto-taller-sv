@@ -109,16 +109,16 @@ export default function ExpedienteVista() {
   const diagnostico = diagnosticos[0];
 
   const InfoRow = ({ label, value }) => value ? (
-    <div className="flex justify-between py-2 border-b border-gray-50 last:border-0">
-      <span className="text-sm text-gray-500">{label}</span>
-      <span className="text-sm font-medium text-gray-900 text-right max-w-xs">{value}</span>
+    <div className="flex items-start justify-between gap-3 border-b border-gray-50 py-2 last:border-0">
+      <span className="shrink-0 text-sm text-gray-500">{label}</span>
+      <span className="max-w-[60%] break-words text-right text-sm font-medium text-gray-900">{value}</span>
     </div>
   ) : null;
 
   return (
     <div className="p-4 sm:p-6 max-w-5xl mx-auto">
       {/* Header */}
-      <button onClick={() => navigate("/Expedientes")} className="flex items-center gap-2 text-gray-500 hover:text-gray-900 mb-4 text-sm">
+      <button onClick={() => navigate("/Expedientes")} className="mb-4 flex min-h-11 items-center gap-2 text-sm text-gray-500 hover:text-gray-900">
         <ArrowLeft className="w-4 h-4" /> Volver a Expedientes
       </button>
 
@@ -134,7 +134,7 @@ export default function ExpedienteVista() {
             <p className="text-sm text-gray-500">{expediente.motivo_visita}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Badge className={estadoColor[expediente.estado_interno]}>{expediente.estado_interno}</Badge>
           {!expediente.factura_generada ? (
             <Button size="sm" onClick={() => setShowFacturaForm(true)}
@@ -150,10 +150,10 @@ export default function ExpedienteVista() {
       </div>
 
       {/* Cambiar estado */}
-      <div className="bg-white border rounded-xl p-3 mb-4 flex items-center gap-3">
-        <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Cambiar estado:</span>
+      <div className="mb-4 flex flex-col gap-2 rounded-xl border bg-white p-3 sm:flex-row sm:items-center sm:gap-3">
+        <span className="text-sm font-medium text-gray-700 sm:whitespace-nowrap">Cambiar estado:</span>
         <Select value={expediente.estado_interno} onValueChange={updateEstado}>
-          <SelectTrigger className="w-56"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-full sm:w-56"><SelectValue /></SelectTrigger>
           <SelectContent>{ESTADOS.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}</SelectContent>
         </Select>
       </div>
@@ -162,7 +162,7 @@ export default function ExpedienteVista() {
       <div className="flex gap-1 bg-gray-100 rounded-xl p-1 mb-5 overflow-x-auto">
         {TABS.filter(t => t.id !== "inspeccion" || expediente.vehiculo_id).map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
-            className={`flex items-center gap-1.5 flex-shrink-0 justify-center py-2 px-3 rounded-lg text-xs sm:text-sm font-medium transition-all ${tab === t.id ? "bg-white shadow text-gray-900" : "text-gray-500 hover:text-gray-700"}`}>
+            className={`flex min-h-11 flex-shrink-0 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-all sm:text-sm ${tab === t.id ? "bg-white shadow text-gray-900" : "text-gray-500 hover:text-gray-700"}`}>
             <t.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" /><span className="hidden sm:inline">{t.label}</span><span className="sm:hidden">{t.label.split(" ")[0]}</span>
           </button>
         ))}
@@ -201,7 +201,7 @@ export default function ExpedienteVista() {
           </div>
           <div className="bg-white border rounded-xl p-4">
             <div className="flex items-center gap-2 mb-3"><DollarSign className="w-4 h-4 text-[#E31E24]" /><h3 className="font-semibold">Estado Financiero</h3></div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
               <div className="bg-gray-50 rounded-lg p-2 text-center"><p className="text-xs text-gray-500">Total</p><p className="font-bold">${(expediente.total_cobrado || 0).toFixed(2)}</p></div>
               <div className="bg-green-50 rounded-lg p-2 text-center"><p className="text-xs text-gray-500">Pagado</p><p className="font-bold text-green-700">${(expediente.total_pagado || 0).toFixed(2)}</p></div>
               <div className="bg-red-50 rounded-lg p-2 text-center"><p className="text-xs text-gray-500">Pendiente</p><p className="font-bold text-red-700">${(expediente.saldo_pendiente || 0).toFixed(2)}</p></div>
@@ -212,7 +212,7 @@ export default function ExpedienteVista() {
 
       {/* TAB: Inspección */}
       {tab === "inspeccion" && (
-        <div className="bg-white border rounded-xl p-5">
+        <div className="bg-white border rounded-xl p-3 sm:p-5">
           {inspeccionCompletada ? (
             <div>
               <div className="flex items-center justify-between mb-4">
@@ -262,7 +262,7 @@ export default function ExpedienteVista() {
 
       {/* TAB: Diagnóstico */}
       {tab === "diagnostico" && (
-        <div className="bg-white border rounded-xl p-5">
+        <div className="bg-white border rounded-xl p-3 sm:p-5">
           {diagnostico ? (
             <div>
               <div className="flex items-center justify-between mb-4">
@@ -298,21 +298,21 @@ export default function ExpedienteVista() {
 
       {/* TAB: Trabajos */}
       {tab === "trabajos" && (
-        <div className="bg-white border rounded-xl p-5">
+        <div className="bg-white border rounded-xl p-3 sm:p-5">
           <TrabajosTab expediente={expediente} empleados={empleados} />
         </div>
       )}
 
       {/* TAB: Materiales */}
       {tab === "materiales" && (
-        <div className="bg-white border rounded-xl p-5">
+        <div className="bg-white border rounded-xl p-3 sm:p-5">
           <MaterialesTab expediente={expediente} />
         </div>
       )}
 
       {/* TAB: Recepcion del vehiculo */}
       {tab === "recepcion" && (
-        <div className="bg-white border rounded-xl p-5">
+        <div className="bg-white border rounded-xl p-3 sm:p-5">
           <RecepcionTab
             expediente={expediente}
             cliente={cliente}
@@ -324,7 +324,7 @@ export default function ExpedienteVista() {
 
       {/* TAB: Caja Chica */}
       {tab === "caja" && (
-        <div className="bg-white border rounded-xl p-5">
+        <div className="bg-white border rounded-xl p-3 sm:p-5">
           <CajaChicaTab expediente={expediente} />
         </div>
       )}

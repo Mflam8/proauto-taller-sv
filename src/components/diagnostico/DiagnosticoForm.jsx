@@ -84,9 +84,9 @@ export default function DiagnosticoForm({ expediente, empleados, onSave, diagnos
       <div className="bg-white border rounded-xl p-4">
         <h3 className="font-semibold text-gray-800 mb-3">Fallas Detectadas</h3>
         {(form.fallas_detectadas || []).map((f, i) => (
-          <div key={i} className="flex items-start gap-2 mb-2 bg-gray-50 rounded-lg p-2">
+          <div key={i} className="mb-2 flex flex-wrap items-start gap-2 rounded-lg bg-gray-50 p-2">
             <Badge className="bg-blue-100 text-blue-800 text-xs shrink-0">{f.sistema}</Badge>
-            <span className="text-sm flex-1">{f.descripcion}</span>
+            <span className="min-w-0 flex-1 break-words text-sm">{f.descripcion}</span>
             <Badge className={`${sevColor[f.severidad]} text-xs shrink-0`}>{f.severidad}</Badge>
             <button onClick={() => quitarFalla(i)} className="text-red-400 hover:text-red-600 shrink-0"><Trash2 className="w-3 h-3" /></button>
           </div>

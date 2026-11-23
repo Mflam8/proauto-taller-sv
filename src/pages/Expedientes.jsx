@@ -75,14 +75,14 @@ export default function Expedientes() {
   const listos = expedientes.filter(e => e.estado_interno === "Listo para Entrega").length;
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="mx-auto w-full max-w-7xl px-3 py-4 sm:p-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Expedientes</h1>
           <p className="text-gray-500 text-sm">{activos} activos · {listos} listos para entrega</p>
         </div>
-        <Button onClick={() => setShowForm(true)} className="bg-[#E31E24] hover:bg-[#B71C1C] gap-2">
+        <Button onClick={() => setShowForm(true)} className="min-h-11 w-full gap-2 bg-[#E31E24] hover:bg-[#B71C1C] sm:w-auto">
           <Plus className="w-4 h-4" /> Nuevo Expediente
         </Button>
       </div>
@@ -132,22 +132,22 @@ export default function Expedientes() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04 }}
               onClick={() => navigate(`/Expedientes/${exp.id}`)}
-              className="bg-white rounded-xl border p-4 cursor-pointer hover:shadow-md transition-shadow flex flex-col sm:flex-row sm:items-center gap-3"
+              className="flex min-w-0 cursor-pointer flex-col gap-3 rounded-xl border bg-white p-3 transition-shadow hover:shadow-md sm:flex-row sm:items-center sm:p-4"
             >
-              <div className="flex items-center gap-3 flex-1">
-                <div className="w-10 h-10 bg-[#E31E24]/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <FolderOpen className="w-5 h-5 text-[#E31E24]" />
+              <div className="flex min-w-0 flex-1 items-center gap-3">
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-[#E31E24]/10">
+                  <FolderOpen className="h-5 w-5 text-[#E31E24]" />
                 </div>
-                <div>
-                  <p className="font-semibold text-gray-900">{exp.numero_expediente || `EXP-${exp.id?.slice(-6)?.toUpperCase()}`}</p>
-                  <p className="text-sm text-gray-500">{exp.motivo_visita}</p>
+                <div className="min-w-0">
+                  <p className="break-words font-semibold text-gray-900">{exp.numero_expediente || `EXP-${exp.id?.slice(-6)?.toUpperCase()}`}</p>
+                  <p className="break-words text-sm text-gray-500">{exp.motivo_visita}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
+              <div className="flex min-w-0 items-center gap-2 break-words text-sm text-gray-600">
                 <User className="w-3 h-3" />
                 {cliente?.nombre_completo || "—"}
               </div>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
+              <div className="flex min-w-0 items-center gap-2 break-words text-sm text-gray-600">
                 <Car className="w-3 h-3" />
                 {vehiculo ? `${vehiculo.marca} ${vehiculo.modelo} · ${vehiculo.placa}` : "Servicio sin vehículo"}
               </div>

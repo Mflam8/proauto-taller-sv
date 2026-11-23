@@ -20,7 +20,7 @@ const EVALUACIONES_RECEPCION = [
 const condicionColor = { "Bueno": "bg-green-100 text-green-800", "Regular": "bg-yellow-100 text-yellow-800", "Malo": "bg-red-100 text-red-800" };
 
 const CondicionSelect = ({ label, value, onChange }) => (
-  <div className="flex items-center justify-between py-2.5 border-b border-gray-50 gap-2">
+  <div className="flex flex-col gap-2 border-b border-gray-50 py-2.5 sm:flex-row sm:items-center sm:justify-between">
     <span className="text-sm text-gray-700">{label}</span>
     <div className="flex gap-1.5">
       {ESTADOS_CONDICION.map(e => (
@@ -34,7 +34,7 @@ const CondicionSelect = ({ label, value, onChange }) => (
 );
 
 const SiNoSelect = ({ label, value, onChange }) => (
-  <div className="flex items-center justify-between py-2.5 border-b border-gray-50 gap-2">
+  <div className="flex flex-col gap-2 border-b border-gray-50 py-2.5 sm:flex-row sm:items-center sm:justify-between">
     <span className="text-sm text-gray-700">{label}</span>
     <div className="flex gap-1.5">
       {["Sí", "No"].map(v => (
@@ -147,7 +147,7 @@ export default function InspeccionForm({ expediente, vehiculo, cliente, empleado
       </div>
 
       {/* Técnico y KM */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <Label>Realizada por</Label>
           <Select value={form.realizada_por} onValueChange={v => set("realizada_por", v)}>
@@ -191,7 +191,7 @@ export default function InspeccionForm({ expediente, vehiculo, cliente, empleado
       {/* Accesorios recibidos */}
       <div className="bg-white border rounded-xl p-4">
         <h3 className="font-semibold text-gray-800 mb-3">Accesorios y Documentos</h3>
-        <div className="flex gap-6 mb-3">
+        <div className="mb-3 flex flex-wrap gap-x-4 gap-y-3">
           {[["llanta_repuesto", "Llanta de repuesto"], ["herramientas", "Herramientas"], ["documentos", "Documentos"]].map(([k, label]) => (
             <label key={k} className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" checked={form[k]} onChange={e => set(k, e.target.checked)}
@@ -213,9 +213,9 @@ export default function InspeccionForm({ expediente, vehiculo, cliente, empleado
         <p className="text-xs text-gray-500 mb-3">Registra el estado de cada elemento recibido. Los daños específicos se anotan en el siguiente paso.</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {EVALUACIONES_RECEPCION.map(([categoria, elemento]) => (
-            <div key={elemento} className="flex items-center justify-between gap-2 border rounded-lg px-3 py-2">
+            <div key={elemento} className="flex flex-col items-stretch gap-2 rounded-lg border px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
               <div><p className="text-sm font-medium text-gray-800">{elemento}</p><p className="text-xs text-gray-400">{categoria}</p></div>
-              <Select value={estadoEvaluacion(elemento)} onValueChange={estado => setEvaluacion(categoria, elemento, estado)}><SelectTrigger className="w-28 h-9"><SelectValue placeholder="Estado" /></SelectTrigger><SelectContent>{ESTADOS_CONDICION.map(estado => <SelectItem key={estado} value={estado}>{estado}</SelectItem>)}</SelectContent></Select>
+              <Select value={estadoEvaluacion(elemento)} onValueChange={estado => setEvaluacion(categoria, elemento, estado)}><SelectTrigger className="h-9 w-full sm:w-28"><SelectValue placeholder="Estado" /></SelectTrigger><SelectContent>{ESTADOS_CONDICION.map(estado => <SelectItem key={estado} value={estado}>{estado}</SelectItem>)}</SelectContent></Select>
             </div>
           ))}
         </div>
@@ -225,9 +225,9 @@ export default function InspeccionForm({ expediente, vehiculo, cliente, empleado
       <div className="bg-white border rounded-xl p-4">
         <h3 className="font-semibold text-gray-800 mb-3">Daños Encontrados</h3>
         {(form.daños || []).map((d, i) => (
-          <div key={i} className="flex items-center gap-2 mb-2 bg-red-50 rounded-lg p-2">
+          <div key={i} className="mb-2 flex flex-wrap items-center gap-2 rounded-lg bg-red-50 p-2">
             <Badge className="bg-red-100 text-red-800 text-xs">{d.tipo}</Badge>
-            <span className="text-sm flex-1">{d.ubicacion} {d.descripcion && `— ${d.descripcion}`}</span>
+            <span className="min-w-0 flex-1 break-words text-sm">{d.ubicacion} {d.descripcion && `— ${d.descripcion}`}</span>
             <button onClick={() => quitarDano(i)} className="text-red-400 hover:text-red-600"><Trash2 className="w-3 h-3" /></button>
           </div>
         ))}
