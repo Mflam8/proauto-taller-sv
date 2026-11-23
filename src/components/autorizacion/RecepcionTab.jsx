@@ -74,7 +74,7 @@ export default function RecepcionTab({ expediente, cliente, vehiculo, inspeccion
     <div className="space-y-5">
       {/* Banner de estado */}
       {yaRecibido ? (
-        <div className="flex items-start gap-3 bg-green-50 border border-green-200 rounded-xl p-4">
+        <div className="flex flex-col gap-3 bg-green-50 border border-green-200 rounded-xl p-4 sm:flex-row sm:items-start">
           <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
           <div className="flex-1">
             <p className="font-semibold text-green-900">Conformidad firmada</p>
@@ -83,7 +83,7 @@ export default function RecepcionTab({ expediente, cliente, vehiculo, inspeccion
               {new Date(rec.fecha_recepcion).toLocaleString("es-SV")}. Firma: {rec.metodo}.
             </p>
           </div>
-          <Button onClick={handleDownload} className="gap-1.5 bg-[#E31E24] hover:bg-[#B71C1C]">
+          <Button onClick={handleDownload} className="w-full gap-1.5 bg-[#E31E24] hover:bg-[#B71C1C] sm:w-auto">
             <Download className="w-4 h-4" /> Descargar PDF
           </Button>
         </div>

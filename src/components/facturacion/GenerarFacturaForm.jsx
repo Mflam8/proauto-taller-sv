@@ -243,18 +243,37 @@ export default function GenerarFacturaForm({ expediente, cliente, vehiculo, onSu
 
         <div className="space-y-1 border rounded-b-lg divide-y">
           {displayItems.map((item, index) => (
-            <div key={index} className="grid grid-cols-12 gap-2 items-center px-3 py-2.5 text-sm">
-              <span className="col-span-1 text-gray-700">{item.cantidad}</span>
-              <span className="col-span-6 text-gray-900 font-medium">{item.descripcion}</span>
-              <span className="col-span-2 text-right text-gray-700">${(item.precio_unitario || 0).toFixed(2)}</span>
-              <span className="col-span-2 text-right font-semibold text-gray-900">
-                ${(item.subtotal || item.cantidad * item.precio_unitario).toFixed(2)}
-              </span>
-              <div className="col-span-1 text-right">
-                <Button size="icon" variant="ghost" className="h-6 w-6 text-red-400 hover:text-red-600"
-                  onClick={() => handleRemoveItem(index)}>
-                  <Trash2 className="w-3 h-3" />
-                </Button>
+            <div key={index} className="px-3 py-2.5 text-sm">
+              {/* Teléfono: una tarjeta por ítem */}
+              <div className="flex items-start justify-between gap-2 md:hidden">
+                <div className="min-w-0">
+                  <p className="break-words font-medium text-gray-900">{item.descripcion}</p>
+                  <p className="text-xs text-gray-500">{item.cantidad} × ${(item.precio_unitario || 0).toFixed(2)}</p>
+                </div>
+                <div className="flex shrink-0 items-center gap-1">
+                  <span className="font-semibold text-gray-900">
+                    ${(item.subtotal || item.cantidad * item.precio_unitario).toFixed(2)}
+                  </span>
+                  <Button size="icon" variant="ghost" className="h-8 w-8 text-red-400 hover:text-red-600"
+                    onClick={() => handleRemoveItem(index)}>
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+              </div>
+              {/* Escritorio: fila de tabla */}
+              <div className="hidden grid-cols-12 items-center gap-2 md:grid">
+                <span className="col-span-1 text-gray-700">{item.cantidad}</span>
+                <span className="col-span-6 font-medium text-gray-900">{item.descripcion}</span>
+                <span className="col-span-2 text-right text-gray-700">${(item.precio_unitario || 0).toFixed(2)}</span>
+                <span className="col-span-2 text-right font-semibold text-gray-900">
+                  ${(item.subtotal || item.cantidad * item.precio_unitario).toFixed(2)}
+                </span>
+                <div className="col-span-1 text-right">
+                  <Button size="icon" variant="ghost" className="h-6 w-6 text-red-400 hover:text-red-600"
+                    onClick={() => handleRemoveItem(index)}>
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </div>
               </div>
             </div>
           ))}
@@ -263,21 +282,21 @@ export default function GenerarFacturaForm({ expediente, cliente, vehiculo, onSu
         {/* Add extra item */}
         <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
           <p className="text-xs font-semibold text-blue-700 mb-2">Agregar ítem adicional</p>
-          <div className="grid grid-cols-12 gap-2 items-end">
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-12 md:items-end">
             <div className="col-span-1">
-              <Input type="number" min="1" value={newItem.cantidad} className="h-8 text-xs"
+              <Input type="number" min="1" value={newItem.cantidad} className="h-10 text-sm md:h-8 md:text-xs"
                 onChange={(e) => setNewItem({ ...newItem, cantidad: parseFloat(e.target.value) || 1 })} />
             </div>
-            <div className="col-span-6">
-              <Input placeholder="Descripción" value={newItem.descripcion} className="h-8 text-xs"
+            <div className="col-span-2 md:col-span-6">
+              <Input placeholder="Descripción" value={newItem.descripcion} className="h-10 text-sm md:h-8 md:text-xs"
                 onChange={(e) => setNewItem({ ...newItem, descripcion: e.target.value })} />
             </div>
-            <div className="col-span-2">
-              <Input type="number" step="0.01" min="0" placeholder="Precio" value={newItem.precio_unitario || ""} className="h-8 text-xs"
+            <div className="col-span-1 md:col-span-2">
+              <Input type="number" step="0.01" min="0" placeholder="Precio" value={newItem.precio_unitario || ""} className="h-10 text-sm md:h-8 md:text-xs"
                 onChange={(e) => setNewItem({ ...newItem, precio_unitario: parseFloat(e.target.value) || 0 })} />
             </div>
-            <div className="col-span-3">
-              <Button size="sm" variant="outline" className="h-8 text-xs w-full" onClick={handleAddItem}>
+            <div className="col-span-1 md:col-span-3">
+              <Button size="sm" variant="outline" className="h-10 w-full text-xs md:h-8" onClick={handleAddItem}>
                 <Plus className="w-3 h-3 mr-1" /> Agregar
               </Button>
             </div>
