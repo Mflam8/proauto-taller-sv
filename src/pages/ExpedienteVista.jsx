@@ -154,12 +154,10 @@ export default function ExpedienteVista() {
   const siguienteEtapa = etapas.find(etapa => !etapa.complete)?.label;
   const etapaPorId = Object.fromEntries(etapas.map(etapa => [etapa.id, etapa]));
   const numeroExpediente = expediente.numero_expediente || `EXP-${id?.slice(-6)?.toUpperCase()}`;
-  const facturaBloqueada = !puedeFacturar || (vehiculo && inspeccion && !inspeccionCompletada) || (!vehiculo && !esGerencia);
-  const motivoBloqueo = vehiculo && inspeccion && !inspeccionCompletada
-    ? "Completa y guarda la inspección de recepción"
-    : !vehiculo && !esGerencia
-      ? "Solo Gerencia puede autorizar una excepción para servicios sin vehículo"
-      : undefined;
+  const facturaBloqueada = !puedeFacturar || (!vehiculo && !esGerencia);
+  const motivoBloqueo = !vehiculo && !esGerencia
+    ? "Solo Gerencia puede autorizar una excepción para servicios sin vehículo"
+    : undefined;
 
   const tabsVisibles = TABS.filter(t => t.id !== "inspeccion" || expediente.vehiculo_id);
   const pistaTab = (tabId) => {
@@ -228,7 +226,7 @@ export default function ExpedienteVista() {
                   ? "No se registró una recepción nueva; esto no bloquea la facturación."
                   : inspeccionCompletada
                     ? `Inspección completa · ${Math.min(fotosRecepcionCount, ANGULOS_FOTO.length)}/4 fotos guardadas.`
-                    : `Inspección pendiente · ${Math.min(fotosRecepcionCount, ANGULOS_FOTO.length)}/4 fotos guardadas. Las fotos se conservan como evidencia.`}
+                    : `Inspección pendiente · ${Math.min(fotosRecepcionCount, ANGULOS_FOTO.length)}/4 fotos guardadas. No es requisito para facturar por ahora.`}
               </p>
               <div className="mt-1.5 flex gap-1.5">
                 {ANGULOS_FOTO.map((angulo, index) => (
