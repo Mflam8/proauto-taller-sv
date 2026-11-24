@@ -143,8 +143,10 @@ export default function ExpedienteVista() {
   const diagnostico = diagnosticos[0];
   const trabajosCompletados = trabajos.length > 0 && trabajos.every(trabajo => trabajo.estado === "Completado");
   const materialesCompletados = materiales.length > 0 && materiales.every(material => ["Instalada", "No utilizada", "Devuelta"].includes(material.estado));
+  const recepcionSinNueva = Boolean(vehiculo && !inspeccion);
+  const recepcionResuelta = !vehiculo || recepcionSinNueva || inspeccionCompletada;
   const etapas = [
-    { id: "inspeccion", label: "Recepción", complete: vehiculo ? inspeccionCompletada : true },
+    { id: "inspeccion", label: "Recepción", complete: recepcionResuelta },
     { id: "diagnostico", label: "Diagnóstico", complete: diagnosticos.some(item => item.estado === "Completado") },
     { id: "trabajos", label: "Trabajos", complete: trabajosCompletados },
     { id: "materiales", label: "Materiales", complete: materialesCompletados },
@@ -152,8 +154,8 @@ export default function ExpedienteVista() {
   const siguienteEtapa = etapas.find(etapa => !etapa.complete)?.label;
   const etapaPorId = Object.fromEntries(etapas.map(etapa => [etapa.id, etapa]));
   const numeroExpediente = expediente.numero_expediente || `EXP-${id?.slice(-6)?.toUpperCase()}`;
-  const facturaBloqueada = !puedeFacturar || (vehiculo ? !inspeccionCompletada : !esGerencia);
-  const motivoBloqueo = vehiculo && !inspeccionCompletada
+  const facturaBloqueada = !puedeFacturar || (vehiculo && inspeccion && !inspeccionCompletada) || (!vehiculo && !esGerencia);
+  const motivoBloqueo = vehiculo && inspeccion && !inspeccionCompletada
     ? "Completa y guarda la inspección de recepción"
     : !vehiculo && !esGerencia
       ? "Solo Gerencia puede autorizar una excepción para servicios sin vehículo"
@@ -163,7 +165,7 @@ export default function ExpedienteVista() {
   const pistaTab = (tabId) => {
     const etapa = etapaPorId[tabId];
     if (!etapa) return null;
-    if (tabId === "inspeccion") return `${etapa.complete ? "Completada" : "Pendiente"} · ${Math.min(fotosRecepcionCount, ANGULOS_FOTO.length)}/4 fotos`;
+    if (tabId === "inspeccion") return recepcionSinNueva ? "Sin recepción nueva" : `${etapa.complete ? "Completada" : "Pendiente"} · ${Math.min(fotosRecepcionCount, ANGULOS_FOTO.length)}/4 fotos`;
     if (tabId === "diagnostico") return etapa.complete ? "Completado" : "Pendiente";
     if (tabId === "trabajos") {
       const completos = trabajos.filter(trabajo => trabajo.estado === "Completado").length;
@@ -215,16 +217,18 @@ export default function ExpedienteVista() {
         {/* Estado de la recepción fotográfica */}
         {vehiculo ? (
           <button onClick={() => abrirSeccion("inspeccion")}
-            className={`mb-3 flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition-colors ${inspeccionCompletada ? "border-green-200 bg-green-50" : "border-amber-200 bg-amber-50"}`}>
-            <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/70 ${inspeccionCompletada ? "text-green-700" : "text-amber-700"}`}>
+            className={`mb-3 flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition-colors ${recepcionSinNueva ? "border-blue-200 bg-blue-50" : inspeccionCompletada ? "border-green-200 bg-green-50" : "border-amber-200 bg-amber-50"}`}>
+            <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/70 ${recepcionSinNueva ? "text-blue-700" : inspeccionCompletada ? "text-green-700" : "text-amber-700"}`}>
               <Camera className="h-5 w-5" />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-gray-900">Recepción fotográfica</p>
               <p className="text-xs text-gray-700">
-                {inspeccionCompletada
-                  ? `Inspección completa · ${Math.min(fotosRecepcionCount, ANGULOS_FOTO.length)}/4 fotos guardadas.`
-                  : `Inspección pendiente · ${Math.min(fotosRecepcionCount, ANGULOS_FOTO.length)}/4 fotos guardadas. Las fotos se conservan como evidencia.`}
+                {recepcionSinNueva
+                  ? "No se registró una recepción nueva; esto no bloquea la facturación."
+                  : inspeccionCompletada
+                    ? `Inspección completa · ${Math.min(fotosRecepcionCount, ANGULOS_FOTO.length)}/4 fotos guardadas.`
+                    : `Inspección pendiente · ${Math.min(fotosRecepcionCount, ANGULOS_FOTO.length)}/4 fotos guardadas. Las fotos se conservan como evidencia.`}
               </p>
               <div className="mt-1.5 flex gap-1.5">
                 {ANGULOS_FOTO.map((angulo, index) => (
@@ -232,10 +236,10 @@ export default function ExpedienteVista() {
                 ))}
               </div>
             </div>
-            {!inspeccionCompletada && (
-              <span className="shrink-0 rounded-lg bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-800 shadow-sm">
-                {inspeccionCompletada ? "Ver recepción" : "Completar recepción"}
-              </span>
+            {recepcionSinNueva ? (
+              <span className="shrink-0 rounded-lg bg-white px-2.5 py-1.5 text-xs font-semibold text-blue-800 shadow-sm">Sin recepción nueva</span>
+            ) : !inspeccionCompletada && (
+              <span className="shrink-0 rounded-lg bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-800 shadow-sm">Completar recepción</span>
             )}
           </button>
         ) : (

@@ -3,7 +3,8 @@ export async function validarRecepcionFactura(db, expediente, user, perfil, moti
     const inspecciones = await db.Inspeccion.filter({ expediente_id: expediente.id });
     const fecha = inspeccion => new Date(inspeccion.fecha || inspeccion.created_date || 0).getTime();
     const inspeccion = [...inspecciones].sort((a, b) => fecha(b) - fecha(a))[0];
-    if (inspeccion?.estado !== "Completada") {
+    if (!inspeccion) return { ok: true, metadata: {} };
+    if (inspeccion.estado !== "Completada") {
       return {
         ok: false,
         status: 409,

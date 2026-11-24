@@ -13,16 +13,16 @@ export default function ProgressTracker({ stages, nextStep }) {
             <span className="truncate">{nextStep ? `Siguiente: ${nextStep}` : "Todas las etapas completas"}</span>
           </span>
         </div>
-        <p className="shrink-0 text-3xl font-light leading-none tracking-tight text-[#E31E24] sm:text-4xl" aria-label={`${percent}% completado`}>
+        <p className="shrink-0 text-3xl font-light leading-none tracking-tight text-[#E31E24] sm:text-4xl" aria-label={`${percent}% resuelto`}>
           {percent}%
         </p>
       </div>
-      <div className="flex gap-2" role="progressbar" aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100} aria-label={`${completed} de ${stages.length} etapas completadas`}>
+      <div className="flex gap-2" role="progressbar" aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100} aria-label={`${completed} de ${stages.length} etapas resueltas`}>
         {stages.map(stage => (
           <span key={stage.label} aria-hidden="true" className={`h-3 min-w-0 flex-1 rounded-full border transition-colors duration-300 sm:h-4 ${stage.complete ? "border-[#E31E24] bg-[#E31E24]" : "border-gray-300 bg-gray-100"}`} />
         ))}
       </div>
-      <p className="mt-2 text-xs text-gray-600">{completed} de {stages.length} secciones completadas</p>
+      <p className="mt-2 text-xs text-gray-600">{completed} de {stages.length} secciones resueltas</p>
     </section>
   );
 }
