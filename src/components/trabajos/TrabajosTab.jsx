@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Plus, Trash2, CheckCircle, Clock, Wrench, ShieldCheck } from "lucide-react";
+import { Plus, Trash2, CheckCircle, Clock, Wrench, ShieldCheck, Camera, Loader2 } from "lucide-react";
+import FotoRecepcion from "@/components/inspeccion/FotoRecepcion";
 import { puedeDefinirCostos } from "@/lib/permissions";
 
 const TIPOS = ["Mano de Obra", "Mano de Obra Pintura", "Repuesto", "Insumo", "Diagnóstico", "Otro"];
@@ -29,6 +30,7 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(emptyTrabajo);
   const [saving, setSaving] = useState(false);
+  const [subiendoEvidencia, setSubiendoEvidencia] = useState(null);
   const [busquedaCatalogo, setBusquedaCatalogo] = useState("");
   const [trabajoEnRevision, setTrabajoEnRevision] = useState(null);
   const [ajuste, setAjuste] = useState({ precio_aprobado: "", motivo: "", aprobado_por_nombre: "" });
@@ -162,7 +164,10 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
         precio_sugerido: Number(form.precio_sugerido) || 0,
         subtotal: calcSubtotal(form),
       };
-      if (tecnicoSel) data.tecnico_id = tecnicoSel.id;
+      if (tecnicoSel) {
+        data.tecnico_id = tecnicoSel.id;
+        data.tecnico_email = tecnicoSel.email || "";
+      }
       const creado = await base44.entities.TrabajoExpediente.create(data);
       qc.invalidateQueries(["trabajos", expediente.id]);
       setForm(emptyTrabajo);
@@ -212,6 +217,24 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
   const handleEstado = async (t, estado) => {
     await base44.entities.TrabajoExpediente.update(t.id, { estado });
     refetch();
+  };
+
+  const agregarEvidencia = async (trabajo, event) => {
+    const input = event.target;
+    const file = input.files?.[0];
+    input.value = "";
+    if (!file) return;
+    setSubiendoEvidencia(trabajo.id);
+    try {
+      const { file_uri } = await base44.integrations.Core.UploadPrivateFile({ file });
+      const evidencia = Array.isArray(trabajo.evidencia_urls) ? trabajo.evidencia_urls : [];
+      await base44.entities.TrabajoExpediente.update(trabajo.id, { evidencia_urls: [...evidencia, file_uri] });
+      await refetch();
+    } catch (error) {
+      alert("No se pudo guardar la foto final: " + mensajeError(error));
+    } finally {
+      setSubiendoEvidencia(null);
+    }
   };
 
   const trabajosOrdenados = [...trabajos].sort((a, b) => {
@@ -324,6 +347,19 @@ export default function TrabajosTab({ expediente, empleados, onTotalesChange }) 
               {t.tecnico_nombre && <p className="text-xs text-gray-500 mt-0.5">Técnico: {t.tecnico_nombre}</p>}
               <p className="text-xs text-gray-500">{t.cantidad} × ${(t.precio_unitario || 0).toFixed(2)} = <span className="font-semibold text-gray-800">${(t.subtotal || 0).toFixed(2)}</span></p>
               {t.precio_ajustado_por && <p className="text-[11px] text-green-700 mt-1">Revisado por: {t.precio_ajustado_por}{t.motivo_ajuste_precio ? ` · ${t.motivo_ajuste_precio}` : ""}</p>}
+              <div className="mt-3 space-y-2">
+                <p className="text-xs font-semibold text-gray-700">Evidencia fotográfica final</p>
+                {Array.isArray(t.evidencia_urls) && t.evidencia_urls.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {t.evidencia_urls.map((fileUri, index) => <FotoRecepcion key={`${fileUri}-${index}`} fileUri={fileUri} alt={`Evidencia final ${index + 1}`} className="h-20 w-24 rounded-lg object-cover" />)}
+                  </div>
+                ) : <p className="text-xs text-gray-500">Sin fotos finales registradas</p>}
+                <label className={`inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-gray-300 px-3 text-xs font-semibold text-gray-700 hover:bg-white ${subiendoEvidencia !== null ? "pointer-events-none opacity-60" : ""}`}>
+                  {subiendoEvidencia === t.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+                  {subiendoEvidencia === t.id ? "Guardando foto…" : "Agregar foto final"}
+                  <input type="file" accept="image/*" capture="environment" className="sr-only" onChange={event => agregarEvidencia(t, event)} disabled={subiendoEvidencia !== null} />
+                </label>
+              </div>
             </div>
             <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap sm:flex-shrink-0">
               {esSupervisor && (

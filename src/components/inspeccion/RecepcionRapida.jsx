@@ -35,7 +35,7 @@ export default function RecepcionRapida({ expediente, vehiculo, cliente, inspecc
     <div className="space-y-3">
       <div className="rounded-2xl border bg-white p-3">
         <p className="text-xs font-bold uppercase tracking-wide text-[#E31E24]">Paso 1 de 2 · Fotos</p>
-        <h3 className="mt-1 font-semibold text-gray-900">Toma las cuatro fotos del vehículo</h3>
+        <h3 className="mt-1 font-semibold text-gray-900">Registra las fotos del vehículo</h3>
         <div className="mt-3 grid grid-cols-2 gap-2 rounded-xl bg-gray-50 p-3 text-xs">
           <div><p className="text-gray-500">Vehículo</p><p className="break-words font-semibold text-gray-900">{vehiculo?.marca} {vehiculo?.modelo}</p></div>
           <div><p className="text-gray-500">Placa</p><p className="font-semibold text-gray-900">{vehiculo?.placa || "—"}</p></div>
@@ -75,7 +75,7 @@ export default function RecepcionRapida({ expediente, vehiculo, cliente, inspecc
       </div>
 
       {error && <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
-      <Button onClick={() => completa && onContinue?.(fotos)} disabled={!completa || subiendo !== null} className="h-12 w-full gap-2 bg-gradient-to-r from-[#E31E24] to-[#B71C1C] text-white">
+      <Button onClick={() => onContinue?.(fotos)} disabled={subiendo !== null} className="h-12 w-full gap-2 bg-gradient-to-r from-[#E31E24] to-[#B71C1C] text-white">
         <CheckCircle2 className="h-4 w-4" /> Continuar a las preguntas (2/2)
       </Button>
       <p className="flex items-center justify-center gap-1.5 text-xs text-gray-400"><Lock className="h-3 w-3" /> Las fotos se guardan de forma privada en el expediente.</p>

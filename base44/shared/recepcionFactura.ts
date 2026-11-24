@@ -3,14 +3,11 @@ export async function validarRecepcionFactura(db, expediente, user, perfil, moti
     const inspecciones = await db.Inspeccion.filter({ expediente_id: expediente.id });
     const fecha = inspeccion => new Date(inspeccion.fecha || inspeccion.created_date || 0).getTime();
     const inspeccion = [...inspecciones].sort((a, b) => fecha(b) - fecha(a))[0];
-    const fotos = Array.isArray(inspeccion?.fotos)
-      ? inspeccion.fotos.filter(foto => typeof foto === "string" && foto.trim()).length
-      : 0;
-    if (inspeccion?.estado !== "Completada" || fotos < 4) {
+    if (inspeccion?.estado !== "Completada") {
       return {
         ok: false,
         status: 409,
-        error: `Completa la inspección de recepción y guarda 4 fotos, una por cada ángulo, antes de facturar. (${Math.min(fotos, 4)}/4)`,
+        error: "Completa y guarda la inspección de recepción antes de facturar.",
       };
     }
     return { ok: true, metadata: {} };

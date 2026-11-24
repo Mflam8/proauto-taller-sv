@@ -21,6 +21,7 @@ import TrabajosTab from "@/components/trabajos/TrabajosTab";
 import MaterialesTab from "@/components/materiales/MaterialesTab";
 import CajaChicaTab from "@/components/caja/CajaChicaTab";
 import CierreTab from "@/components/cierre/CierreTab";
+import ProgressTracker from "@/components/expedientes/ProgressTracker";
 import GenerarFacturaForm from "@/components/facturacion/GenerarFacturaForm";
 import RecepcionTab from "@/components/autorizacion/RecepcionTab";
 import ResumenExpediente from "@/components/expedientes/ResumenExpediente";
@@ -94,15 +95,27 @@ export default function ExpedienteVista() {
 
   const { data: usuario } = useQuery({ queryKey: ["me"], queryFn: () => base44.auth.me() });
 
-  const { data: inspecciones = [], refetch: refetchInsp } = useQuery({
+  const { data: inspecciones = [], refetch: refetchInsp, isLoading: isLoadingInsp } = useQuery({
     queryKey: ["inspecciones", id],
     queryFn: () => base44.entities.Inspeccion.filter({ expediente_id: id }),
     enabled: !!id,
   });
 
-  const { data: diagnosticos = [], refetch: refetchDiag } = useQuery({
+  const { data: diagnosticos = [], refetch: refetchDiag, isLoading: isLoadingDiag } = useQuery({
     queryKey: ["diagnosticos", id],
     queryFn: () => base44.entities.Diagnostico.filter({ expediente_id: id }),
+    enabled: !!id,
+  });
+
+  const { data: trabajos = [], isLoading: isLoadingTrabajos } = useQuery({
+    queryKey: ["trabajos", id],
+    queryFn: () => base44.entities.TrabajoExpediente.filter({ expediente_id: id }),
+    enabled: !!id,
+  });
+
+  const { data: materiales = [], isLoading: isLoadingMateriales } = useQuery({
+    queryKey: ["materiales-trabajo", id],
+    queryFn: () => base44.entities.MaterialTrabajo.filter({ expediente_id: id }),
     enabled: !!id,
   });
 
@@ -117,29 +130,49 @@ export default function ExpedienteVista() {
     requestAnimationFrame(() => contenidoRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
   };
 
-  if (isLoading || !expediente) {
+  if (isLoading || isLoadingInsp || isLoadingDiag || isLoadingTrabajos || isLoadingMateriales || !expediente) {
     return <div className="p-6 text-gray-400">Cargando expediente...</div>;
   }
 
   const inspeccion = [...inspecciones].sort((a, b) => new Date(b.fecha || b.created_date || 0) - new Date(a.fecha || a.created_date || 0))[0];
   const fotosRecepcion = inspeccion?.fotos || [];
   const fotosRecepcionCount = fotosRecepcion.filter(foto => typeof foto === "string" && foto.trim()).length;
-  const inspeccionCompletada = inspeccion?.estado === "Completada" && fotosRecepcionCount >= ANGULOS_FOTO.length;
+  const inspeccionCompletada = inspeccion?.estado === "Completada";
   const esGerencia = esDueno(usuario);
   const puedeFacturar = esGerencia || (esAdmin(usuario) && puede(usuario, "crear_facturas"));
   const diagnostico = diagnosticos[0];
+  const trabajosCompletados = trabajos.length > 0 && trabajos.every(trabajo => trabajo.estado === "Completado");
+  const materialesCompletados = materiales.length > 0 && materiales.every(material => ["Instalada", "No utilizada", "Devuelta"].includes(material.estado));
+  const etapas = [
+    { id: "inspeccion", label: "Recepción", complete: vehiculo ? inspeccionCompletada : true },
+    { id: "diagnostico", label: "Diagnóstico", complete: diagnosticos.some(item => item.estado === "Completado") },
+    { id: "trabajos", label: "Trabajos", complete: trabajosCompletados },
+    { id: "materiales", label: "Materiales", complete: materialesCompletados },
+  ];
+  const siguienteEtapa = etapas.find(etapa => !etapa.complete)?.label;
+  const etapaPorId = Object.fromEntries(etapas.map(etapa => [etapa.id, etapa]));
   const numeroExpediente = expediente.numero_expediente || `EXP-${id?.slice(-6)?.toUpperCase()}`;
   const facturaBloqueada = !puedeFacturar || (vehiculo ? !inspeccionCompletada : !esGerencia);
   const motivoBloqueo = vehiculo && !inspeccionCompletada
-    ? "Completa la recepción y guarda las 4 fotos"
+    ? "Completa y guarda la inspección de recepción"
     : !vehiculo && !esGerencia
       ? "Solo Gerencia puede autorizar una excepción para servicios sin vehículo"
       : undefined;
 
   const tabsVisibles = TABS.filter(t => t.id !== "inspeccion" || expediente.vehiculo_id);
   const pistaTab = (tabId) => {
-    if (tabId === "inspeccion") return `${Math.min(fotosRecepcionCount, ANGULOS_FOTO.length)}/4 fotos`;
-    if (tabId === "diagnostico") return diagnostico ? "Registrado" : "Pendiente";
+    const etapa = etapaPorId[tabId];
+    if (!etapa) return null;
+    if (tabId === "inspeccion") return `${etapa.complete ? "Completada" : "Pendiente"} · ${Math.min(fotosRecepcionCount, ANGULOS_FOTO.length)}/4 fotos`;
+    if (tabId === "diagnostico") return etapa.complete ? "Completado" : "Pendiente";
+    if (tabId === "trabajos") {
+      const completos = trabajos.filter(trabajo => trabajo.estado === "Completado").length;
+      return trabajos.length ? `${trabajosCompletados ? "Completados" : "Pendientes"} · ${completos}/${trabajos.length}` : "Pendiente · Sin registrar";
+    }
+    if (tabId === "materiales") {
+      const resueltos = materiales.filter(material => ["Instalada", "No utilizada", "Devuelta"].includes(material.estado)).length;
+      return materiales.length ? `${materialesCompletados ? "Completos" : "Pendientes"} · ${resueltos}/${materiales.length}` : "Pendiente · Sin registrar";
+    }
     return null;
   };
 
@@ -177,6 +210,8 @@ export default function ExpedienteVista() {
       </header>
 
       <main className="mx-auto max-w-5xl px-3 py-4 sm:px-6">
+        <ProgressTracker stages={etapas} nextStep={siguienteEtapa} />
+
         {/* Estado de la recepción fotográfica */}
         {vehiculo ? (
           <button onClick={() => abrirSeccion("inspeccion")}
@@ -188,8 +223,8 @@ export default function ExpedienteVista() {
               <p className="text-sm font-semibold text-gray-900">Recepción fotográfica</p>
               <p className="text-xs text-gray-700">
                 {inspeccionCompletada
-                  ? `Completa: ${ANGULOS_FOTO.length}/4 ángulos guardados.`
-                  : `Pendiente: ${Math.min(fotosRecepcionCount, ANGULOS_FOTO.length)}/4 ángulos. La factura requiere los cuatro.`}
+                  ? `Inspección completa · ${Math.min(fotosRecepcionCount, ANGULOS_FOTO.length)}/4 fotos guardadas.`
+                  : `Inspección pendiente · ${Math.min(fotosRecepcionCount, ANGULOS_FOTO.length)}/4 fotos guardadas. Las fotos se conservan como evidencia.`}
               </p>
               <div className="mt-1.5 flex gap-1.5">
                 {ANGULOS_FOTO.map((angulo, index) => (
@@ -199,7 +234,7 @@ export default function ExpedienteVista() {
             </div>
             {!inspeccionCompletada && (
               <span className="shrink-0 rounded-lg bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-800 shadow-sm">
-                Tomar fotos
+                {inspeccionCompletada ? "Ver recepción" : "Completar recepción"}
               </span>
             )}
           </button>
@@ -222,7 +257,7 @@ export default function ExpedienteVista() {
                 <t.icon className={`h-5 w-5 ${activo ? "text-white" : "text-[#E31E24]"}`} />
                 <span className="text-xs font-semibold leading-tight">{t.label}</span>
                 {pista && (
-                  <span className={`text-[10px] font-medium leading-none ${activo ? "text-white/80" : "text-gray-400"}`}>{pista}</span>
+                  <span className={`text-[10px] font-medium leading-none ${activo ? "text-white/80" : etapaPorId[t.id]?.complete ? "text-green-700" : "text-amber-700"}`}>{pista}</span>
                 )}
               </button>
             );

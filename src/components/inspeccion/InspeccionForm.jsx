@@ -124,7 +124,7 @@ export default function InspeccionForm({ expediente, vehiculo, cliente, empleado
       vehiculo_id: vehiculo.id,
       cliente_id: cliente.id,
       fecha: new Date().toISOString(),
-      estado: fotosGuardadas >= ANGULOS_FOTO.length ? "Completada" : "Pendiente",
+      estado: "Completada",
       firma_ingreso: form.firma_ingreso?.firma_data_url ? {
         ...form.firma_ingreso,
         fecha: new Date().toISOString(),
@@ -137,7 +137,7 @@ export default function InspeccionForm({ expediente, vehiculo, cliente, empleado
       await base44.entities.Inspeccion.create(data);
     }
     setSaving(false);
-    onSave(fotosGuardadas >= ANGULOS_FOTO.length);
+    onSave(true);
   };
 
   return (
@@ -258,8 +258,8 @@ export default function InspeccionForm({ expediente, vehiculo, cliente, empleado
             <h3 className="font-semibold text-gray-800">Fotos de recepción: {Math.min(fotosGuardadas, ANGULOS_FOTO.length)}/{ANGULOS_FOTO.length}</h3>
             <p className="mt-1 text-sm text-gray-600">Usa la cámara del dispositivo del taller. Cada foto se sube directo al expediente y queda guardada de forma privada.</p>
           </div>
-          <div role="status" className={`rounded-lg border px-3 py-2 text-sm ${fotosGuardadas >= ANGULOS_FOTO.length ? "border-green-200 bg-green-50 text-green-800" : "border-amber-200 bg-amber-50 text-amber-800"}`}>
-            {fotosGuardadas >= ANGULOS_FOTO.length ? "Recepción fotográfica completa. Ya puedes continuar con la facturación." : `Pendiente de fotografías: ${Math.min(fotosGuardadas, ANGULOS_FOTO.length)}/4. Completa los cuatro ángulos antes de facturar.`}
+          <div role="status" className={`rounded-lg border px-3 py-2 text-sm ${fotosGuardadas >= ANGULOS_FOTO.length ? "border-green-200 bg-green-50 text-green-800" : "border-blue-200 bg-blue-50 text-blue-900"}`}>
+            {fotosGuardadas >= ANGULOS_FOTO.length ? "Las cuatro fotos de recepción quedaron guardadas como evidencia." : `Fotos de evidencia: ${Math.min(fotosGuardadas, ANGULOS_FOTO.length)}/4. Puedes guardar la inspección y facturar sin completar las fotos.`}
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {ANGULOS_FOTO.map((angulo, index) => {
