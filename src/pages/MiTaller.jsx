@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { esAdmin, esDueno, puede } from "@/lib/permissions";
+import HistorialAsistencia from "@/components/asistencia/HistorialAsistencia";
 import {
-  LogIn, LogOut, MapPin, Wrench, Loader2, Clock,
+  LogIn, LogOut, MapPin, Wrench, Loader2, Clock, Coffee,
   Play, CheckCircle2, Users, Save, AlertTriangle, CheckCircle,
 } from "lucide-react";
 
@@ -44,6 +45,15 @@ export default function MiTaller() {
     enabled: !!miEmail,
   });
 
+  const { data: historialAsistencia = [], isLoading: cargandoHistorial } = useQuery({
+    queryKey: ["historial-asistencia", miEmail],
+    queryFn: async () => {
+      const pagina = await base44.entities.Asistencia.filter({ empleado_email: miEmail }, { sort: "-fecha_hora", limit: 20 });
+      return pagina.items;
+    },
+    enabled: !!miEmail,
+  });
+
   // Asistencia de todos (solo admin y jefe de taller)
   const { data: diaTodos = [] } = useQuery({
     queryKey: ["asistencia-dia"],
@@ -66,6 +76,8 @@ export default function MiTaller() {
   });
 
   const entradaHoy = miDia.find((r) => r.tipo === "Entrada");
+  const inicioAlmuerzoHoy = miDia.find((r) => r.tipo === "Inicio Almuerzo");
+  const finAlmuerzoHoy = miDia.find((r) => r.tipo === "Fin Almuerzo");
   const salidaHoy = miDia.find((r) => r.tipo === "Salida");
 
   const marcar = (tipo) => {
@@ -85,9 +97,16 @@ export default function MiTaller() {
             longitud: pos.coords.longitude,
           });
           if (res.data?.ok) {
-            setMensaje({ tipo: "ok", texto: tipo === "Entrada" ? "Entrada registrada. ¡Buen trabajo!" : "Salida registrada. ¡Buen día!" });
+            const mensajes = {
+              "Entrada": "Entrada registrada.",
+              "Inicio Almuerzo": "Inicio de almuerzo registrado.",
+              "Fin Almuerzo": "Fin de almuerzo registrado.",
+              "Salida": "Salida del día registrada.",
+            };
+            setMensaje({ tipo: "ok", texto: mensajes[tipo] || "Asistencia registrada." });
             qc.invalidateQueries({ queryKey: ["asistencia-hoy"] });
             qc.invalidateQueries({ queryKey: ["asistencia-dia"] });
+            qc.invalidateQueries({ queryKey: ["historial-asistencia", miEmail] });
           } else {
             setMensaje({ tipo: "error", texto: res.data?.error || "No se pudo registrar." });
           }
@@ -173,43 +192,41 @@ export default function MiTaller() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex flex-wrap items-center gap-3 text-sm">
-            <Badge className={entradaHoy ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-500"}>
-              Entrada: {entradaHoy ? horaSV(entradaHoy.fecha_hora) : "sin registrar"}
-            </Badge>
-            <Badge className={salidaHoy ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-500"}>
-              Salida: {salidaHoy ? horaSV(salidaHoy.fecha_hora) : "sin registrar"}
-            </Badge>
-            {entradaHoy?.distancia_metros != null && (
-              <span className="text-xs text-gray-500 flex items-center gap-1">
-                <MapPin className="w-3 h-3" /> Verificado en el taller
-              </span>
-            )}
+          <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
+            {[["Entrada", entradaHoy], ["Inicio almuerzo", inicioAlmuerzoHoy], ["Fin almuerzo", finAlmuerzoHoy], ["Salida", salidaHoy]].map(([label, registro]) => (
+              <div key={label} className={`rounded-xl border p-2.5 ${registro ? "border-green-200 bg-green-50" : "border-gray-200 bg-gray-50"}`}>
+                <p className="text-xs text-gray-500">{label}</p>
+                <p className={`font-semibold ${registro ? "text-green-800" : "text-gray-500"}`}>{registro ? horaSV(registro.fecha_hora) : "Sin registrar"}</p>
+              </div>
+            ))}
           </div>
-          <div className="flex flex-col sm:flex-row gap-3">
+          {entradaHoy?.distancia_metros != null && (
+            <p className="flex items-center gap-1 text-xs text-gray-500"><MapPin className="h-3 w-3" /> Ubicación verificada en el taller</p>
+          )}
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {!entradaHoy && (
-              <Button
-                onClick={() => marcar("Entrada")}
-                disabled={!!marcando || !!salidaHoy}
-                className="flex-1 h-14 text-base bg-[#E31E24] hover:bg-[#B71C1C] gap-2"
-              >
-                {marcando === "Entrada" ? <Loader2 className="w-5 h-5 animate-spin" /> : <LogIn className="w-5 h-5" />}
-                Marcar Entrada
+              <Button onClick={() => marcar("Entrada")} disabled={!!marcando || !!salidaHoy} className="h-12 gap-2 bg-[#E31E24] text-base hover:bg-[#B71C1C]">
+                {marcando === "Entrada" ? <Loader2 className="h-5 w-5 animate-spin" /> : <LogIn className="h-5 w-5" />} Marcar entrada
+              </Button>
+            )}
+            {entradaHoy && !inicioAlmuerzoHoy && !salidaHoy && (
+              <Button onClick={() => marcar("Inicio Almuerzo")} disabled={!!marcando} variant="outline" className="h-12 gap-2 text-base">
+                {marcando === "Inicio Almuerzo" ? <Loader2 className="h-5 w-5 animate-spin" /> : <Coffee className="h-5 w-5" />} Iniciar almuerzo
+              </Button>
+            )}
+            {inicioAlmuerzoHoy && !finAlmuerzoHoy && !salidaHoy && (
+              <Button onClick={() => marcar("Fin Almuerzo")} disabled={!!marcando} variant="outline" className="h-12 gap-2 text-base">
+                {marcando === "Fin Almuerzo" ? <Loader2 className="h-5 w-5 animate-spin" /> : <Play className="h-5 w-5" />} Finalizar almuerzo
               </Button>
             )}
             {entradaHoy && !salidaHoy && (
-              <Button
-                onClick={() => marcar("Salida")}
-                disabled={!!marcando}
-                className="flex-1 h-14 text-base bg-gray-900 hover:bg-gray-800 gap-2"
-              >
-                {marcando === "Salida" ? <Loader2 className="w-5 h-5 animate-spin" /> : <LogOut className="w-5 h-5" />}
-                Marcar Salida
+              <Button onClick={() => marcar("Salida")} disabled={!!marcando} className="h-12 gap-2 bg-gray-900 text-base hover:bg-gray-800">
+                {marcando === "Salida" ? <Loader2 className="h-5 w-5 animate-spin" /> : <LogOut className="h-5 w-5" />} Terminar jornada
               </Button>
             )}
             {entradaHoy && salidaHoy && (
-              <div className="flex-1 h-14 flex items-center justify-center rounded-xl bg-green-50 border border-green-200 text-sm font-medium text-green-800 gap-2">
-                <CheckCircle2 className="w-5 h-5" /> Jornada completa registrada
+              <div className="flex h-12 items-center justify-center gap-2 rounded-xl border border-green-200 bg-green-50 text-sm font-medium text-green-800 sm:col-span-2">
+                <CheckCircle2 className="h-5 w-5" /> Jornada completa registrada
               </div>
             )}
           </div>
@@ -232,6 +249,8 @@ export default function MiTaller() {
           )}
         </CardContent>
       </Card>
+
+      <HistorialAsistencia registros={historialAsistencia} cargando={cargandoHistorial} />
 
       {/* Asistencia del día (con capacidad de gestionar asistencia) */}
       {puedeGestionarAsistencia && diaTodos.length > 0 && (

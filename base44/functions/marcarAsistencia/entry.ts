@@ -16,14 +16,22 @@ export default async function(req: Request): Promise<Response> {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'No autenticado' }, { status: 401 });
 
-    if (!['admin', 'jefe_taller', 'tecnico'].includes(user.role)) {
-      return Response.json({ error: 'Tu acceso a la app no permite marcar asistencia. Pide a gerencia que revise tu rol de empleado.' }, { status: 403 });
+    const email = String(user.email || '').trim().toLowerCase();
+    const rolPermitido = ['admin', 'jefe_taller', 'tecnico'].includes(user.role);
+    if (!rolPermitido) {
+      const fichas = await base44.asServiceRole.entities.Empleado.filter({ email });
+      const empleado = fichas[0];
+      const perfilesPermitidos = ['admin', 'jefe_taller', 'recepcion_cobros', 'tecnico', 'pintura'];
+      if (!empleado || empleado.activo === false || !perfilesPermitidos.includes(empleado.perfil_acceso)) {
+        return Response.json({ error: 'Tu acceso a la app no permite marcar asistencia. Pide a gerencia que revise tu perfil de empleado.' }, { status: 403 });
+      }
     }
 
     const body = await req.json().catch(() => ({}));
     const tipo = body.tipo;
-    if (tipo !== 'Entrada' && tipo !== 'Salida') {
-      return Response.json({ error: 'Tipo de registro inválido' }, { status: 400 });
+    const tiposPermitidos = ['Entrada', 'Inicio Almuerzo', 'Fin Almuerzo', 'Salida'];
+    if (!tiposPermitidos.includes(tipo)) {
+      return Response.json({ error: 'Selecciona una acción de asistencia válida.' }, { status: 400 });
     }
 
     const latitud = Number(body.latitud);
@@ -48,16 +56,26 @@ export default async function(req: Request): Promise<Response> {
     }
 
     const hoy = new Date().toLocaleDateString('en-CA', { timeZone: 'America/El_Salvador' });
-    const email = String(user.email).toLowerCase();
     const registrosHoy = await base44.asServiceRole.entities.Asistencia.filter({ empleado_email: email, fecha_sv: hoy });
     const entrada = registrosHoy.find((r) => r.tipo === 'Entrada');
+    const inicioAlmuerzo = registrosHoy.find((r) => r.tipo === 'Inicio Almuerzo');
+    const finAlmuerzo = registrosHoy.find((r) => r.tipo === 'Fin Almuerzo');
     const salida = registrosHoy.find((r) => r.tipo === 'Salida');
 
     if (tipo === 'Entrada' && entrada) {
       return Response.json({ error: 'Ya marcaste tu entrada hoy.', yaRegistrado: true }, { status: 400 });
     }
-    if (tipo === 'Salida' && !entrada) {
+    if (tipo !== 'Entrada' && !entrada) {
       return Response.json({ error: 'Primero debes marcar tu entrada.' }, { status: 400 });
+    }
+    if (tipo === 'Inicio Almuerzo' && (inicioAlmuerzo || salida)) {
+      return Response.json({ error: inicioAlmuerzo ? 'Ya marcaste el inicio del almuerzo hoy.' : 'No puedes iniciar el almuerzo después de marcar la salida.' }, { status: 400 });
+    }
+    if (tipo === 'Fin Almuerzo' && !inicioAlmuerzo) {
+      return Response.json({ error: 'Primero debes marcar el inicio del almuerzo.' }, { status: 400 });
+    }
+    if (tipo === 'Fin Almuerzo' && (finAlmuerzo || salida)) {
+      return Response.json({ error: finAlmuerzo ? 'Ya marcaste el fin del almuerzo hoy.' : 'No puedes finalizar el almuerzo después de marcar la salida.' }, { status: 400 });
     }
     if (tipo === 'Salida' && salida) {
       return Response.json({ error: 'Ya marcaste tu salida hoy.', yaRegistrado: true }, { status: 400 });

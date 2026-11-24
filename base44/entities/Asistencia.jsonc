@@ -14,6 +14,8 @@
       "type": "string",
       "enum": [
         "Entrada",
+        "Inicio Almuerzo",
+        "Fin Almuerzo",
         "Salida"
       ],
       "description": "Tipo de registro de asistencia"
@@ -81,16 +83,12 @@
           }
         },
         {
-          "$and": [
-            {
-              "user_condition": {
-                "role": "tecnico"
-              }
-            },
-            {
-              "data.empleado_email": "{{user.email}}"
-            }
-          ]
+          "user_condition": {
+            "role": "tecnico"
+          }
+        },
+        {
+          "data.empleado_email": "{{user.email}}"
         }
       ]
     },

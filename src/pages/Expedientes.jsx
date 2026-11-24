@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import ExpedienteForm from "@/components/expedientes/ExpedienteForm";
+import { esTecnico } from "@/lib/permissions";
 
 const ESTADOS = [
   "Todos", "Recibido", "En Diagnóstico", "Esperando Aprobación", "Aprobado",
@@ -34,9 +35,11 @@ const estadoColor = {
 
 export default function Expedientes() {
   const [search, setSearch] = useState("");
-  const [filtroEstado, setFiltroEstado] = useState("Todos");
+  const [filtroEstado, setFiltroEstado] = useState(null);
   const [showForm, setShowForm] = useState(false);
 
+  const { data: user } = useQuery({ queryKey: ["me"], queryFn: () => base44.auth.me() });
+  const filtroActual = filtroEstado || (esTecnico(user) ? "Recibido" : "Todos");
   const navigate = useNavigate();
   const qc = useQueryClient();
 
@@ -66,7 +69,7 @@ export default function Expedientes() {
       cliente?.nombre_completo?.toLowerCase().includes(search.toLowerCase()) ||
       vehiculo?.placa?.toLowerCase().includes(search.toLowerCase()) ||
       vehiculo?.marca?.toLowerCase().includes(search.toLowerCase());
-    const matchEstado = filtroEstado === "Todos" || exp.estado_interno === filtroEstado;
+    const matchEstado = filtroActual === "Todos" || exp.estado_interno === filtroActual;
     return matchSearch && matchEstado;
   });
 
@@ -109,7 +112,7 @@ export default function Expedientes() {
           <button
             key={estado}
             onClick={() => setFiltroEstado(estado)}
-            className={`min-h-9 shrink-0 whitespace-nowrap rounded-full px-3 text-xs font-medium transition-all ${filtroEstado === estado ? "bg-[#E31E24] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+            className={`min-h-9 shrink-0 whitespace-nowrap rounded-full px-3 text-xs font-medium transition-all ${filtroActual === estado ? "bg-[#E31E24] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
           >
             {estado}
             {estado !== "Todos" && (

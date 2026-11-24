@@ -48,7 +48,7 @@ const SiNoSelect = ({ label, value, onChange }) => (
   </div>
 );
 
-export default function InspeccionForm({ expediente, vehiculo, cliente, empleados, onSave, inspeccionExistente }) {
+export default function InspeccionForm({ expediente, vehiculo, cliente, empleados, onSave, inspeccionExistente, fotosIniciales, mostrarFotos = true, onBack }) {
   const [form, setForm] = useState(inspeccionExistente || {
     realizada_por: "",
     kilometraje: vehiculo?.kilometraje_actual || "",
@@ -79,7 +79,8 @@ export default function InspeccionForm({ expediente, vehiculo, cliente, empleado
   const [nuevoDano, setNuevoDano] = useState({ tipo: "Rayón", ubicacion: "", descripcion: "" });
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
-  const fotosGuardadas = (form.fotos || []).filter(foto => typeof foto === "string" && foto.trim()).length;
+  const fotosActuales = Array.isArray(fotosIniciales) ? fotosIniciales : (form.fotos || []);
+  const fotosGuardadas = fotosActuales.filter(foto => typeof foto === "string" && foto.trim()).length;
 
   const agregarDano = () => {
     if (!nuevoDano.ubicacion) return;
@@ -118,6 +119,7 @@ export default function InspeccionForm({ expediente, vehiculo, cliente, empleado
     setSaving(true);
     const data = {
       ...form,
+      fotos: fotosActuales,
       expediente_id: expediente.id,
       vehiculo_id: vehiculo.id,
       cliente_id: cliente.id,
@@ -140,6 +142,10 @@ export default function InspeccionForm({ expediente, vehiculo, cliente, empleado
 
   return (
     <div className="space-y-6">
+      <div className="rounded-xl border border-blue-200 bg-blue-50 p-3">
+        <p className="text-xs font-bold uppercase tracking-wide text-blue-800">Paso 2 de 2 · Preguntas</p>
+        <p className="mt-1 text-sm text-blue-900">Completa la revisión del vehículo y guarda la recepción.</p>
+      </div>
       {/* Info vehículo */}
       <div className="bg-blue-50 rounded-xl p-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
         <div><p className="text-gray-500 text-xs">Vehículo</p><p className="font-semibold">{vehiculo?.marca} {vehiculo?.modelo}</p></div>
@@ -246,34 +252,35 @@ export default function InspeccionForm({ expediente, vehiculo, cliente, empleado
           value={nuevoDano.descripcion} onChange={e => setNuevoDano(n => ({ ...n, descripcion: e.target.value }))} />
       </div>
 
-      {/* Fotos y confirmación inicial */}
-      <div className="space-y-3 rounded-xl border bg-white p-4">
-        <div>
-          <h3 className="font-semibold text-gray-800">Fotos de recepción: {Math.min(fotosGuardadas, ANGULOS_FOTO.length)}/{ANGULOS_FOTO.length}</h3>
-          <p className="mt-1 text-sm text-gray-600">Usa la cámara del dispositivo del taller. Cada foto se sube directo al expediente y queda guardada de forma privada.</p>
-        </div>
-        <div role="status" className={`rounded-lg border px-3 py-2 text-sm ${fotosGuardadas >= ANGULOS_FOTO.length ? "border-green-200 bg-green-50 text-green-800" : "border-amber-200 bg-amber-50 text-amber-800"}`}>
-          {fotosGuardadas >= ANGULOS_FOTO.length ? "Recepción fotográfica completa. Ya puedes continuar con la facturación." : `Pendiente de fotografías: ${Math.min(fotosGuardadas, ANGULOS_FOTO.length)}/4. Completa los cuatro ángulos antes de facturar.`}
-        </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {ANGULOS_FOTO.map((angulo, index) => {
-            const fileUri = form.fotos?.[index];
-            return (
-              <div key={angulo} className="space-y-2 rounded-lg border border-gray-200 p-3">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="font-medium text-gray-800">{index + 1}. {angulo}</p>
-                  <span className={`text-xs font-medium ${fileUri ? "text-green-700" : "text-amber-700"}`}>{fileUri ? "Guardada" : "Pendiente"}</span>
+      {mostrarFotos && (
+        <div className="space-y-3 rounded-xl border bg-white p-4">
+          <div>
+            <h3 className="font-semibold text-gray-800">Fotos de recepción: {Math.min(fotosGuardadas, ANGULOS_FOTO.length)}/{ANGULOS_FOTO.length}</h3>
+            <p className="mt-1 text-sm text-gray-600">Usa la cámara del dispositivo del taller. Cada foto se sube directo al expediente y queda guardada de forma privada.</p>
+          </div>
+          <div role="status" className={`rounded-lg border px-3 py-2 text-sm ${fotosGuardadas >= ANGULOS_FOTO.length ? "border-green-200 bg-green-50 text-green-800" : "border-amber-200 bg-amber-50 text-amber-800"}`}>
+            {fotosGuardadas >= ANGULOS_FOTO.length ? "Recepción fotográfica completa. Ya puedes continuar con la facturación." : `Pendiente de fotografías: ${Math.min(fotosGuardadas, ANGULOS_FOTO.length)}/4. Completa los cuatro ángulos antes de facturar.`}
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {ANGULOS_FOTO.map((angulo, index) => {
+              const fileUri = form.fotos?.[index];
+              return (
+                <div key={angulo} className="space-y-2 rounded-lg border border-gray-200 p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-medium text-gray-800">{index + 1}. {angulo}</p>
+                    <span className={`text-xs font-medium ${fileUri ? "text-green-700" : "text-amber-700"}`}>{fileUri ? "Guardada" : "Pendiente"}</span>
+                  </div>
+                  {fileUri ? <FotoRecepcion fileUri={fileUri} alt={`Vista ${angulo}`} className="h-36 w-full rounded-md object-cover" /> : <div className="flex h-24 items-center justify-center rounded-md bg-gray-50 text-sm text-gray-500">Foto pendiente</div>}
+                  <label className="inline-flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    <Camera className="h-4 w-4" aria-hidden="true" />{uploading ? "Guardando foto…" : fileUri ? "Cambiar foto" : "Tomar foto"}
+                    <input type="file" accept="image/*" capture="environment" className="sr-only" onChange={event => handleFotoAngulo(index, event)} disabled={uploading} />
+                  </label>
                 </div>
-                {fileUri ? <FotoRecepcion fileUri={fileUri} alt={`Vista ${angulo}`} className="h-36 w-full rounded-md object-cover" /> : <div className="flex h-24 items-center justify-center rounded-md bg-gray-50 text-sm text-gray-500">Foto pendiente</div>}
-                <label className="inline-flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-                  <Camera className="h-4 w-4" aria-hidden="true" />{uploading ? "Guardando foto…" : fileUri ? "Cambiar foto" : "Tomar foto"}
-                  <input type="file" accept="image/*" capture="environment" className="sr-only" onChange={event => handleFotoAngulo(index, event)} disabled={uploading} />
-                </label>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       <div>
         <Label>Observaciones generales</Label>
@@ -286,10 +293,13 @@ export default function InspeccionForm({ expediente, vehiculo, cliente, empleado
         <div><Label>Firma del cliente</Label><SignaturePad value={form.firma_ingreso?.firma_data_url || ""} onChange={firma_data_url => set("firma_ingreso", { ...(form.firma_ingreso || {}), firma_data_url, metodo: "Digital" })} /></div>
       </div>
 
-      <Button className="w-full bg-[#E31E24] hover:bg-[#B71C1C] gap-2" onClick={handleSave} disabled={saving || uploading}>
-        <CheckCircle className="w-4 h-4" />
-        {saving ? "Guardando..." : "Guardar Inspección"}
-      </Button>
+      <div className={`grid gap-2 ${onBack ? "sm:grid-cols-2" : ""}`}>
+        {onBack && <Button variant="outline" className="h-11" onClick={onBack} disabled={saving || uploading}>Volver a fotos (1/2)</Button>}
+        <Button className="h-11 w-full gap-2 bg-[#E31E24] hover:bg-[#B71C1C]" onClick={handleSave} disabled={saving || uploading}>
+          <CheckCircle className="h-4 w-4" />
+          {saving ? "Guardando..." : "Guardar recepción completa"}
+        </Button>
+      </div>
     </div>
   );
 }

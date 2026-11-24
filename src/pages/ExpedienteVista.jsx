@@ -62,7 +62,8 @@ export default function ExpedienteVista() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [tab, setTab] = useState("resumen");
-  const [modoInspeccion, setModoInspeccion] = useState("rapida");
+  const [pasoRecepcion, setPasoRecepcion] = useState(1);
+  const [fotosPasoRecepcion, setFotosPasoRecepcion] = useState(null);
   const [showFacturaForm, setShowFacturaForm] = useState(false);
   const contenidoRef = useRef(null);
 
@@ -290,25 +291,14 @@ export default function ExpedienteVista() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-1 rounded-xl bg-gray-100 p-1">
-                    <button onClick={() => setModoInspeccion("rapida")}
-                      className={`min-h-10 rounded-lg text-xs font-semibold transition-all ${modoInspeccion === "rapida" ? "bg-white text-gray-900 shadow" : "text-gray-500"}`}>
-                      Recepción rápida
-                    </button>
-                    <button onClick={() => setModoInspeccion("completa")}
-                      className={`min-h-10 rounded-lg text-xs font-semibold transition-all ${modoInspeccion === "completa" ? "bg-white text-gray-900 shadow" : "text-gray-500"}`}>
-                      Inspección completa
-                    </button>
-                  </div>
-                  {modoInspeccion === "rapida" ? (
+                  {pasoRecepcion === 1 ? (
                     <RecepcionRapida
                       expediente={expediente}
                       vehiculo={vehiculo}
                       cliente={cliente}
-                      empleados={empleados}
                       inspeccionExistente={inspeccion}
-                      onSave={(completa) => { refetchInsp(); qc.invalidateQueries(["expediente", id]); if (completa) setTab("diagnostico"); }}
-                      onAbrirCompleta={() => setModoInspeccion("completa")}
+                      fotosIniciales={fotosPasoRecepcion ?? inspeccion?.fotos ?? []}
+                      onContinue={(fotos) => { setFotosPasoRecepcion(fotos); setPasoRecepcion(2); }}
                     />
                   ) : (
                     <InspeccionForm
@@ -317,7 +307,16 @@ export default function ExpedienteVista() {
                       cliente={cliente}
                       empleados={empleados}
                       inspeccionExistente={inspeccion}
-                      onSave={(completa) => { refetchInsp(); qc.invalidateQueries(["expediente", id]); if (completa) setTab("diagnostico"); }}
+                      fotosIniciales={fotosPasoRecepcion ?? inspeccion?.fotos ?? []}
+                      mostrarFotos={false}
+                      onBack={() => setPasoRecepcion(1)}
+                      onSave={(completa) => {
+                        refetchInsp();
+                        qc.invalidateQueries(["expediente", id]);
+                        setFotosPasoRecepcion(null);
+                        setPasoRecepcion(1);
+                        if (completa) setTab("diagnostico");
+                      }}
                     />
                   )}
                 </div>
